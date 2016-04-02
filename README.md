@@ -49,6 +49,13 @@ This application uses following products:
 
 Except the components mentioned above, the whole application (or game) in open-sourced under [MIT License](LICENSE).
 
+## Snapshots
+
+![Snapshot](http://i.imgur.com/ioU37sD.png)
+![Snapshot](http://i.imgur.com/zM43rWa.png)
+![Snapshot](http://i.imgur.com/tDvIFNg.png)
+![Snapshot](http://i.imgur.com/TSvI0Y3.png)
+
 ## References
 
 - **[BMS command memo](http://hitkey.nekokan.dyndns.info/cmds.htm)**: Even this is a draft memo, it is deep enough to study the whole BMS format.
