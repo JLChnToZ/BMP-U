@@ -1,6 +1,6 @@
 # Be-Music-Player Unity Edition
 
-**Yet-Another Unity-based [https://en.wikipedia.org/wiki/Be-Music_Source](Be-Music Script/Source) (BMS) Player**
+**Yet-Another Unity-based [Be-Music Script/Source](https://en.wikipedia.org/wiki/Be-Music_Source) (BMS) Player**
 
 This project aims to parse BMS scores and allows everyone to play with them as a rhythm game. You may play with your BMS track with keyboard, game controllers or even with touch screen.
 
@@ -43,12 +43,12 @@ Currently the whole stuff is lack of graphics and some of the features are missi
 ## Copyright Notice / Acknowledgements
 
 This application uses following products:
-- **[http://moji-waku.com/makinas/](Makinas Font（マキナス）)** by [http://moji-waku.com](もじワク研究) - [http://moji-waku.com/mj_work_license/](LICENSE)
-- **[http://www.dafont.com/5identification-mono.font](5 Identification Mono Font)** by [http://www.dafont.com/winty5.d4560](Winter Design Studio)
-- **[http://fr.sfml-dev.org/forums/index.php?topic=12305.0](VideoStreamer & VideoStreamer.NET)** by Brown Star - [https://bitbucket.org/zsbzsb/videostreamer/src/df763ea34e6e8be6576dea3fb7843a7e1c193dda/license.txt](LICENSE)
+- **[Makinas Font（マキナス）](http://moji-waku.com/makinas/)** by [http://moji-waku.com](もじワク研究) - [LICENSE](http://moji-waku.com/mj_work_license/)
+- **[5 Identification Mono Font](http://www.dafont.com/5identification-mono.font)** by [Winter Design Studio](http://www.dafont.com/winty5.d4560)
+- **[VideoStreamer & VideoStreamer.NET](http://fr.sfml-dev.org/forums/index.php?topic=12305.0)** by Brown Star - [LICENSE](https://bitbucket.org/zsbzsb/videostreamer/src/df763ea34e6e8be6576dea3fb7843a7e1c193dda/license.txt)
 
-Except the components mentioned above, the whole application (or game) in open-sourced under [LICENSE](MIT License).
+Except the components mentioned above, the whole application (or game) in open-sourced under [MIT License](LICENSE).
 
 ## References
 
-- **[http://hitkey.nekokan.dyndns.info/cmds.htm](BMS command memo)**: Even this is a draft memo, it is deep enough to study the whole BMS format.
+- **[BMS command memo](http://hitkey.nekokan.dyndns.info/cmds.htm)**: Even this is a draft memo, it is deep enough to study the whole BMS format.
