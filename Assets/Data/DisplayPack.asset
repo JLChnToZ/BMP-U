@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c52142dff14b3d4c84ca9b6c6f9c7bd, type: 3}
+  m_Name: DisplayPack
+  m_EditorClassIdentifier: 
+  images:
+  - {fileID: 21300000, guid: 0d85a0bd3cdc2ce47932327d32f908e1, type: 3}
+  - {fileID: 21300000, guid: ca075a94790543b458a3dd91a77b89cd, type: 3}
+  - {fileID: 21300000, guid: cf4ead9fbb376e646b95e7bfcd978b65, type: 3}
+  - {fileID: 21300000, guid: d45039ac9dc3ea143bf654f45763b7a9, type: 3}

@@ -1,0 +1,127 @@
+﻿using UnityEngine;
+using System.Collections;
+using BMS.Visualization;
+using System;
+
+[RequireComponent(typeof(LineRenderer))]
+public class CurvedNoteHandler: NoteHandler {
+    float timeBetween, endTimeBetween, endDelta;
+    Color baseColor = Color.white;
+
+    public Vector3 centroid;
+    [Range(0F, 360F)]
+    public float clampRangeStart = 0F;
+    [Range(0F, 360F)]
+    public float clampRangeEnd = 360F;
+    public float startDistance = 0F;
+    public float targetDistance = 1F;
+
+    float delta1 = 0, delta2 = 0;
+
+    public SpriteRenderer startNoteHandler;
+    public SpriteRenderer endNoteHander;
+    public SpriteRenderer targetPointInd;
+    public SpriteRenderer scoreInd;
+
+    public ScoreDisplayPack scoreDisplayPack;
+
+    LineRenderer _lineRenderer;
+    LineRenderer lineRenderer {
+        get {
+            if(_lineRenderer == null)
+                _lineRenderer = GetComponent<LineRenderer>();
+            return _lineRenderer;
+        }
+    }
+
+    protected override void Initialize() {
+        transform.rotation = Quaternion.AngleAxis(Mathf.Lerp(clampRangeStart, clampRangeEnd, float.IsNaN(delta) ? 0.5F : delta) - 90, Vector3.forward);
+        transform.position = centroid;
+        transform.localScale = Vector3.one;
+        targetPointInd.transform.localPosition = new Vector3(0, targetDistance, 0.1F);
+        targetPointInd.enabled = true;
+        startNoteHandler.transform.localScale = Vector3.one;
+        endNoteHander.transform.localScale = Vector3.one;
+        timeBetween = (float)bmsManager.PreEventOffset.TotalSeconds;
+        endTimeBetween = (float)noteDetector.EndTimeOffset.TotalSeconds;
+        baseColor = Color.white;
+        endNoteHander.gameObject.SetActive(isLongNote);
+        lineRenderer.enabled = isLongNote;
+        scoreInd.sprite = null;
+        endDelta = 0;
+        endTargetTime = targetTime;
+        SetColor(Color.white);
+    }
+
+    public override void SetColor(Color color) {
+        baseColor = color;
+    }
+
+    public override void RegisterLongNoteEnd(TimeSpan time, int noteId) {
+        base.RegisterLongNoteEnd(time, noteId);
+        endNoteHander.gameObject.SetActive(true);
+    }
+
+    protected override void NoteClicked(TimeSpan timePosition, int channel, int data, int flag) {
+        base.NoteClicked(timePosition, channel, data, flag);
+        if(firstNoteClicked || secondNoteClicked)
+            scoreInd.sprite = scoreDisplayPack.images[resultFlag < 0 ? scoreDisplayPack.images.Length - 1 : resultFlag];
+        scoreInd.transform.rotation = Quaternion.identity;
+        if(secondNoteClicked) lineRenderer.enabled = false;
+    }
+
+    protected override void UpdatePosition() {
+        float lerpDelay = (float)noteDetector.EndTimeOffset.TotalMilliseconds;
+        UpdateNotePos(startNoteHandler, (float)(targetTime - bmsManager.TimePosition).TotalSeconds, firstNoteClicked, true);
+        if(isLongNote) {
+            if(!longNoteRegistered) endTargetTime = bmsManager.TimePosition + bmsManager.PreEventOffset;
+            UpdateNotePos(endNoteHander, (float)(endTargetTime - bmsManager.TimePosition).TotalSeconds, secondNoteClicked, false);
+            lineRenderer.SetPosition(0, startNoteHandler.transform.position + Vector3.back);
+            lineRenderer.SetPosition(1, endNoteHander.transform.position + Vector3.back);
+            lineRenderer.SetColors(startNoteHandler.color, endNoteHander.color);
+        }
+    }
+
+    void UpdateNotePos(SpriteRenderer handler, float timeDelta, bool clicked, bool isFirst) {
+        float delta;
+        bool overTime = timeDelta < 0;
+        if(overTime) {
+            delta = timeDelta / endTimeBetween;
+            if(!clicked && delta >= 2) cycleDone = true;
+        } else {
+            delta = timeDelta / timeBetween;
+        }
+
+        if(clicked) {
+            if(isLongNote ? secondNoteClicked : true) {
+                endDelta = Mathf.Lerp(endDelta, 1, Time.deltaTime * 5);
+                handler.color = new Color(baseColor.r, baseColor.g, baseColor.b, 1 - endDelta);
+                scoreInd.color = new Color(1, 1, 1, 1 - endDelta);
+                handler.transform.localScale = Vector3.one * (1 + endDelta);
+                if(endDelta >= 0.999F) cycleDone = true;
+                targetPointInd.enabled = false;
+            }
+        } else if(overTime) {
+            if(delta >= 1) {
+                scoreInd.color = new Color(1, 1, 1, 2 - delta);
+                handler.color = new Color(1, 1, 1, 0);
+            } else {
+                scoreInd.color = new Color(1, 1, 1, 0);
+                handler.color = new Color(baseColor.r, baseColor.g, baseColor.b, 1 - delta);
+            }
+        } else {
+            handler.color = delta >= 0.5F ? new Color(baseColor.r, baseColor.g, baseColor.b, (1 - delta) * 2) : baseColor;
+            if(isFirst) targetPointInd.color = new Color(1, 1, 1, (1 - delta) / 2);
+        }
+
+        if(cycleDone) return;
+
+        if(clicked) {
+            if(isFirst && isLongNote) handler.transform.localPosition = Vector3.up * targetDistance;
+        } else if(overTime) {
+            handler.transform.localPosition = Vector3.up * (targetDistance + Mathf.Abs(targetDistance - startDistance) * Mathf.Pow(delta, 0.5F) / 16);
+        } else {
+            handler.transform.localPosition = Vector3.up * Mathf.Lerp(startDistance, targetDistance, Mathf.Pow(1 - delta, 2));
+        }
+    }
+}
