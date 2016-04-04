@@ -143,6 +143,7 @@ static class SongInfoLoader {
                             songInfo = new SongInfo {
                                 index = reader.ReadInt32(),
                                 filePath = reader.ReadString(),
+                                name = reader.ReadString(),
                                 artist = reader.ReadString(),
                                 subArtist = reader.ReadString(),
                                 genre = reader.ReadString(),
@@ -187,6 +188,7 @@ static class SongInfoLoader {
     static void WriteSongInfo(BinaryWriter writer, SongInfo songInfo) {
         writer.Write(songInfo.index);
         writer.Write(songInfo.filePath);
+        writer.Write(songInfo.name);
         writer.Write(songInfo.artist);
         writer.Write(songInfo.subArtist);
         writer.Write(songInfo.genre);
