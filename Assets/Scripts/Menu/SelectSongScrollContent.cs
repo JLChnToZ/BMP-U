@@ -34,8 +34,11 @@ public class SelectSongScrollContent : MonoBehaviour {
     List<SongInfo> songInfos = new List<SongInfo>();
     Vector2 currentPosition = Vector2.zero;
     HashSet<int> loadingImageIndeces = new HashSet<int>();
+    List<int> deleteSongIdx = new List<int>(); 
 
     public event Action<Texture> OnChangeBackground;
+
+    public event Action<int> OnSongInfoRemoved;
     
     RectTransform _rectTransform;
     public RectTransform rectTransform {
@@ -183,6 +186,11 @@ public class SelectSongScrollContent : MonoBehaviour {
                     initResult = row.items[j].Init(songInfo);
                     if(initResult == 1 || initResult == -1) hasToggle = true;
                     if(initResult == 0) continue;
+                    if(!songInfo.Exists) {
+                        deleteSongIdx.Add(itemIdx);
+                        if(OnSongInfoRemoved != null)
+                            OnSongInfoRemoved.Invoke(songInfo.index);
+                    }
                     if(!loadingImageIndeces.Contains(itemIdx) && songInfo.background == null && !string.IsNullOrEmpty(songInfo.backgroundPath))
                         StartCoroutine(LoadBackgroundImage(itemIdx, songInfo));
                     if(!go.activeSelf) go.SetActive(true);
@@ -191,6 +199,13 @@ public class SelectSongScrollContent : MonoBehaviour {
             }
         }
         if(!hasToggle) toggleGroup.SetAllTogglesOff();
+        if(deleteSongIdx.Count > 0) {
+            deleteSongIdx.Sort();
+            deleteSongIdx.Reverse();
+            foreach(var removeIdx in deleteSongIdx)
+                songInfos.RemoveAt(removeIdx);
+            deleteSongIdx.Clear();
+        }
     }
 
     IEnumerator LoadBackgroundImage(int index, SongInfo songInfo) {

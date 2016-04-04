@@ -4,14 +4,9 @@ using UnityEngine.SceneManagement;
 
 using BMS;
 
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-
-using ThreadPriority = System.Threading.ThreadPriority;
+using System;
 
 public class SelectSongManager : MonoBehaviour {
     static int savedSortMode;
@@ -25,10 +20,6 @@ public class SelectSongManager : MonoBehaviour {
     public RawImage background;
     public ColorRampLevel colorSet;
     string dataPath;
-    float loadedPercentage = 0;
-
-    static List<SongInfo> cachedSongInfo = new List<SongInfo>();
-    static HashSet<string> cachedSongInfoPaths = new HashSet<string>();
 
     public BMSManager bmsManager;
 
@@ -39,6 +30,7 @@ public class SelectSongManager : MonoBehaviour {
         speedSlider.value = Loader.speed;
         sortMode.value = savedSortMode;
         itemsDisplay.OnChangeBackground += ChangeBackground;
+        itemsDisplay.OnSongInfoRemoved += SongInfoLoader.RemoveSongInfo;
     }
 
     void OnDestroy() {
@@ -69,28 +61,36 @@ public class SelectSongManager : MonoBehaviour {
         if(itemsDisplay.SelectedSongInternalIndex >= 0)
             SceneManager.LoadScene("GameScene");
     }
-
-    Thread loadBMSFilesThread;
+    
     Coroutine loadBMSFilesCoroutine;
     void LoadBMSInThread() {
         loadingDisplay.gameObject.SetActive(true);
         if(bmsManager == null)
             bmsManager = gameObject.GetComponent<BMSManager>() ?? gameObject.AddComponent<BMSManager>();
-
-        if(loadBMSFilesThread != null && loadBMSFilesThread.IsAlive)
-            loadBMSFilesThread.Abort();
+        
+        SongInfoLoader.LoadBMSInThread(bmsManager, OnLoadCacheInfo, OnAddSong);
         dataPath = Application.dataPath;
-        loadBMSFilesThread = new Thread(LoadBMS) {
-            Priority = ThreadPriority.BelowNormal
-        };
-        loadBMSFilesThread.Start();
         StartCoroutine(LoadBMSEnd());
+    }
+
+    void OnAddSong(SongInfo songInfo) {
+        if(itemsDisplay != null)
+            itemsDisplay.AddItem(songInfo);
+        else
+            SongInfoLoader.StopLoadBMS();
+    }
+
+    void OnLoadCacheInfo(IEnumerable<SongInfo> songInfos) {
+        if(itemsDisplay != null)
+            itemsDisplay.AddItem(songInfos);
+        else
+            SongInfoLoader.StopLoadBMS();
     }
 
     IEnumerator LoadBMSEnd() {
         Vector2 loadingAnchorMax = loadingPercentageDisplay.anchorMax;
-        while(loadBMSFilesThread != null && loadBMSFilesThread.IsAlive) {
-            loadingAnchorMax.x = loadedPercentage;
+        while(SongInfoLoader.HasLoadingThreadRunning) {
+            loadingAnchorMax.x = SongInfoLoader.LoadedPercentage;
             loadingPercentageDisplay.anchorMax = loadingAnchorMax;
             yield return null;
         }
@@ -98,64 +98,6 @@ public class SelectSongManager : MonoBehaviour {
         loadingPercentageDisplay.anchorMax = loadingAnchorMax;
         loadingDisplay.gameObject.SetActive(false);
         yield break;
-    }
-    
-    void LoadBMS() {
-        try {
-            itemsDisplay.markLoaded = false;
-            itemsDisplay.AddItem(cachedSongInfo);
-            itemsDisplay.RestorePosition();
-            var dirInfo = new DirectoryInfo(Path.Combine(dataPath, "../BMS"));
-            var fileList = RecursiveSearchFiles(dirInfo, null, "*.bms", "*.bme", "*.bml", "*.pms");
-            SongInfo songInfo;
-            string bmsContent;
-            int i = 0, l = fileList.Count;
-            foreach(var file in fileList) {
-                if(itemsDisplay == null) return;
-                if(cachedSongInfoPaths.Contains(file.FullName)) continue;
-                if(!file.Exists) continue;
-                bmsContent = string.Empty;
-                using(var fs = file.OpenRead())
-                using(var fsRead = new StreamReader(fs, SongInfoLoader.CurrentEncoding))
-                    bmsContent = fsRead.ReadToEnd();
-                bmsManager.LoadBMS(bmsContent, file.Directory.FullName, true);
-                songInfo = new SongInfo {
-                    index = SongInfoLoader.GetNextIndex(),
-                    filePath = file.FullName,
-                    name = bmsManager.Title,
-                    artist = bmsManager.Artist,
-                    subArtist = bmsManager.SubArtist,
-                    genre = bmsManager.Genre,
-                    bpm = bmsManager.BPM,
-                    level = bmsManager.PlayLevel,
-                    comments = bmsManager.Comments,
-                    background = bmsManager.StageFile,
-                    backgroundPath = bmsManager.StageFilePath
-                };
-                cachedSongInfo.Add(songInfo);
-                cachedSongInfoPaths.Add(file.FullName);
-                if(itemsDisplay == null) return;
-                itemsDisplay.AddItem(songInfo);
-                loadedPercentage = ++i / (float)l;
-            }
-            if(itemsDisplay == null) return;
-            itemsDisplay.markLoaded = true;
-            itemsDisplay.Sort();
-        } catch(ThreadAbortException) {
-        } catch(Exception ex) {
-            Debug.LogException(ex);
-        }
-    }
-
-    static HashSet<FileInfo> RecursiveSearchFiles(DirectoryInfo parent, HashSet<FileInfo> list, params string[] filters) {
-        if(list == null) list = new HashSet<FileInfo>();
-        if(filters == null || filters.Length < 1)
-            list.UnionWith(parent.GetFiles());
-        foreach(var filter in filters)
-            list.UnionWith(parent.GetFiles(filter, SearchOption.TopDirectoryOnly));
-        foreach(var directory in parent.GetDirectories())
-            RecursiveSearchFiles(directory, list, filters);
-        return list;
     }
 
     void ChangeBackground(Texture texture) {
