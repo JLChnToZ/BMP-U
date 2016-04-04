@@ -67,7 +67,8 @@ public class SelectSongManager : MonoBehaviour {
         loadingDisplay.gameObject.SetActive(true);
         if(bmsManager == null)
             bmsManager = gameObject.GetComponent<BMSManager>() ?? gameObject.AddComponent<BMSManager>();
-        
+
+        itemsDisplay.markLoaded = false;
         SongInfoLoader.LoadBMSInThread(bmsManager, OnLoadCacheInfo, OnAddSong);
         dataPath = Application.dataPath;
         StartCoroutine(LoadBMSEnd());
@@ -97,6 +98,8 @@ public class SelectSongManager : MonoBehaviour {
         loadingAnchorMax.x = 1;
         loadingPercentageDisplay.anchorMax = loadingAnchorMax;
         loadingDisplay.gameObject.SetActive(false);
+        itemsDisplay.markLoaded = true;
+        itemsDisplay.Sort();
         yield break;
     }
 
