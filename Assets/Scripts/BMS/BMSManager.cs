@@ -11,6 +11,73 @@ namespace BMS {
         Resources = 4
     }
 
+    public class LongNoteTimeHolder {
+        int score, remainScore;
+        long startTime, duration, previousUpdatetime;
+        int channel;
+
+        public event Action<int> OnAddScore;
+
+        public TimeSpan StartTime {
+            get { return new TimeSpan(startTime); }
+            set { startTime = value.Ticks; }
+        }
+
+        public TimeSpan Duration {
+            get { return new TimeSpan(duration); }
+            set { duration = value.Ticks; }
+        }
+
+        public int Score {
+            get { return score; }
+            set { remainScore = score = value; }
+        }
+
+        public int Channel {
+            get { return channel; }
+        }
+
+        public LongNoteTimeHolder(int channel) {
+            this.channel = channel;
+            ResetRemainTime();
+        }
+
+        public void AddRemainScore() {
+            if(remainScore > 0) {
+                if(OnAddScore != null)
+                    OnAddScore.Invoke(remainScore);
+                remainScore = 0;
+            }
+            ResetRemainTime();
+        }
+
+        public void ResetRemainTime() {
+            previousUpdatetime = 0;
+            score = 0;
+        }
+
+        public void Update(TimeSpan currentTime) {
+            if(score == 0) return;
+            if(remainScore < 0) {
+                score = 0;
+                return;
+            }
+            long newUpdateTime = currentTime.Ticks - startTime;
+            bool exceed = newUpdateTime > duration;
+            if(exceed) newUpdateTime = duration;
+            int addScore = Mathf.FloorToInt((float)score * (newUpdateTime - previousUpdatetime) / duration);
+            if(addScore > 0) {
+                remainScore -= addScore;
+                if(remainScore < 0)
+                    addScore += remainScore;
+                if(OnAddScore != null)
+                   OnAddScore.Invoke(addScore);
+                previousUpdatetime = newUpdateTime;
+            }
+            if(exceed) score = 0;
+        }
+    }
+
     public partial class BMSManager: MonoBehaviour {
         public Texture placeHolderTexture;
 
@@ -63,6 +130,7 @@ namespace BMS {
         int[] comboBonus;
         readonly List<int> comboPools = new List<int>();
         int[] noteScoreCount;
+        readonly Dictionary<int, LongNoteTimeHolder> lnHolders = new Dictionary<int, LongNoteTimeHolder>();
 
         [SerializeField]
         RankControl rankControl;
@@ -147,6 +215,7 @@ namespace BMS {
                     score = 0;
                     accuracy = 0;
                     comboPools.Clear();
+                    lnHolders.Clear();
                     soundPlayer.StopAll();
                     soundPlayer.Volume = volume;
                     mainTimingHelper.Reset();
@@ -247,6 +316,8 @@ namespace BMS {
                 mainTimingHelper.Update(timePosition);
                 beatResetHelper.Update(timePosition);
                 bpmChangeHelper.Update(timePosition);
+                foreach(var ln in lnHolders.Values)
+                    ln.Update(timePosition);
                 if(OnBeatFlow != null) {
                     float beatFlow = (float)(timePosition - bpmBasePoint).TotalMinutes * currentBPM + bpmBasePointBeatFlow;
                     OnBeatFlow.Invoke(Mathf.Repeat(beatFlow, 1), Mathf.Repeat(beatFlow, currentTimeSignature));
@@ -322,7 +393,32 @@ namespace BMS {
             return flag >= 0 && flag < scoreWeight.Length;
         }
 
-        public int NoteClicked(TimeSpan expectedTimePosition, int channel, int eventId, bool countAsMiss, bool hasSound = true) {
+        void AddScore(int addScore) {
+            score += addScore;
+        }
+
+        LongNoteTimeHolder GetHolder(int channel) {
+            LongNoteTimeHolder lnHolder;
+            if(!lnHolders.TryGetValue(channel, out lnHolder)) {
+                lnHolders[channel] = lnHolder = new LongNoteTimeHolder(channel);
+                lnHolder.OnAddScore += AddScore;
+            }
+            return lnHolder;
+        }
+
+        void ResetHolder(int channel) {
+            LongNoteTimeHolder lnHolder;
+            if(lnHolders.TryGetValue(channel, out lnHolder))
+                lnHolder.ResetRemainTime();
+        }
+
+        void AddRemainTime(int channel) {
+            LongNoteTimeHolder lnHolder;
+            if(lnHolders.TryGetValue(channel, out lnHolder))
+                lnHolder.AddRemainScore();
+        }
+
+        public int NoteClicked(TimeSpan expectedTimePosition, int channel, int eventId, bool countAsMiss, bool hasSound = true, TimeSpan? endNotePos = null) {
             if(!isStarted || isPaused) return -2;
             var timeDiff = timePosition - expectedTimePosition;
 
@@ -335,12 +431,26 @@ namespace BMS {
                 accuracy = (float)timeDiff.TotalMilliseconds;
             }
             if(IsValidFlag(resultFlag)) {
-                score += Mathf.FloorToInt(scorePerNote * scoreWeight[resultFlag]) + comboBonus[combos];
+                int addScore = Mathf.FloorToInt(scorePerNote * scoreWeight[resultFlag]) + comboBonus[combos];
+                if(endNotePos.HasValue) {
+                    var lnHolder = GetHolder(channel);
+                    lnHolder.ResetRemainTime();
+                    lnHolder.StartTime = timePosition;
+                    lnHolder.Duration = endNotePos.Value - timePosition;
+                    lnHolder.Score = addScore;
+                } else {
+                    score += addScore;
+                    if(resultFlag == 0)
+                        AddRemainTime(channel);
+                    else
+                        ResetHolder(channel);
+                }
                 noteScoreCount[resultFlag]++;
             } else {
                 if(combos > 1) comboPools.Add(combos);
                 combos = -1;
                 noteScoreCount[noteScoreCount.Length - 1]++;
+                ResetHolder(channel);
             }
             if(score + extraScore >= maxScore)
                 score = maxScore;

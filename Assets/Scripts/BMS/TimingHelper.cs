@@ -5,7 +5,7 @@ using System.Text;
 
 namespace BMS {
     internal class TimingHelper {
-        readonly HashSet<KeyframesHandle> handles = new HashSet<KeyframesHandle>();
+        readonly Dictionary<int, KeyframesHandle> handles = new Dictionary<int, KeyframesHandle>();
 
         int endedCount;
         public bool IsEnded {
@@ -28,19 +28,23 @@ namespace BMS {
         public void AddTimelineHandle(TimeLine timeline, int timeLineId) {
             if(!timeline.Normalized) return;
             var handle = new KeyframesHandle(this, timeline.KeyFrames, timeLineId);
-            handles.Add(handle);
+            handles.Add(timeLineId, handle);
         }
 
         public void Reset() {
-            foreach(var handle in handles)
+            foreach(var handle in handles.Values)
                 handle.Reset();
             endedCount = 0;
         }
 
         public void Update(TimeSpan timePosition) {
             timePosition += offset;
-            foreach(var handle in handles)
+            foreach(var handle in handles.Values)
                 handle.Update(timePosition);
+        }
+
+        public KeyFrame Peek(int timeLineId, int offset) {
+            return handles[timeLineId].Peek(offset);
         }
 
         public void ClearHandles() {
@@ -78,6 +82,15 @@ namespace BMS {
                     parent.endedCount++;
                     isEnded = true;
                 }
+            }
+
+            public KeyFrame Peek(int offset) {
+                offset += index;
+                if(offset >= keyFrameList.Count)
+                    offset = keyFrameList.Count - 1;
+                if(offset < 0)
+                    offset = 0;
+                return keyFrameList[offset];
             }
         }
     }

@@ -16,6 +16,7 @@ namespace BMS {
             public int dataId;
             public NoteType type;
             public int longNoteId;
+            public TimeSpan lnEndPosition;
         }
         struct QueuedLongNoteState {
             public bool isNoteDown;
@@ -114,13 +115,17 @@ namespace BMS {
 
         void OnHasKeyFrame(TimeSpan timePosition, int channel, int dataId) {
             bool isLongNote = channel >= 50, lnDown = false;
+            TimeSpan lnEndpos = TimeSpan.Zero;
             QueuedLongNoteState queuedLNState = new QueuedLongNoteState();
             if(isLongNote) {
                 channel -= 40;
                 queuedLongNoteState.TryGetValue(channel, out queuedLNState);
                 lnDown = queuedLNState.isNoteDown;
                 queuedLNState.isNoteDown = !lnDown;
-                if(!lnDown) queuedLNState.longNoteId++;
+                if(!lnDown) {
+                    queuedLNState.longNoteId++;
+                    lnEndpos = preQueueMapper.Peek(channel + 40, 2).TimePosition;
+                }
                 queuedLongNoteState[channel] = queuedLNState;
             }
             GetChannelQueue(channel).Enqueue(new KeyFrame {
@@ -128,7 +133,8 @@ namespace BMS {
                 channelId = channel,
                 dataId = dataId,
                 type = isLongNote ? (lnDown ? NoteType.LongEnd : NoteType.LongStart) : NoteType.Normal,
-                longNoteId = queuedLNState.longNoteId
+                longNoteId = queuedLNState.longNoteId,
+                lnEndPosition = lnEndpos
             });
         }
 
@@ -177,6 +183,7 @@ namespace BMS {
             if(isClicking && ch.Count > 0) {
                 keyFrame = ch.Peek();
                 bool handle = true, skip = false, hasSound = true;
+                TimeSpan? endNote = null;
                 switch(keyFrame.type) {
                     case NoteType.Normal:
                         if(!isDown) handle = false;
@@ -186,6 +193,7 @@ namespace BMS {
                         if(!isDown) handle = false;
                         lns.longNoteId = keyFrame.longNoteId;
                         lns.longNoteDataId = keyFrame.dataId;
+                        endNote = keyFrame.lnEndPosition;
                         break;
                     case NoteType.LongEnd:
                         if(isDown) handle = false;
@@ -198,7 +206,7 @@ namespace BMS {
                 longNoteStates[channel] = lns;
                 if(handle || skip) ch.Dequeue();
                 if(handle) {
-                    flag = bmsManager.NoteClicked(keyFrame.timePosition, channel, keyFrame.dataId, false, hasSound);
+                    flag = bmsManager.NoteClicked(keyFrame.timePosition, channel, keyFrame.dataId, false, hasSound, endNote);
                     if(OnNoteClicked != null)
                         OnNoteClicked.Invoke(keyFrame.timePosition, channel, keyFrame.dataId, flag);
                     lns.isMissed = flag < 0;
