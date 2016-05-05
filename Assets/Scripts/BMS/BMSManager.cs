@@ -276,6 +276,7 @@ namespace BMS {
         }
 
         void Awake() {
+            Application.targetFrameRate = -1;
             if(preEventOffset == TimeSpan.Zero)
                 preEventOffset = TimeSpan.FromSeconds(preEventOffsetSeconds);
         }

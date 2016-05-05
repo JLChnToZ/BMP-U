@@ -2,6 +2,7 @@
 using System.Collections;
 using BMS.Visualization;
 using System;
+using UnityRandom = UnityEngine.Random;
 
 [RequireComponent(typeof(LineRenderer))]
 public class CurvedNoteHandler: NoteHandler {
@@ -24,6 +25,8 @@ public class CurvedNoteHandler: NoteHandler {
     public SpriteRenderer scoreInd;
 
     public ScoreDisplayPack scoreDisplayPack;
+
+    public ParticleSystem particles;
 
     LineRenderer _lineRenderer;
     LineRenderer lineRenderer {
@@ -64,10 +67,14 @@ public class CurvedNoteHandler: NoteHandler {
 
     protected override void NoteClicked(TimeSpan timePosition, int channel, int data, int flag) {
         base.NoteClicked(timePosition, channel, data, flag);
-        if(firstNoteClicked || secondNoteClicked)
+        if(firstNoteClicked || secondNoteClicked) {
             scoreInd.sprite = scoreDisplayPack.images[resultFlag < 0 ? scoreDisplayPack.images.Length - 1 : resultFlag];
+            if(channel == channelId)
+                particles.Emit(new ParticleSystem.EmitParams { position = startNoteHandler.transform.position }, UnityRandom.Range(3, 5));
+        }
         scoreInd.transform.rotation = Quaternion.identity;
-        if(secondNoteClicked) lineRenderer.enabled = false;
+        if(secondNoteClicked)
+            lineRenderer.enabled = false;
     }
 
     protected override void UpdatePosition() {
@@ -95,12 +102,14 @@ public class CurvedNoteHandler: NoteHandler {
         if(clicked) {
             if(isLongNote ? secondNoteClicked : true) {
                 endDelta = Mathf.Lerp(endDelta, 1, Time.deltaTime * 5);
-                handler.color = new Color(baseColor.r, baseColor.g, baseColor.b, 1 - endDelta);
+                handler.color = new Color(1, 1, 1, 0);// new Color(baseColor.r, baseColor.g, baseColor.b, 1 - endDelta);
                 scoreInd.color = new Color(1, 1, 1, 1 - endDelta);
                 handler.transform.localScale = Vector3.one * (1 + endDelta);
                 if(endDelta >= 0.999F) cycleDone = true;
                 targetPointInd.enabled = false;
             }
+            if(isLongNote && !secondNoteClicked && UnityRandom.value > 0.8F)
+                particles.Emit(new ParticleSystem.EmitParams { position = startNoteHandler.transform.position }, 1);
         } else if(overTime) {
             if(delta >= 1) {
                 scoreInd.color = new Color(1, 1, 1, 2 - delta);

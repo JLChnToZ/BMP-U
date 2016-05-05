@@ -26,10 +26,10 @@ namespace BMS {
             basePath = path;
         }
 
-        public IEnumerator LoadResource(ResourceObject resource) {
+        public IEnumerator LoadResource(ResourceObject resource, Action callback = null) {
             switch(resource.type) {
-                case ResourceType.wav: return LoadWavRes(resource);
-                case ResourceType.bmp: return LoadBmpRes(resource);
+                case ResourceType.wav: return LoadWavRes(resource, callback);
+                case ResourceType.bmp: return LoadBmpRes(resource, callback);
                 default: return null;
             }
         }
@@ -48,29 +48,33 @@ namespace BMS {
             return null;
         }
 
-        IEnumerator LoadWavRes(ResourceObject resource) {
+        IEnumerator LoadWavRes(ResourceObject resource, Action callback) {
             var finfo = FindRes(resource, ".wav");
-            if(finfo == null) yield break;
-            var audioLoader = new WWW(new Uri(finfo.FullName).AbsoluteUri);
-            yield return audioLoader;
-            resource.value = audioLoader.GetAudioClip(false, false);
+            if(finfo != null) {
+                var audioLoader = new WWW(new Uri(finfo.FullName).AbsoluteUri);
+                yield return audioLoader;
+                resource.value = audioLoader.GetAudioClip(false, false);
+            }
+            if(callback != null) callback.Invoke();
             yield break;
         }
 
-        IEnumerator LoadBmpRes(ResourceObject resource) {
+        IEnumerator LoadBmpRes(ResourceObject resource, Action callback) {
             var finfo = FindRes(resource, ".bmp");
-            if(finfo == null) yield break;
-            bool isImage = false;
-            var ext = finfo.Extension.ToLower();
-            foreach(var imageType in imageTypes)
-                if(ext == imageType) {
-                    isImage = true;
-                    break;
-                }
-            if(isImage)
-                resource.value = ReadTextureFromFile(finfo);
-            else
-                resource.value = ReadMovieTextureFromFile(finfo);
+            if(finfo != null) {
+                bool isImage = false;
+                var ext = finfo.Extension.ToLower();
+                foreach(var imageType in imageTypes)
+                    if(ext == imageType) {
+                        isImage = true;
+                        break;
+                    }
+                if(isImage)
+                    resource.value = ReadTextureFromFile(finfo);
+                else
+                    resource.value = ReadMovieTextureFromFile(finfo);
+            }
+            if(callback != null) callback.Invoke();
             yield break;
         }
 

@@ -19,7 +19,6 @@ Currently this project is still in alpha stage, therefore the features are still
 
 ## Pending features
 
-- **Song selection UI cache**: When everytime it runs, it will scan and fetch every file it supported from the BMS folder and subfolders, it is OK if the folder has not too much tracks in it, but the player will wait much longer when there has large amount of playable tracks.
 - **Online ranking**: It is not critical but players will be happy to compare the result online each other.
 - **Proper options UI**: Currently the only way to configue the key mappings is in the launch game menu, it will be not able to change after the game starts until the player re-launch the game. In the other hand, it would be better if player can change the channel orders and save or load multiple configuation.
 - **A more charming name for the whole stuff**: Well, I think "Be-Music Player" is not good enough.
@@ -47,7 +46,7 @@ This application uses following products:
 - **[5 Identification Mono Font](http://www.dafont.com/5identification-mono.font)** by [Winter Design Studio](http://www.dafont.com/winty5.d4560)
 - **[VideoStreamer & VideoStreamer.NET](http://fr.sfml-dev.org/forums/index.php?topic=12305.0)** by Brown Star - [LICENSE](https://bitbucket.org/zsbzsb/videostreamer/src/df763ea34e6e8be6576dea3fb7843a7e1c193dda/license.txt)
 
-Except the components mentioned above, the whole application (or game) in open-sourced under [MIT License](LICENSE).
+Except the components mentioned above, the whole application (or game) in open-sourced under [LICENSE](Artistic License 2.0).
 
 ## Snapshots
 

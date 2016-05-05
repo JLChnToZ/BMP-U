@@ -23,7 +23,7 @@ public class SelectSongManager : MonoBehaviour {
 
     public BMSManager bmsManager;
 
-	void Start () {
+	void Start() {
         SongInfoLoader.CurrentCodePage = 932; // Hardcoded to Shift-JIS as most of BMS are encoded by this.
         LoadBMSInThread();
         autoModeToggle.isOn = Loader.autoMode;

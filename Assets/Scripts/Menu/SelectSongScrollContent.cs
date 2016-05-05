@@ -74,7 +74,7 @@ public class SelectSongScrollContent : MonoBehaviour {
         var parentRect = prefab.GetComponent<RectTransform>();
         slotPerRow = prefabConf.items.Length;
         songRows.Add(prefabConf);
-        yield return new WaitForEndOfFrame();
+        yield return new WaitForSeconds(1);
         widthPerRow = parentRect.sizeDelta.x;
         for(float x = widthPerRow, w = scroller.viewport.rect.width + widthPerRow; x < w; x += widthPerRow) {
             var go = Instantiate(prefab);
@@ -210,7 +210,7 @@ public class SelectSongScrollContent : MonoBehaviour {
 
     IEnumerator LoadBackgroundImage(int index, SongInfo songInfo) {
         loadingImageIndeces.Add(index);
-        var file = new FileInfo(songInfo.filePath);
+        var file = new FileInfo(SongInfoLoader.GetAbsolutePath(songInfo.filePath));
         var resLoader = new ResourceLoader(file.Directory.FullName);
         var resObj = new ResourceObject(-1, ResourceType.bmp, songInfo.backgroundPath);
         yield return StartCoroutine(resLoader.LoadResource(resObj));

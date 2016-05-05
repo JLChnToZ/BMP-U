@@ -40,7 +40,7 @@ public struct SongInfo:IEquatable<SongInfo>, IComparable<SongInfo> {
     }
 
     public bool Exists {
-        get { return !string.IsNullOrEmpty(filePath) && File.Exists(filePath); }
+        get { return !string.IsNullOrEmpty(filePath) && File.Exists(SongInfoLoader.GetAbsolutePath(filePath)); }
     }
 }
 
@@ -94,10 +94,13 @@ static class SongInfoLoader {
         loadCachethread.Start();
     }
 
+    static SongInfoLoader() {
+        GetDataPath();
+    }
+
     public static void LoadBMSInThread(BMS.BMSManager manager, Action<IEnumerable<SongInfo>> loadCacheSongInfoCallback, Action<SongInfo> addSongInfoCallback) {
         LoadCacheInThread();
         StopLoadBMS();
-        dataPath = Application.dataPath;
         onAddSongInfo = addSongInfoCallback;
         onAddSongInfoCache = loadCacheSongInfoCallback;
         bmsManager = manager;
@@ -130,8 +133,17 @@ static class SongInfoLoader {
         return list;
     }
 
+    static void GetDataPath() {
+        if(string.IsNullOrEmpty(dataPath))
+            dataPath = Application.dataPath.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
+    }
+
+    public static string GetAbsolutePath(string path) {
+        return Path.IsPathRooted(path) ? path : Path.GetFullPath(Path.Combine(dataPath, path));
+    }
+
     static void CacheLoad() {
-        var cacheFileInfo = new FileInfo(Path.Combine(dataPath, "../cache.dat"));
+        var cacheFileInfo = new FileInfo(GetAbsolutePath("../cache.dat"));
         SongInfo songInfo;
         if(cacheFileInfo.Exists) {
             try {
@@ -152,9 +164,10 @@ static class SongInfoLoader {
                                 comments = reader.ReadString(),
                                 backgroundPath = reader.ReadString(),
                             };
-                            if(File.Exists(songInfo.filePath)) {
+                            var absolutePath = GetAbsolutePath(songInfo.filePath);
+                            if(File.Exists(absolutePath)) {
                                 cachedSongInfo.Add(songInfo);
-                                cachedSongInfoPaths.Add(songInfo.filePath);
+                                cachedSongInfoPaths.Add(absolutePath);
                             }
                         } catch { }
                     }
@@ -168,7 +181,7 @@ static class SongInfoLoader {
         while(!cacheLoaded) Thread.Sleep(25);
         int currentIdx = 0;
         bool isMax;
-        using(var writeStream = File.Open(Path.Combine(dataPath, "../cache.dat"), FileMode.OpenOrCreate, FileAccess.Write, FileShare.None)) {
+        using(var writeStream = File.Open(GetAbsolutePath("../cache.dat"), FileMode.OpenOrCreate, FileAccess.Write, FileShare.None)) {
             var writer = new BinaryWriter(writeStream);
             writer.Write(index);
             while(true) {
@@ -236,7 +249,7 @@ static class SongInfoLoader {
                 bmsManager.LoadBMS(bmsContent, file.Directory.FullName, true);
                 songInfo = new SongInfo {
                     index = GetNextIndex(),
-                    filePath = file.FullName,
+                    filePath = HelperFunctions.MakeRelative(dataPath, file.FullName),
                     name = bmsManager.Title,
                     artist = bmsManager.Artist,
                     subArtist = bmsManager.SubArtist,

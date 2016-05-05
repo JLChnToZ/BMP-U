@@ -38,7 +38,7 @@ namespace BMS {
         Coroutine reloadResourceCoroutine;
         void ReloadResources() {
             if(reloadResourceCoroutine != null) StopCoroutine(reloadResourceCoroutine);
-            reloadResourceCoroutine = StartCoroutine(ReloadResourcesCoroutine(resourcePath));
+            reloadResourceCoroutine = SmartCoroutineLoadBalancer.StartCoroutine(this, ReloadResourcesCoroutine(resourcePath));
         }
 
         public bool IsLoadingResources {
@@ -55,16 +55,31 @@ namespace BMS {
             var resLoader = new ResourceLoader(path);
             totalResources = wavObjects.Count + bmpObjects.Count;
             loadedResources = 0;
-            foreach(var wav in wavObjects.Values) {
-                var route = resLoader.LoadResource(wav);
-                if(route != null) yield return StartCoroutine(route);
+            int waitingLoaders = 0;
+            System.Action onResLoaded = () => {
                 loadedResources++;
+                waitingLoaders--;
+            };
+            foreach(var wav in wavObjects.Values) {
+                var route = resLoader.LoadResource(wav, onResLoaded);
+                if(route != null) {
+                    waitingLoaders++;
+                    StartCoroutine(route);
+                } else
+                    loadedResources++;
+                yield return null;
             }
             foreach(var bmp in bmpObjects.Values) {
-                var route = resLoader.LoadResource(bmp);
-                if(route != null) yield return StartCoroutine(route);
-                loadedResources++;
+                var route = resLoader.LoadResource(bmp, onResLoaded);
+                if(route != null) {
+                    waitingLoaders++;
+                    StartCoroutine(route);
+                } else
+                    loadedResources++;
+                yield return null;
             }
+            while(waitingLoaders > 0)
+                yield return SmartCoroutineLoadBalancer.ForceLoadYieldInstruction;
             reloadResourceCoroutine = null;
             yield break;
         }

@@ -286,6 +286,11 @@ namespace BMS {
                     timeLineKV.Value.Normalize(results);
                     mainTimingHelper.AddTimelineHandle(timeLineKV.Value, timeLineKV.Key);
                     preTimingHelper.AddTimelineHandle(timeLineKV.Value, timeLineKV.Key);
+                    if(timeLineKV.Key < 30 || (timeLineKV.Key > 50 && timeLineKV.Key < 70)) {
+                        var kfs = timeLineKV.Value.KeyFrames;
+                        if(kfs.Count > 0 && kfs[kfs.Count - 1].TimePosition > duration)
+                            duration = kfs[kfs.Count - 1].TimePosition;
+                    }
                 }
                 bpms[TimeSpan.Zero] = bpm;
                 foreach(var bpmObj in bpmMapping)
@@ -296,8 +301,6 @@ namespace BMS {
                 timeSigns[TimeSpan.Zero] = 1;
                 foreach(var tsObj in timeSigMapping)
                     timeSigns[results[new MeasureBeat(tsObj.Key, 0, tsObj.Value)]] = tsObj.Value / 4;
-                foreach(var time in results.Values)
-                    if(time > duration) duration = time;
                 beatResetHelper = new TimeSpanHandle<float>(timeSigns);
                 beatResetHelper.OnNotified += OnBeatReset;
             } catch(ThreadAbortException) {

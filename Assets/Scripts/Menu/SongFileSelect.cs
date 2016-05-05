@@ -50,7 +50,7 @@ public class SongFileSelect : MonoBehaviour {
 	
     public void OnClick(bool isOn) {
         if(!isOn) return;
-        Loader.songPath = songInfo.filePath;
+        Loader.songPath = SongInfoLoader.GetAbsolutePath(songInfo.filePath);
         if(parent != null)
             parent.OnSelected(songInfo);
         else

@@ -26,7 +26,6 @@ namespace JLChnToZ.Toolset.Editor.ScriptTester {
         int selectedFieldIndex;
         FieldInfo selectedField;
         PropertyInfo selectedProperty;
-        InspectorDrawer unknownTypeDrawer;
         ComponentMethodDrawer ctorDrawer;
         Rect menuButtonRect;
         bool changed;
@@ -130,7 +129,6 @@ namespace JLChnToZ.Toolset.Editor.ScriptTester {
             }
             set {
                 privateFields = value;
-                unknownTypeDrawer = null;
                 if(referenceMode)
                     InitFieldTypes();
                 if(ctorDrawer != null)
@@ -144,7 +142,6 @@ namespace JLChnToZ.Toolset.Editor.ScriptTester {
             }
             set {
                 obsolete = value;
-                unknownTypeDrawer = null;
                 if(referenceMode)
                     InitFieldTypes();
                 if(ctorDrawer != null)
@@ -182,12 +179,6 @@ namespace JLChnToZ.Toolset.Editor.ScriptTester {
                 rawValue = value;
                 changed = false;
                 SetArray();
-                if(unknownTypeDrawer != null) {
-                    if(!unknownTypeDrawer.target.Equals(value))
-                        unknownTypeDrawer = null;
-                    else
-                        unknownTypeDrawer.UpdateValues(true);
-                }
             }
         }
 
@@ -240,6 +231,7 @@ namespace JLChnToZ.Toolset.Editor.ScriptTester {
                 castableTypes.Add(PropertyType.Enum);
                 castableTypes.Add(PropertyType.Integer);
                 currentType = PropertyType.Enum;
+                masked = Attribute.IsDefined(requiredType, typeof(FlagsAttribute));
                 return;
             }
             if(requiredType == typeof(object)) {
@@ -306,10 +298,6 @@ namespace JLChnToZ.Toolset.Editor.ScriptTester {
                 DrawCtorField();
             if(!rect.HasValue)
                 EditorGUI.indentLevel++;
-            if(!readOnly) {
-                if(!referenceMode && castableTypes.Count == 0)
-                    EditorGUILayout.HelpBox(string.Format("{0} is not supported.", requiredType.Name), MessageType.Warning);
-            }
             if(getException != null)
                 EditorGUILayout.HelpBox(getException.Message, MessageType.Error);
         }
@@ -432,17 +420,17 @@ namespace JLChnToZ.Toolset.Editor.ScriptTester {
                             value = EditorGUILayout.Toggle(nameContent, (bool)(value ?? false));
                         break;
                     case PropertyType.Enum:
-                        if(masked || readOnly) {
+                        if(masked) {
                             if(rect.HasValue)
-                                value = Helper.MaskedEnumField(rect.Value, nameContent, requiredType, (int)(value ?? 0));
+                                value = Helper.MaskedEnumField(rect.Value, nameContent, requiredType, value);
                             else
-                                value = Helper.MaskedEnumField(nameContent, requiredType, (int)(value ?? 0));
+                                value = Helper.MaskedEnumField(nameContent, requiredType, value);
                             break;
                         }
                         if(rect.HasValue)
-                            value = Helper.EnumField(rect.Value, nameContent, requiredType, (int)(value ?? 0));
+                            value = Helper.EnumField(rect.Value, nameContent, requiredType, value);
                         else
-                            value = Helper.EnumField(nameContent, requiredType, (int)(value ?? 0));
+                            value = Helper.EnumField(nameContent, requiredType, value);
                         break;
                     case PropertyType.Long:
 #if UNITY_5
@@ -545,13 +533,11 @@ namespace JLChnToZ.Toolset.Editor.ScriptTester {
                     default:
                         var stringValue = value != null ? value.ToString() : "Null";
                         if(rect.HasValue) {
-                            Helper.StringField(rect.Value, nameContent, stringValue, true);
-                            DrawUnknownField(readOnly, value);
+                            Helper.StringField(Helper.ScaleRect(rect.Value, 0, 0, 1, 1, 0, 0, -36), nameContent, stringValue, true);
+                            DrawUnknownField(readOnly, value, Helper.ScaleRect(rect.Value, 1, 0, 0, 1, -34, 0, 32));
                         } else {
-                            EditorGUILayout.BeginVertical();
                             Helper.StringField(nameContent, stringValue, true);
                             DrawUnknownField(readOnly, value);
-                            EditorGUILayout.EndVertical();
                         }
                         break;
                 }
@@ -567,23 +553,16 @@ namespace JLChnToZ.Toolset.Editor.ScriptTester {
             }
         }
 
-        void DrawUnknownField(bool readOnly, object target) {
-            if(target == null && unknownTypeDrawer == null)
+        void DrawUnknownField(bool readOnly, object target, Rect? position = null) {
+            if(target == null)
                 return;
-            if(EditorGUILayout.Foldout(unknownTypeDrawer != null && unknownTypeDrawer.shown, name)) {
-                if(target == null) {
-                    unknownTypeDrawer = null;
-                } else if(unknownTypeDrawer == null || unknownTypeDrawer.target != target) {
-                    unknownTypeDrawer = new InspectorDrawer(target, true, true, privateFields, obsolete, true);
-                    unknownTypeDrawer.OnRequireRedraw += RequireRedraw;
-                    unknownTypeDrawer.UpdateValues(true);
-                }
-                if(unknownTypeDrawer != null) {
-                    unknownTypeDrawer.shown = true;
-                    unknownTypeDrawer.Draw(false, !requiredType.IsValueType || readOnly);
-                }
-            } else if(unknownTypeDrawer != null)
-                unknownTypeDrawer.shown = false;
+            bool clicked = false;
+            if(!position.HasValue)
+                clicked = GUILayout.Button("...", EditorStyles.miniButton, GUILayout.ExpandWidth(false));
+            else
+                clicked = GUI.Button(position.Value, "...", EditorStyles.miniButton);
+            if(clicked)
+                InspectorChildWindow.Open(target, true, privateFields, obsolete, true, true);
         }
 
         void ShowMenu(Rect position) {

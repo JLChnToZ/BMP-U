@@ -105,4 +105,37 @@ public static class HelperFunctions {
     public static float mod(this float x, float m) {
         return (x % m + m) % m;
     }
+
+    public static string MakeRelative(string fromPath, string toPath) {
+        if(string.IsNullOrEmpty(fromPath))
+            throw new ArgumentNullException("fromPath");
+        if(string.IsNullOrEmpty(toPath))
+            throw new ArgumentNullException("toPath");
+        fromPath = Path.GetFullPath(fromPath);
+        toPath = Path.GetFullPath(toPath);
+        if(Path.IsPathRooted(fromPath) && Path.IsPathRooted(toPath)) {
+            bool isDifferentRoot = string.Compare(Path.GetPathRoot(fromPath), Path.GetPathRoot(toPath), true) != 0;
+            if(isDifferentRoot)
+                return toPath;
+        }
+        var relativePath = new List<string>();
+        var fromDirectories = fromPath.Split(Path.DirectorySeparatorChar);
+        var toDirectories = toPath.Split(Path.DirectorySeparatorChar);
+        int length = Math.Min(fromDirectories.Length, toDirectories.Length);
+        int lastCommonRoot = -1;
+        for(int x = 0; x < length; x++) {
+            if(string.Compare(fromDirectories[x], toDirectories[x], StringComparison.OrdinalIgnoreCase) != 0)
+                break;
+            lastCommonRoot = x;
+        }
+        if(lastCommonRoot == -1)
+            return toPath;
+        for(int x = lastCommonRoot + 1; x < fromDirectories.Length; x++)
+            if(fromDirectories[x].Length > 0)
+                relativePath.Add("..");
+        for(int x = lastCommonRoot + 1; x < toDirectories.Length; x++)
+            relativePath.Add(toDirectories[x]);
+        var result = string.Join(Path.DirectorySeparatorChar.ToString(), relativePath.ToArray());
+        return result;
+    }
 }

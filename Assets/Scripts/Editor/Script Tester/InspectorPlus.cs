@@ -6,11 +6,17 @@ using System.Linq;
 using UnityObject = UnityEngine.Object;
 
 namespace JLChnToZ.Toolset.Editor.ScriptTester {
-    class InspectorPlus: EditorWindow {
+    class InspectorPlus: EditorWindow, IHasCustomMenu {
+        const string description = "The main purpose of this panel is provide a general way " +
+            "to debugging and testing the game objects and scripts, " +
+            "it has power to access everything exists in the game and editor, " +
+            "even they are invisible to the global, " +
+            "thus improper use may cause the game or the editor crash in some cases. " +
+            "Use this at your own risk.";
+
         readonly List<InspectorDrawer[]> drawers = new List<InspectorDrawer[]>();
         string searchText;
         Vector2 scrollPos;
-        Rect toolbarMenuPos;
         bool autoUpdateValues = EditorPrefs.GetBool("inspectorplus_autoupdate", true);
         bool privateFields = EditorPrefs.GetBool("inspectorplus_private", true);
         bool forceUpdateProps = EditorPrefs.GetBool("inspectorplus_editupdate", false);
@@ -35,10 +41,6 @@ namespace JLChnToZ.Toolset.Editor.ScriptTester {
 
         void OnGUI() {
             GUILayout.BeginHorizontal(EditorStyles.toolbar);
-            if(GUILayout.Button("Menu", EditorStyles.toolbarButton, GUILayout.ExpandWidth(false)))
-                ShowMenu();
-            if(Event.current.type == EventType.Repaint)
-                toolbarMenuPos = GUILayoutUtility.GetLastRect();
             GUI.changed = false;
             GUILayout.Space(8);
             searchText = EditorGUILayout.TextField(searchText, Helper.GetGUIStyle("ToolbarSeachTextField"));
@@ -52,11 +54,7 @@ namespace JLChnToZ.Toolset.Editor.ScriptTester {
             GUILayout.EndHorizontal();
             GUI.changed = false;
             scrollPos = GUILayout.BeginScrollView(scrollPos);
-            EditorGUILayout.HelpBox("The main purpose of this panel is provide a general way to debugging and testing the game objects and scripts, " +
-                                    "it has power to access everything exists in the game and editor, " +
-                                    "even they are invisible to the global, " +
-                                    "thus improper use may cause the game or the editor crash in some cases. " +
-                                    "Use this at your own risk.", MessageType.Info);
+            EditorGUILayout.HelpBox(description, MessageType.Info);
             foreach(var drawer in drawers.SelectMany(drawer => drawer)) {
                 drawer.searchText = searchText;
                 drawer.Draw();
@@ -72,20 +70,21 @@ namespace JLChnToZ.Toolset.Editor.ScriptTester {
             UpdateValues();
         }
 
-        void ShowMenu() {
-            var menu = new GenericMenu();
+        void ShowButton(Rect rect) {
+            GUI.Toggle(rect, locked, GUIContent.none, Helper.GetGUIStyle("IN LockButton"));
+            if(GUI.changed)
+                TriggerLock();
+            GUI.changed = false;
+        }
+
+        public void AddItemsToMenu(GenericMenu menu) {
             menu.AddItem(new GUIContent("Refresh"), false, RefreshList);
             if(autoUpdateValues)
                 menu.AddDisabledItem(new GUIContent("Update Values", "Auto Updating"));
             else
                 menu.AddItem(new GUIContent("Update Values"), false, UpdateValues);
             menu.AddSeparator("");
-            menu.AddItem(new GUIContent("Lock Selection"), locked, () => {
-                locked = !locked;
-                if(!locked)
-                    OnSelectionChange();
-                EditorPrefs.SetBool("inspectorplus_lock", locked);
-            });
+            menu.AddItem(new GUIContent("Lock Selection"), locked, TriggerLock);
             menu.AddItem(new GUIContent("Auto Update Values"), autoUpdateValues, () => {
                 autoUpdateValues = !autoUpdateValues;
                 EditorPrefs.SetBool("inspectorplus_autoupdate", autoUpdateValues);
@@ -118,12 +117,18 @@ namespace JLChnToZ.Toolset.Editor.ScriptTester {
                 IterateDrawers<IReflectorDrawer>(methodDrawer => methodDrawer.AllowObsolete = showObsolete);
                 EditorPrefs.SetBool("inspectorplus_obsolete", showObsolete);
             });
-            menu.DropDown(toolbarMenuPos);
         }
 
         void RefreshList() {
             drawers.Clear();
             OnSelectionChange();
+        }
+
+        void TriggerLock() {
+            locked = !locked;
+            if(!locked)
+                OnSelectionChange();
+            EditorPrefs.SetBool("inspectorplus_lock", locked);
         }
 
         void OnSelectionChange() {

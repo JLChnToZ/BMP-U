@@ -10,6 +10,7 @@ public class MaiStyleBeatFlowHandler : MonoBehaviour {
     public Color color1;
     public Color color2;
     public AnimationCurve colorTransformCurve = AnimationCurve.Linear(0, 0, 1, 1);
+    public ColorToneHandler colorToneHandler;
 
     SpriteRenderer _renderer;
     new SpriteRenderer renderer {
@@ -31,6 +32,18 @@ public class MaiStyleBeatFlowHandler : MonoBehaviour {
 
     void BeatFlow(float beat, float measure) {
         renderer.color = Color.Lerp(color1, color2, colorTransformCurve.Evaluate(beat));
+    }
+
+    void Update() {
+        if(!colorToneHandler) return;
+        float a;
+        var resultColor = colorToneHandler.ResultColor;
+        a = color1.a;
+        color1 = resultColor;
+        color1.a = a;
+        a = color2.a;
+        color2 = resultColor;
+        color2.a = a;
     }
 
 

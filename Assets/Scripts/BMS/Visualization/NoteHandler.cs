@@ -28,6 +28,7 @@ namespace BMS.Visualization {
             this.noteSpawner = noteSpawner;
             noteDetector = noteSpawner.noteDetector;
             noteDetector.OnNoteClicked += NoteClicked;
+            noteDetector.OnLongNoteMissed += LongNoteMissed;
             this.bmsManager = bmsManager;
             targetTime = time;
             this.channelId = channelId;
@@ -57,14 +58,24 @@ namespace BMS.Visualization {
                     if(handle) secondNoteClicked = true;
                 }
 
-                if(handle && noteDetector != null)
+                if(handle && noteDetector != null) {
                     noteDetector.OnNoteClicked -= NoteClicked;
+                    noteDetector.OnLongNoteMissed -= LongNoteMissed;
+                }
+            }
+        }
+
+        protected virtual void LongNoteMissed(int channel) {
+            if(channel == channelId && isLongNote) {
+                cycleDone = true;
             }
         }
 
         void OnDestroy() {
-            if(!isIdle && noteDetector != null)
+            if(!isIdle && noteDetector != null) {
                 noteDetector.OnNoteClicked -= NoteClicked;
+                noteDetector.OnLongNoteMissed -= LongNoteMissed;
+            }
         }
 
         public virtual void RegisterLongNoteEnd(TimeSpan time, int noteId) {
@@ -84,8 +95,10 @@ namespace BMS.Visualization {
                 UpdatePosition();
                 yield return null;
             }
-            if(noteDetector != null)
+            if(noteDetector != null) {
                 noteDetector.OnNoteClicked -= NoteClicked;
+                noteDetector.OnLongNoteMissed -= LongNoteMissed;
+            }
             gameObject.SetActive(false);
             isIdle = true;
             noteSpawner.RecycleNote(this);

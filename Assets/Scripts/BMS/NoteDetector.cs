@@ -47,6 +47,7 @@ namespace BMS {
         }
 
         public event Action<TimeSpan, int, int, int> OnNoteClicked;
+        public event Action<int> OnLongNoteMissed;
         public bool autoMode;
 
         void Awake() {
@@ -180,37 +181,46 @@ namespace BMS {
                 if(OnNoteClicked != null)
                     OnNoteClicked.Invoke(keyFrame.timePosition, channel, keyFrame.dataId, flag);
             }
-            if(isClicking && ch.Count > 0) {
-                keyFrame = ch.Peek();
-                bool handle = true, skip = false, hasSound = true;
-                TimeSpan? endNote = null;
-                switch(keyFrame.type) {
-                    case NoteType.Normal:
-                        if(!isDown) handle = false;
-                        lns.longNoteId = -1;
-                        break;
-                    case NoteType.LongStart:
-                        if(!isDown) handle = false;
-                        lns.longNoteId = keyFrame.longNoteId;
-                        lns.longNoteDataId = keyFrame.dataId;
-                        endNote = keyFrame.lnEndPosition;
-                        break;
-                    case NoteType.LongEnd:
-                        if(isDown) handle = false;
-                        if(lns.longNoteId != keyFrame.longNoteId) skip = true;
-                        lns.longNoteId = -1;
-                        hasSound = lns.longNoteDataId != keyFrame.dataId;
-                        break;
-                }
-                lns.isDown = isDown;
-                longNoteStates[channel] = lns;
-                if(handle || skip) ch.Dequeue();
-                if(handle) {
-                    flag = bmsManager.NoteClicked(keyFrame.timePosition, channel, keyFrame.dataId, false, hasSound, endNote);
-                    if(OnNoteClicked != null)
-                        OnNoteClicked.Invoke(keyFrame.timePosition, channel, keyFrame.dataId, flag);
-                    lns.isMissed = flag < 0;
-                    if(flag < 0) lns.longNoteId = -1;
+            if(isClicking) {
+                if(ch.Count > 0) {
+                    keyFrame = ch.Peek();
+                    bool handle = true, skip = false, hasSound = true;
+                    TimeSpan? endNote = null;
+                    switch(keyFrame.type) {
+                        case NoteType.Normal:
+                            if(!isDown) handle = false;
+                            lns.longNoteId = -1;
+                            break;
+                        case NoteType.LongStart:
+                            if(!isDown) handle = false;
+                            lns.longNoteId = keyFrame.longNoteId;
+                            lns.longNoteDataId = keyFrame.dataId;
+                            endNote = keyFrame.lnEndPosition;
+                            break;
+                        case NoteType.LongEnd:
+                            if(isDown) handle = false;
+                            if(lns.longNoteId != keyFrame.longNoteId) skip = true;
+                            lns.longNoteId = -1;
+                            hasSound = lns.longNoteDataId != keyFrame.dataId;
+                            break;
+                    }
+                    lns.isDown = keyFrame.type == NoteType.Normal ? false : isDown;
+                    longNoteStates[channel] = lns;
+                    if(handle || skip) ch.Dequeue();
+                    if(handle) {
+                        flag = bmsManager.NoteClicked(keyFrame.timePosition, channel, keyFrame.dataId, false, hasSound, endNote);
+                        if(OnNoteClicked != null)
+                            OnNoteClicked.Invoke(keyFrame.timePosition, channel, keyFrame.dataId, flag);
+                        lns.isMissed = flag < 0;
+                        if(flag < 0) lns.longNoteId = -1;
+                        longNoteStates[channel] = lns;
+                    }
+                } else if(lns.isDown) {
+                    lns.isDown = false;
+                    lns.isMissed = true;
+                    bmsManager.NoteClicked(TimeSpan.Zero, channel, 0, true, false, null);
+                    if(OnLongNoteMissed != null)
+                        OnLongNoteMissed.Invoke(channel);
                     longNoteStates[channel] = lns;
                 }
             }

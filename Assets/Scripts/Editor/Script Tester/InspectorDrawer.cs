@@ -71,6 +71,7 @@ namespace JLChnToZ.Toolset.Editor.ScriptTester {
                 var methodDrawer = item as ComponentMethodDrawer;
                 var fieldDrawer = item as MethodPropertyDrawer;
                 if(methodDrawer != null) {
+                    EditorGUILayout.Space();
                     EditorGUI.indentLevel--;
                     EditorGUILayout.BeginHorizontal();
                     EditorGUILayout.LabelField(GUIContent.none, GUILayout.Width(EditorGUIUtility.singleLineHeight));

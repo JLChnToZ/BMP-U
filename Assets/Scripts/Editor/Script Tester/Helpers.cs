@@ -191,95 +191,100 @@ namespace JLChnToZ.Toolset.Editor.ScriptTester {
             return new Quaternion(cValue.x, cValue.y, cValue.z, cValue.w);
         }
 
-        internal static int EnumField(Rect position, GUIContent label, Type type, int value) {
+        internal static object EnumField(Rect position, GUIContent label, Type type, object value) {
             GUIContent[] itemNames;
-            int[] itemValues;
+            Array itemValues;
             int val = EnumFieldPreProcess(type, value, out itemNames, out itemValues);
             int newVal = EditorGUI.Popup(position, label, val, itemNames);
             return EnumFieldPostProcess(itemValues, newVal);
         }
 
-        internal static int EnumField(GUIContent label, Type type, int value, params GUILayoutOption[] options) {
+        internal static object EnumField(GUIContent label, Type type, object value, params GUILayoutOption[] options) {
             GUIContent[] itemNames;
-            int[] itemValues;
+            Array itemValues;
             int val = EnumFieldPreProcess(type, value, out itemNames, out itemValues);
             int newVal = EditorGUILayout.Popup(label, val, itemNames, options);
             return EnumFieldPostProcess(itemValues, newVal);
         }
 
-        static int EnumFieldPreProcess(Type type, int val, out GUIContent[] itemNames, out int[] itemValues) {
+        static int EnumFieldPreProcess(Type type, object rawValue, out GUIContent[] itemNames, out Array itemValues) {
             itemNames = Enum.GetNames(type).Select(x => new GUIContent(x)).ToArray();
-            itemValues = Enum.GetValues(type) as int[];
+            itemValues = Enum.GetValues(type);
+            long val = Convert.ToInt64(rawValue);
             for(int i = 0; i < itemValues.Length; i++)
-                if(val == itemValues[i])
+                if(Convert.ToInt64(itemValues.GetValue(i)) == val)
                     return i;
             return 0;
         }
 
-        static int EnumFieldPostProcess(int[] itemValues, int val) {
-            return itemValues[val];
+        static object EnumFieldPostProcess(Array itemValues, int val) {
+            return itemValues.GetValue(val);
         }
 
 
-        internal static int MaskedEnumField(Rect position, string label, Type type, int mask) {
+        internal static object MaskedEnumField(Rect position, string label, Type type, object mask) {
             return MaskedEnumField(position, new GUIContent(label), type, mask);
         }
 
-        internal static int MaskedEnumField(Rect position, GUIContent label, Type type, int mask) {
+        internal static object MaskedEnumField(Rect position, GUIContent label, Type type, object mask) {
             string[] itemNames;
-            int[] itemValues;
+            Array itemValues;
             int val = MaskedEnumFieldPreProcess(type, mask, out itemNames, out itemValues);
             int newVal = EditorGUI.MaskField(position, label, val, itemNames);
-            return MaskedEnumFieldPostProcess(itemValues, mask, val, newVal);
+            return MaskedEnumFieldPostProcess(type, itemValues, mask, val, newVal);
         }
 
-        internal static int MaskedEnumField(string label, Type type, int mask, params GUILayoutOption[] options) {
+        internal static object MaskedEnumField(string label, Type type, object mask, params GUILayoutOption[] options) {
             return MaskedEnumField(new GUIContent(label), type, mask, options);
         }
 
-        internal static int MaskedEnumField(GUIContent label, Type type, int mask, params GUILayoutOption[] options) {
+        internal static object MaskedEnumField(GUIContent label, Type type, object mask, params GUILayoutOption[] options) {
             string[] itemNames;
-            int[] itemValues;
+            Array itemValues;
             int val = MaskedEnumFieldPreProcess(type, mask, out itemNames, out itemValues);
             int newVal = EditorGUILayout.MaskField(label, val, itemNames, options);
-            return MaskedEnumFieldPostProcess(itemValues, mask, val, newVal);
+            return MaskedEnumFieldPostProcess(type, itemValues, mask, val, newVal);
         }
 
-        static int MaskedEnumFieldPreProcess(Type type, int val, out string[] itemNames, out int[] itemValues) {
+        static int MaskedEnumFieldPreProcess(Type type, object rawValue, out string[] itemNames, out Array itemValues) {
             itemNames = Enum.GetNames(type);
-            itemValues = Enum.GetValues(type) as int[];
+            itemValues = Enum.GetValues(type);
             int maskVal = 0;
+            long value = Convert.ToInt64(rawValue), itemValue;
             for(int i = 0; i < itemValues.Length; i++) {
-                if(itemValues[i] != 0) {
-                    if((val & itemValues[i]) == itemValues[i])
+                itemValue = Convert.ToInt64(itemValues.GetValue(i));
+                if(itemValue != 0) {
+                    if((value & itemValue) != 0)
                         maskVal |= 1 << i;
-                } else if(val == 0)
+                } else if(value == 0)
                     maskVal |= 1 << i;
             }
             return maskVal;
         }
 
-        static int MaskedEnumFieldPostProcess(int[] itemValues, int val, int maskVal, int newMaskVal) {
+        static object MaskedEnumFieldPostProcess(Type enumType, Array itemValues, object rawValue, int maskVal, int newMaskVal) {
             int changes = maskVal ^ newMaskVal;
+            long value = Convert.ToInt64(rawValue), itemValue;
             for(int i = 0; i < itemValues.Length; i++)
                 if((changes & (1 << i)) != 0) {
+                    itemValue = Convert.ToInt64(itemValues.GetValue(i));
                     if((newMaskVal & (1 << i)) != 0) {
-                        if(itemValues[i] == 0) {
-                            val = 0;
+                        if(itemValue == 0) {
+                            rawValue = 0;
                             break;
                         }
-                        val |= itemValues[i];
+                        value |= itemValue;
                     } else
-                        val &= ~itemValues[i];
+                        value &= ~itemValue;
                 }
-            return val;
+            return Enum.ToObject(enumType, value);
         }
 
         internal static string StringField(GUIContent label, string value, bool readOnly, params GUILayoutOption[] options) {
             int length = value == null ? 0 : value.Length;
             if(length > 5000) {
                 EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField(label, "Text too long to display (" + length + " characters)");
+                EditorGUILayout.LabelField(label, new GUIContent("Text too long to display (" + length + " characters)"));
                 if(GUILayout.Button("Copy", GUILayout.ExpandWidth(false)))
                     EditorGUIUtility.systemCopyBuffer = value;
                 if(!readOnly && GUILayout.Button("Paste", GUILayout.ExpandWidth(false))) {

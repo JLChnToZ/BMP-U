@@ -9,6 +9,8 @@ namespace BMS.Visualization {
 
         public BMSManager bmsManager;
 
+        bool hasBga = false;
+
         Renderer _meshRenderer;
         Renderer meshRenderer {
             get {
@@ -36,6 +38,7 @@ namespace BMS.Visualization {
             meshRenderer.material.mainTextureOffset = Vector2.zero;
             meshRenderer.material.mainTextureScale = Vector2.one;
             meshRenderer.enabled = texture;
+            hasBga = false;
             transform.localPosition = Vector3.forward * transform.localPosition.z;
             transform.localScale = new Vector3(
                 texture ? (float)texture.width / texture.height : 1,
@@ -47,7 +50,7 @@ namespace BMS.Visualization {
             if(this.channel == channel) {
                 var scaleFineTune = Vector3.one;
                 bool isMovieBmp = bmsManager.IsMovieBmp(id);
-                if(bmsManager.IsMovieBmp(id) && texture != null) scaleFineTune.y *= -1;
+                if(isMovieBmp && texture != null) scaleFineTune.y *= -1;
                 var mat = meshRenderer.material;
                 mat.mainTexture = texture;
                 BGAObject bga;
@@ -62,7 +65,7 @@ namespace BMS.Visualization {
                 else
                     bga = new BGAObject {
                         clipArea = new Rect(Vector2.zero, textureSize),
-                        offset = Vector2.zero
+                        offset = new Vector2(128 - textureSize.x / 2, 0)
                     };
                 mat.mainTextureOffset = new Vector2(
                     bga.clipArea.xMin / textureSize.x,
@@ -72,7 +75,7 @@ namespace BMS.Visualization {
                     bga.clipArea.width / textureSize.x,
                     bga.clipArea.height / textureSize.y
                 );
-                if(!temp.HasValue) {
+                if(!temp.HasValue && !hasBga) {
                     transform.localScale = new Vector3(
                         textureSize.x / textureSize.y * scaleFineTune.x,
                         scaleFineTune.y,
@@ -87,12 +90,16 @@ namespace BMS.Visualization {
                     );
                     transform.localPosition = new Vector3(
                         (bga.clipArea.width / 2 + bga.offset.x) / 256 - 0.5F,
-                        (bga.clipArea.height / 2 - bga.offset.y) / 256 - 0.5F,
+                        -(bga.clipArea.height / 2 + bga.offset.y) / 256 + 0.5F,
                         transform.localPosition.z
                     );
                 }
                 meshRenderer.enabled = texture != null;
+            } else if(meshRenderer.material.mainTexture == bmsManager.placeHolderTexture && texture != null) {
+                meshRenderer.material.mainTexture = null;
+                meshRenderer.enabled = false;
             }
+            hasBga = true;
         }
     }
 
