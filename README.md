@@ -46,7 +46,7 @@ This application uses following products:
 - **[5 Identification Mono Font](http://www.dafont.com/5identification-mono.font)** by [Winter Design Studio](http://www.dafont.com/winty5.d4560)
 - **[VideoStreamer & VideoStreamer.NET](http://fr.sfml-dev.org/forums/index.php?topic=12305.0)** by Brown Star - [LICENSE](https://bitbucket.org/zsbzsb/videostreamer/src/df763ea34e6e8be6576dea3fb7843a7e1c193dda/license.txt)
 
-Except the components mentioned above, the whole application (or game) in open-sourced under [LICENSE](Artistic License 2.0).
+Except the components mentioned above, the whole application (or game) in open-sourced under [Artistic License 2.0](LICENSE).
 
 ## Snapshots
 
