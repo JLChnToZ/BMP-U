@@ -142,7 +142,7 @@ Material:
       data:
         first:
           name: _Threshold
-        second: 0.04
+        second: 0.00095
     m_Colors:
       data:
         first:

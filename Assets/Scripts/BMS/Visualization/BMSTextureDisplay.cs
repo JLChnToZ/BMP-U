@@ -48,18 +48,24 @@ namespace BMS.Visualization {
 
         public void OnTextureUpdated(Texture texture, int channel, BGAObject? temp, int id) {
             if(this.channel == channel) {
-                var scaleFineTune = Vector3.one;
-                bool isMovieBmp = bmsManager.IsMovieBmp(id);
-                if(isMovieBmp && texture != null) scaleFineTune.y *= -1;
+                bool inverted = texture != bmsManager.placeHolderTexture;
                 var mat = meshRenderer.material;
                 mat.mainTexture = texture;
                 BGAObject bga;
                 var textureSize = Vector2.one;
-                if(texture != null)
+                if(texture != null) {
                     textureSize = new Vector2(
                         texture.width,
                         texture.height
                     );
+                    var filterMode = texture.filterMode;
+                    if(channel != 0) {
+                        if(filterMode != FilterMode.Point)
+                            texture.filterMode = FilterMode.Point;
+                    } else if(filterMode == FilterMode.Point) {
+                        texture.filterMode = FilterMode.Bilinear;
+                    }
+                }
                 if(temp.HasValue)
                     bga = temp.Value;
                 else
@@ -69,25 +75,17 @@ namespace BMS.Visualization {
                     };
                 mat.mainTextureOffset = new Vector2(
                     bga.clipArea.xMin / textureSize.x,
-                    bga.clipArea.yMin / textureSize.y
+                    bga.clipArea.yMax / textureSize.y
                 );
                 mat.mainTextureScale = new Vector2(
                     bga.clipArea.width / textureSize.x,
-                    bga.clipArea.height / textureSize.y
+                    bga.clipArea.height / textureSize.y * (inverted ? -1 : 1)
                 );
                 if(!temp.HasValue && !hasBga) {
-                    transform.localScale = new Vector3(
-                        textureSize.x / textureSize.y * scaleFineTune.x,
-                        scaleFineTune.y,
-                        scaleFineTune.z
-                    );
+                    transform.localScale = new Vector3(textureSize.x / textureSize.y, 1, 1);
                     transform.localPosition = Vector3.forward * transform.localPosition.z;
                 } else {
-                    transform.localScale = new Vector3(
-                        bga.clipArea.width / 256 * scaleFineTune.x,
-                        bga.clipArea.height / 256 * scaleFineTune.y,
-                        scaleFineTune.z
-                    );
+                    transform.localScale = (Vector3)(bga.clipArea.size / 256) + Vector3.forward;
                     transform.localPosition = new Vector3(
                         (bga.clipArea.width / 2 + bga.offset.x) / 256 - 0.5F,
                         -(bga.clipArea.height / 2 + bga.offset.y) / 256 + 0.5F,

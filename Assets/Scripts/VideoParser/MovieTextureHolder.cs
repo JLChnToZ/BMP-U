@@ -53,6 +53,7 @@ public class MovieTextureHolder: ScriptableObject {
             videoStream.Preload = true;
             videoStream.FrameChanged += FrameChanged;
             outputTexture = new Texture2D((int)videoStream.VideoSize.X, (int)videoStream.VideoSize.Y, TextureFormat.RGBA32, false);
+            outputTexture.wrapMode = TextureWrapMode.Repeat;
             Stop();
             loaded = true;
         } catch(Exception ex) {

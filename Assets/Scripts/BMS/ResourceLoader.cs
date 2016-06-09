@@ -82,25 +82,32 @@ namespace BMS {
 #if UNITY_STANDALONE_WIN
         static Texture2D ReadTextureFromFile(FileInfo finfo) {
             FileStream fs = null;
-            MemoryStream ms = null;
-            Image bmp = null;
+            Image img = null;
+            Bitmap bmp = null;
+            BitmapData bmpData = null;
             Texture2D result = null;
             if(textureCache.TryGetValue(finfo.FullName, out result) && result != null)
                 return result;
             try {
                 fs = finfo.OpenRead();
-                bmp = Image.FromStream(fs);
-                result = new Texture2D(bmp.Width, bmp.Height, TextureFormat.DXT5, false);
-                ms = new MemoryStream();
-                bmp.Save(ms, ImageFormat.Png);
-                result.LoadImage(ms.ToArray());
+                img = Image.FromStream(fs, true);
+                bmp = new Bitmap(img);
+                bmpData = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+                result = new Texture2D(bmp.Width, bmp.Height, TextureFormat.BGRA32, false);
+#if UNITY_EDITOR
+                result.name = finfo.Name;
+#endif
+                result.wrapMode = TextureWrapMode.Repeat;
+                result.LoadRawTextureData(bmpData.Scan0, Math.Abs(bmpData.Stride) * bmp.Height);
+                result.Apply();
+                bmp.UnlockBits(bmpData);
                 textureCache[finfo.FullName] = result;
                 return result;
             } catch {
                 return null;
             } finally {
-                if(ms != null) ms.Dispose();
                 if(bmp != null) bmp.Dispose();
+                if(img != null) img.Dispose();
                 if(fs != null) fs.Dispose();
             }
         }
