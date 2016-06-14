@@ -296,7 +296,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 120967757}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: 1, z: 0.35}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1050942001}
@@ -485,10 +485,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 92738949}
   m_RootOrder: 2
-  m_AnchorMin: {x: 0.5, y: 1}
-  m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 0, y: -160.00003}
-  m_SizeDelta: {x: 100, y: 30}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 20}
+  m_SizeDelta: {x: 100, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &184944854
 MonoBehaviour:
@@ -516,7 +516,7 @@ MonoBehaviour:
     m_BestFit: 0
     m_MinSize: 0
     m_MaxSize: 60
-    m_Alignment: 1
+    m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
     m_HorizontalOverflow: 1
@@ -1268,7 +1268,7 @@ MonoBehaviour:
   endAngle: 110
   startLength: 1.5
   endLength: 2.5
-  centroid: {x: 0, y: -1, z: 0}
+  centroid: {x: 0, y: -0.85, z: 0}
 --- !u!114 &496827475
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2199,8 +2199,9 @@ MonoBehaviour:
   centroid: {x: 0, y: -1, z: 0}
   clampRangeStart: 70
   clampRangeEnd: 110
-  startDistance: 0.4
-  targetDistance: 1.8
+  startDistance: 30
+  targetDistance: 0.1
+  offset: 1.9
   startNoteHandler: {fileID: 833815135}
   endNoteHander: {fileID: 2052446800}
   targetPointInd: {fileID: 1270292047}
@@ -2374,7 +2375,7 @@ MonoBehaviour:
   endAngle: 330
   startLength: 1.5
   endLength: 2.5
-  centroid: {x: 0, y: 1, z: 0}
+  centroid: {x: 0, y: 0.85, z: 0}
 --- !u!1 &1052466147
 GameObject:
   m_ObjectHideFlags: 0
@@ -2479,8 +2480,9 @@ MonoBehaviour:
   centroid: {x: 0, y: 1, z: 0}
   clampRangeStart: 210
   clampRangeEnd: 330
-  startDistance: 0.4
-  targetDistance: 1.95
+  startDistance: 30
+  targetDistance: 0.1
+  offset: 1.9
   startNoteHandler: {fileID: 1339190855}
   endNoteHander: {fileID: 1052466149}
   targetPointInd: {fileID: 1791634853}
@@ -3053,7 +3055,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1258345985}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -2.5}
+  m_LocalPosition: {x: 0, y: 0, z: -6.25}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1050942001}
@@ -3075,9 +3077,9 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.3
-  far clip plane: 10
-  field of view: 60
-  orthographic: 1
+  far clip plane: 50
+  field of view: 20
+  orthographic: 0
   orthographic size: 1.1
   m_Depth: 1
   m_CullingMask:

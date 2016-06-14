@@ -69,6 +69,10 @@ public static class HelperFunctions {
         return result.ToArray();
     }
 
+    public static Vector3 ScreenToWorldPoint(this Camera camera, Vector3 screenPoint, float distance) {
+        return camera.ScreenPointToRay(screenPoint).GetPoint(distance);
+    }
+
     public static T Choose<T>(int index, params T[] items) {
         if(index < 0 || index >= items.Length)
             return default(T);

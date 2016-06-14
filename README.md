@@ -1,4 +1,5 @@
-# Be-Music-Player Unity Edition
+# BananaBeats
+(Formly named: Be-Music-Player Unity Edition)
 
 **Yet-Another Unity-based [Be-Music Script/Source](https://en.wikipedia.org/wiki/Be-Music_Source) (BMS) Player**
 
@@ -21,7 +22,6 @@ Currently this project is still in alpha stage, therefore the features are still
 
 - **Online ranking**: It is not critical but players will be happy to compare the result online each other.
 - **Proper options UI**: Currently the only way to configue the key mappings is in the launch game menu, it will be not able to change after the game starts until the player re-launch the game. In the other hand, it would be better if player can change the channel orders and save or load multiple configuation.
-- **A more charming name for the whole stuff**: Well, I think "Be-Music Player" is not good enough.
 
 ## How to Play
 

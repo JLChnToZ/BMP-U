@@ -75,7 +75,7 @@ public class MultiTouchCurvedNoteDetector : MonoBehaviour {
     int DetectIndex(Vector3 position, IList<int> mapping) {
         int mappingCount = mapping.Count;
         if(mappingCount <= 0) return -1;
-        Vector3 localPosition = hitTestCamera.ScreenToWorldPoint(position);
+        Vector3 localPosition = hitTestCamera.ScreenToWorldPoint(position, Vector3.Distance(hitTestCamera.transform.position, centroid));
         float distance = Vector2.Distance(localPosition, centroid);
         if(distance < startLength || distance > endLength) return -1;
         float anglePerSlot = (endAngle - startAngle) / mappingCount;

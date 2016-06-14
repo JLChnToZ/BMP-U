@@ -16,6 +16,7 @@ public class CurvedNoteHandler: NoteHandler {
     public float clampRangeEnd = 360F;
     public float startDistance = 0F;
     public float targetDistance = 1F;
+    public float offset = 1F;
 
     float delta1 = 0, delta2 = 0;
 
@@ -41,7 +42,7 @@ public class CurvedNoteHandler: NoteHandler {
         transform.rotation = Quaternion.AngleAxis(Mathf.Lerp(clampRangeStart, clampRangeEnd, float.IsNaN(delta) ? 0.5F : delta) - 90, Vector3.forward);
         transform.position = centroid;
         transform.localScale = Vector3.one;
-        targetPointInd.transform.localPosition = new Vector3(0, targetDistance, 0.1F);
+        targetPointInd.transform.localPosition = new Vector3(0, offset, targetDistance);
         targetPointInd.enabled = true;
         startNoteHandler.transform.localScale = Vector3.one;
         endNoteHander.transform.localScale = Vector3.one;
@@ -83,8 +84,8 @@ public class CurvedNoteHandler: NoteHandler {
         if(isLongNote) {
             if(!longNoteRegistered) endTargetTime = bmsManager.TimePosition + bmsManager.PreEventOffset;
             UpdateNotePos(endNoteHander, (float)(endTargetTime - bmsManager.TimePosition).TotalSeconds, secondNoteClicked, false);
-            lineRenderer.SetPosition(0, startNoteHandler.transform.position + Vector3.back);
-            lineRenderer.SetPosition(1, endNoteHander.transform.position + Vector3.back);
+            lineRenderer.SetPosition(0, startNoteHandler.transform.position);
+            lineRenderer.SetPosition(1, endNoteHander.transform.position);
             lineRenderer.SetColors(startNoteHandler.color, endNoteHander.color);
         }
     }
@@ -126,11 +127,11 @@ public class CurvedNoteHandler: NoteHandler {
         if(cycleDone) return;
 
         if(clicked) {
-            if(isFirst && isLongNote) handler.transform.localPosition = Vector3.up * targetDistance;
+            if(isFirst && isLongNote) handler.transform.localPosition = Vector3.up * offset + Vector3.forward * targetDistance;
         } else if(overTime) {
-            handler.transform.localPosition = Vector3.up * (targetDistance + Mathf.Abs(targetDistance - startDistance) * Mathf.Pow(delta, 0.5F) / 16);
+            handler.transform.localPosition = Vector3.up * offset + Vector3.back * (targetDistance + Mathf.Abs(targetDistance - startDistance) * Mathf.Pow(delta, 0.5F) / 16);
         } else {
-            handler.transform.localPosition = Vector3.up * Mathf.Lerp(startDistance, targetDistance, Mathf.Pow(1 - delta, 2));
+            handler.transform.localPosition = Vector3.up * offset + Vector3.forward * Mathf.Lerp(startDistance, targetDistance, 1 - delta);
         }
     }
 }
