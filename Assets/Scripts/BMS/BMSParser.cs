@@ -45,11 +45,15 @@ namespace BMS {
         TimeSpanHandle<float> beatResetHelper;
         TimeSpanHandle<float> bpmChangeHelper;
         
-        bool parseHeader, parseBody, parseAll;
+        bool parseHeader, parseBody, parseResHeader, parseAll, hasRandom;
         ResourceObject stageFileObject;
         Thread loadBMSThread;
 
         public event Action OnStageFileLoaded;
+
+        public bool HasRandom {
+            get { return hasRandom; }
+        }
 
         void StopPreviousBMSLoadJob() {
             if(loadBMSThread == null) return;
@@ -57,10 +61,11 @@ namespace BMS {
                 loadBMSThread.Abort();
         }
 
-        void ReloadTimeline(bool parseHeader, bool parseBody, bool direct) {
+        void ReloadTimeline(bool parseHeader, bool parseBody, bool parseResHeader, bool direct) {
             StopPreviousBMSLoadJob();
             this.parseHeader = parseHeader;
             this.parseBody = parseBody;
+            this.parseResHeader = parseResHeader;
             bmsLoaded = false;
             if(!direct) {
                 loadBMSThread = new Thread(ReloadTimelineInThread) {
@@ -124,6 +129,7 @@ namespace BMS {
                 var random = new Random();
                 int randomGroup = -1, randomIndex = -1;
                 TimeLine timeLine;
+                if(parseBody) hasRandom = false;
                 foreach(var line in bmsContent) {
                     if(string.IsNullOrEmpty(line) || line[0] != '#') continue;
                     splitter = line.IndexOf(':', 1) >= 0 ? ':' : ' ';
@@ -184,6 +190,7 @@ namespace BMS {
                             if(int.TryParse(param1, out randomParam))
                                 randomParam = random.Next(randomParam) + 1;
                             randomGroup++;
+                            hasRandom = true;
                             continue;
                         case "#if":
                             ifBlockLevel++;
@@ -218,24 +225,25 @@ namespace BMS {
                         cName2 = cName;
                         param2 = string.Empty;
                     }
-                    switch(cName2.ToLower()) {
-                        case "wav": GetDataObject(ResourceType.wav, Base36.Decode(param2), param1); continue;
-                        case "bmp": GetDataObject(ResourceType.bmp, Base36.Decode(param2), param1); continue;
-                        case "bpm":
-                            if(cName.ToLower() == "bpm") float.TryParse(param1, out bpm);
-                            else bpmObjects[Base36.Decode(param2)] = float.Parse(param1);
-                            continue;
-                        case "bga":
-                            Vector2 pos1 = new Vector2(float.Parse(parameters[2]), float.Parse(parameters[3]));
-                            Vector2 pos2 = new Vector2(float.Parse(parameters[4]), float.Parse(parameters[5]));
-                            var bga = new BGAObject {
-                                index = Base36.Decode(parameters[1]),
-                                clipArea = new Rect(pos1, pos2 - pos1),
-                                offset = new Vector2(float.Parse(parameters[6]), float.Parse(parameters[7]))
-                            };
-                            bgaObjects.Add(Base36.Decode(param2), bga);
-                            continue;
-                    }
+                    if(parseResHeader)
+                        switch(cName2.ToLower()) {
+                            case "wav": GetDataObject(ResourceType.wav, Base36.Decode(param2), param1); continue;
+                            case "bmp": GetDataObject(ResourceType.bmp, Base36.Decode(param2), param1); continue;
+                            case "bpm":
+                                if(cName.ToLower() == "bpm") float.TryParse(param1, out bpm);
+                                else bpmObjects[Base36.Decode(param2)] = float.Parse(param1);
+                                continue;
+                            case "bga":
+                                Vector2 pos1 = new Vector2(float.Parse(parameters[2]), float.Parse(parameters[3]));
+                                Vector2 pos2 = new Vector2(float.Parse(parameters[4]), float.Parse(parameters[5]));
+                                var bga = new BGAObject {
+                                    index = Base36.Decode(parameters[1]),
+                                    clipArea = new Rect(pos1, pos2 - pos1),
+                                    offset = new Vector2(float.Parse(parameters[6]), float.Parse(parameters[7]))
+                                };
+                                bgaObjects.Add(Base36.Decode(param2), bga);
+                                continue;
+                        }
                     if(!int.TryParse(cName2, out verse)) continue;
                     if((channel = GetChannelNumberById(param2)) < 0) continue;
                     param1 = Regex.Replace(param1, "\\s+", string.Empty);

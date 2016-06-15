@@ -4,11 +4,13 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace BMS {
+    [Flags]
     public enum BMSReloadOperation {
         None = 0,
         Header = 1,
         Body = 2,
-        Resources = 4
+        Resources = 4,
+        ResourceHeader = 8
     }
 
     public class LongNoteTimeHolder {

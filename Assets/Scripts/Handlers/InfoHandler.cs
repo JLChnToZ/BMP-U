@@ -26,7 +26,7 @@ public class InfoHandler : MonoBehaviour {
     int displayingScore, displayCombos, targetCombos;
     float combosValue;
 
-    bool bmsLoaded, stageFileLoaded, gameStarted, gameEnded, pauseChanged;
+    bool bmsLoaded, stageFileLoaded, gameStarted, gameEnded, pauseChanged, startOnLoad;
 
     [SerializeField, Multiline]
     string resultFormat = "";
@@ -56,6 +56,11 @@ public class InfoHandler : MonoBehaviour {
             bmsLoaded = false;
             infoDisplay.text = string.Format("{0} - {1}\nLevel: {2}", bmsManager.Title, bmsManager.Artist, bmsManager.PlayLevel);
             infoDisplay2.text = string.Format("{0}\n{1}", bmsManager.SubArtist, bmsManager.Comments);
+            if(startOnLoad) {
+                bmsManager.IsStarted = true;
+                startOnLoad = false;
+                gameStarted = true;
+            }
         }
         if(stageFileLoaded) {
             stageFileLoaded = false;
@@ -144,7 +149,12 @@ public class InfoHandler : MonoBehaviour {
 
     public void AgainClick() {
         bmsManager.IsStarted = false;
-        bmsManager.IsStarted = true;
+        if(bmsManager.HasRandom) {
+            startOnLoad = true;
+            bmsManager.ReloadBMS(BMSReloadOperation.Body);
+        } else {
+            bmsManager.IsStarted = true;
+        }
     }
 
     public void BackClick() {

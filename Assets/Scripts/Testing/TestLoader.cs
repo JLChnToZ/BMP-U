@@ -38,7 +38,7 @@ public class TestLoader: MonoBehaviour {
             bmsManager.LoadBMS(bmsContent, file.Directory.FullName);
             while(!bmsManager.BMSLoaded) yield return null;
 
-            bmsManager.ReloadBMS(BMS.BMSReloadOperation.Body);
+            bmsManager.ReloadBMS(BMS.BMSReloadOperation.Body | BMS.BMSReloadOperation.ResourceHeader);
             while(!bmsManager.BMSLoaded) yield return null;
             bmsManager.ReloadBMS(BMS.BMSReloadOperation.Resources);
             while(bmsManager.IsLoadingResources) yield return null;

@@ -32,10 +32,11 @@ namespace BMS {
             bool header = (reloadType & BMSReloadOperation.Header) == BMSReloadOperation.Header;
             bool body = (reloadType & BMSReloadOperation.Body) == BMSReloadOperation.Body;
             bool res = (reloadType & BMSReloadOperation.Resources) == BMSReloadOperation.Resources;
+            bool resHeader = (reloadType & BMSReloadOperation.ResourceHeader) == BMSReloadOperation.ResourceHeader;
             if(header || body) {
-                if(res)
+                if(res && !resHeader)
                     ClearDataObjects(true, direct);
-                ReloadTimeline(header, body, direct);
+                ReloadTimeline(header, body, resHeader, direct);
             } else if(res)
                 ClearDataObjects(false, direct);
             if(res)
