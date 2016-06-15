@@ -128,6 +128,8 @@ public class InfoHandler : MonoBehaviour {
     }
 
     void OnBMSLoaded() {
+        if(startOnLoad)
+            bmsManager.InitializeNoteScore();
         bmsLoaded = true;
     }
 
