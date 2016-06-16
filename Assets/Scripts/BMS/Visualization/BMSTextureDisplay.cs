@@ -74,8 +74,8 @@ namespace BMS.Visualization {
                         offset = new Vector2(128 - textureSize.x / 2, 0)
                     };
                 mat.mainTextureOffset = new Vector2(
-                    bga.clipArea.xMin / textureSize.x,
-                    bga.clipArea.yMax / textureSize.y
+                    Mathf.Repeat(bga.clipArea.xMin / textureSize.x, 1),
+                    Mathf.Repeat(bga.clipArea.yMax / textureSize.y, 1)
                 );
                 mat.mainTextureScale = new Vector2(
                     bga.clipArea.width / textureSize.x,
