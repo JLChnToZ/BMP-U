@@ -224,6 +224,7 @@ namespace BMS {
                     preTimingHelper.Reset();
                     beatResetHelper.Reset();
                     bpmChangeHelper.Reset();
+                    Array.Clear(noteScoreCount, 0, noteScoreCount.Length);
                     bpmBasePointBeatFlow = 0;
                     currentTimeSignature = 4;
                     bpmBasePoint = TimeSpan.Zero;

@@ -5,6 +5,8 @@ namespace BMS.Visualization {
     [RequireComponent(typeof(Renderer))]
     public class BMSTextureDisplay: MonoBehaviour {
 
+        static readonly float magitudeOfVector2One = Vector2.one.sqrMagnitude;
+
         public int channel;
 
         public BMSManager bmsManager;
@@ -53,19 +55,11 @@ namespace BMS.Visualization {
                 mat.mainTexture = texture;
                 BGAObject bga;
                 var textureSize = Vector2.one;
-                if(texture != null) {
+                if(texture)
                     textureSize = new Vector2(
                         texture.width,
                         texture.height
                     );
-                    var filterMode = texture.filterMode;
-                    if(channel != 0) {
-                        if(filterMode != FilterMode.Point)
-                            texture.filterMode = FilterMode.Point;
-                    } else if(filterMode == FilterMode.Point) {
-                        texture.filterMode = FilterMode.Bilinear;
-                    }
-                }
                 if(temp.HasValue)
                     bga = temp.Value;
                 else
@@ -73,9 +67,22 @@ namespace BMS.Visualization {
                         clipArea = new Rect(Vector2.zero, textureSize),
                         offset = new Vector2(128 - textureSize.x / 2, 0)
                     };
+                if(texture) {
+                    var filterMode = channel == 0 ? FilterMode.Bilinear : FilterMode.Point;
+                    var wrapMode =
+                        filterMode == FilterMode.Point ||
+                        Mathf.Repeat(bga.clipArea.xMin, textureSize.x) > Mathf.Repeat(bga.clipArea.xMax, textureSize.x) ||
+                        Mathf.Repeat(bga.clipArea.yMin, textureSize.y) > Mathf.Repeat(bga.clipArea.yMax, textureSize.y) ?
+                            TextureWrapMode.Repeat :
+                            TextureWrapMode.Clamp;
+                    if(texture.filterMode != filterMode)
+                        texture.filterMode = filterMode;
+                    if(texture.wrapMode != wrapMode)
+                        texture.wrapMode = wrapMode;
+                }
                 mat.mainTextureOffset = new Vector2(
                     Mathf.Repeat(bga.clipArea.xMin / textureSize.x, 1),
-                    Mathf.Repeat(bga.clipArea.yMax / textureSize.y, 1)
+                    Mathf.Repeat(bga.clipArea.yMax / textureSize.y, 1) + (inverted ? 1 : 0)
                 );
                 mat.mainTextureScale = new Vector2(
                     bga.clipArea.width / textureSize.x,
@@ -97,7 +104,7 @@ namespace BMS.Visualization {
                 meshRenderer.material.mainTexture = null;
                 meshRenderer.enabled = false;
             }
-            hasBga = true;
+            if(channel >= 0) hasBga = true;
         }
     }
 
