@@ -13,6 +13,13 @@ namespace BMS {
         ResourceHeader = 8
     }
 
+    public delegate void StateChangedEvent();
+    public delegate void ChangeBPMEvent(float bpm);
+    public delegate void NoteEmitEvent(TimeSpan timePosition, int channel, int eventId);
+    public delegate void NoteClickEvent(TimeSpan expectedTimePosition, TimeSpan currentTimePosition, int channel, int eventId, int resultFlag);
+    public delegate void ChangeBGAEvent(Texture texture, int channel, BGAObject? bga, int eventId);
+    public delegate void BeatFlowEvent(float measureFlow, float beatFlow);
+
     public class LongNoteTimeHolder {
         int score, remainScore;
         long startTime, duration, previousUpdatetime;
@@ -192,18 +199,23 @@ namespace BMS {
             get { return duration > TimeSpan.Zero ? (float)(timePosition.TotalMilliseconds / duration.TotalMilliseconds) : 0; }
         }
 
+        public int Polyphony {
+            get { return soundPlayer.Polyphony; }
+        }
+
         public int GetNoteScoreCount(int index) {
             return noteScoreCount[index];
         }
 
-        public event Action OnGameStarted;
-        public event Action OnGameEnded;
-        public event Action OnPauseChanged;
-        public event Action<float> OnChangeBPM;
-        public event Action<TimeSpan, int, int> OnPreNoteEvent;
-        public event Action<TimeSpan, int, int> OnNoteEvent;
-        public event Action<Texture, int, BGAObject?, int> OnChangeBackground;
-        public event Action<float, float> OnBeatFlow;
+        public event StateChangedEvent OnGameStarted;
+        public event StateChangedEvent OnGameEnded;
+        public event StateChangedEvent OnPauseChanged;
+        public event ChangeBPMEvent OnChangeBPM;
+        public event NoteEmitEvent OnPreNoteEvent;
+        public event NoteEmitEvent OnNoteEvent;
+        public event NoteClickEvent OnNoteClicked;
+        public event ChangeBGAEvent OnChangeBackground;
+        public event BeatFlowEvent OnBeatFlow;
 
         public bool IsStarted {
             get { return isStarted; }
@@ -224,7 +236,8 @@ namespace BMS {
                     preTimingHelper.Reset();
                     beatResetHelper.Reset();
                     bpmChangeHelper.Reset();
-                    Array.Clear(noteScoreCount, 0, noteScoreCount.Length);
+                    if(noteScoreCount != null && noteScoreCount.Length > 0)
+                        Array.Clear(noteScoreCount, 0, noteScoreCount.Length);
                     bpmBasePointBeatFlow = 0;
                     currentTimeSignature = 4;
                     bpmBasePoint = TimeSpan.Zero;
@@ -464,6 +477,9 @@ namespace BMS {
 
             if(hasSound && IsValidFlag(resultFlag))
                 PlayWAV(eventId);
+
+            if(OnNoteClicked != null)
+                OnNoteClicked.Invoke(expectedTimePosition, timePosition, channel, eventId, resultFlag);
 
             return resultFlag;
         }

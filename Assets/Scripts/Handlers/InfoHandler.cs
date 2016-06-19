@@ -8,12 +8,16 @@ using BMS;
 public class InfoHandler : MonoBehaviour {
 
     public BMSManager bmsManager;
+    public GraphHelper graphHandler;
 
     public Text infoDisplay;
     public Text infoDisplay2;
     public RawImage bgTexture;
     public Text scoreDisplay;
     public Text comboDisplay;
+    [UnityEngine.Serialization.FormerlySerializedAs("polyphonyDisplay")]
+    public Text debugInfoDisplay;
+    public RawImage graphDisplay;
 
     public RectTransform loadingBar;
     public RectTransform durationBar;
@@ -32,17 +36,22 @@ public class InfoHandler : MonoBehaviour {
     string resultFormat = "";
     
     void Start () {
-        if(bmsManager != null) {
+        if(bmsManager) {
             bmsManager.OnBMSLoaded += OnBMSLoaded;
             bmsManager.OnStageFileLoaded += OnStageFileLoaded;
             bmsManager.OnGameStarted += OnGameStarted;
             bmsManager.OnGameEnded += OnGameEnded;
             bmsManager.OnPauseChanged += OnPauseChanged;
         }
+        if(graphDisplay) {
+            if(graphHandler)
+                graphHandler.size = graphDisplay.rectTransform.rect.size;
+            graphDisplay.enabled = false;
+        }
     }
 
     void OnDestroy() {
-        if(bmsManager != null) {
+        if(bmsManager) {
             bmsManager.OnBMSLoaded -= OnBMSLoaded;
             bmsManager.OnStageFileLoaded -= OnStageFileLoaded;
             bmsManager.OnGameStarted -= OnGameStarted;
@@ -84,6 +93,11 @@ public class InfoHandler : MonoBehaviour {
                 )
             );
             bgTexture.enabled = bgTexture.texture != null;
+            if(graphDisplay) {
+                if(graphHandler)
+                    graphDisplay.texture = graphHandler.Texture;
+                graphDisplay.enabled = graphDisplay.texture;
+            }
         }
         if(gameStarted) {
             gameStarted = false;
@@ -125,6 +139,8 @@ public class InfoHandler : MonoBehaviour {
             durationBar.anchorMin = anchorPos;
             durationBar.anchorMax = anchorPos;
         }
+        if(debugInfoDisplay)
+            debugInfoDisplay.text = string.Format("{0:0.0}BPM \t{1}POLY \tACCU.{2:0.0}MS \t{3:0.0}FPS", bmsManager.BPM, bmsManager.Polyphony, bmsManager.Accuracy, 1 / Time.unscaledDeltaTime);
     }
 
     void OnBMSLoaded() {

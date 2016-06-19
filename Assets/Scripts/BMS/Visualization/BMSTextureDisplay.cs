@@ -80,10 +80,13 @@ namespace BMS.Visualization {
                     if(texture.wrapMode != wrapMode)
                         texture.wrapMode = wrapMode;
                 }
-                mat.mainTextureOffset = new Vector2(
+                var textureOffset = new Vector2(
                     Mathf.Repeat(bga.clipArea.xMin / textureSize.x, 1),
-                    Mathf.Repeat(bga.clipArea.yMax / textureSize.y, 1) + (inverted ? 1 : 0)
+                    Mathf.Repeat(bga.clipArea.yMax / textureSize.y, 1)
                 );
+                if(inverted && textureOffset.y == 0)
+                    textureOffset.y = 1;
+                mat.mainTextureOffset = textureOffset;
                 mat.mainTextureScale = new Vector2(
                     bga.clipArea.width / textureSize.x,
                     bga.clipArea.height / textureSize.y * (inverted ? -1 : 1)
