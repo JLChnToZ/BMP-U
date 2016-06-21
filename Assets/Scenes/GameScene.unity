@@ -2914,11 +2914,11 @@ MonoBehaviour:
   placeHolderTexture: {fileID: 8400000, guid: 8615cd369f4523246bc9700504142414, type: 2}
   maxScore: 1000000
   noteOffsetThesholds:
-  - -1
-  - -0.7
   - -0.5
-  - -0.2
-  - 0.2
+  - -0.4
+  - -0.3
+  - -0.16
+  - 0.16
   - 0.3
   - 0.4
   - 0.5

@@ -39,7 +39,7 @@ public class GraphHelper: MonoBehaviour {
         graphTexture = new Texture2D(Mathf.FloorToInt(size.x), Mathf.FloorToInt(size.y), TextureFormat.ARGB32, false) {
             wrapMode = TextureWrapMode.Clamp
         };
-        var transparentColor = new Color(0, 0, 0, 0);
+        var transparentColor = new Color(1, 1, 1, 0);
         var pixels = graphTexture.GetPixels();
         for(int i = 0; i < pixels.Length; i++)
             pixels[i] = transparentColor;
