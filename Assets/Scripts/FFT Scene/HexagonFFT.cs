@@ -26,7 +26,7 @@ public class HexagonFFT : MonoBehaviour {
 		cylinders.Clear();
 		cylinderRenderers.Clear();
 		samples = new float[samplesCount];
-		int geneIndex = 0, direction = 0;
+        int geneIndex = 0, direction = 0;
 		Vector2 currentCoord = getNextCoord(Vector2.zero, startDirection + 60, -size);
 		CreateCylinder(Vector2.zero);
 		for(int i = 1, g = 1; g < maxGeneration; i++) {
@@ -71,18 +71,23 @@ public class HexagonFFT : MonoBehaviour {
 		float oldSize, index, sample, newSize;
 		Transform cylinTransform;
 		MeshRenderer meshRender;
+        Material mat;
+        Color c;
 		for(int i = 0; i < count; i++) {
 			cylinTransform = cylinders[i];
 			meshRender = cylinderRenderers[i];
-			oldSize = cylinTransform.localScale.y;
+            mat = meshRender.material;
+            oldSize = cylinTransform.localScale.y;
 			index = Mathf.Sqrt((float)i / count) * samplesCount;
 			sample = GetSample(index);
 			if(sample > 0)
 				sample = Mathf.Sqrt(sample);
 			newSize = sample * (1 + Mathf.Sqrt(index / samplesCount)) * scale;
 			cylinTransform.localScale = new Vector3(1, newSize > oldSize ? newSize : Mathf.Lerp(oldSize, newSize, lerpDelta * deltaTime), 1);
-			meshRender.material.color = HelperFunctions.ColorFromHSL((1.6F - (float)i / count), 1, 1 - Mathf.Clamp01(sample * 4) / 2, 0.65F);
-		}
+            c = HelperFunctions.ColorFromHSL((1.6F - (float)i / count), 1, 1 - sample, 1);
+            mat.color = Color.black;
+            mat.SetColor("_EmissionColor", c);
+        }
 	}
 	
 	float GetSample(float index) {
