@@ -26,8 +26,7 @@ namespace BMS.Visualization {
         static int currentColor;
         static TimeSpan currentMatchingTime = TimeSpan.Zero;
         readonly static HashSet<NoteHandler> matchingTimeNoteHandlers = new HashSet<NoteHandler>();
-        [SerializeField]
-        int[] handledChannels = new[] { 11, 12, 13, 14, 15, 18, 19, 17, 21, 22, 23, 24, 25, 28, 29, 27 };
+        protected int[] handledChannels = new[] { 11, 12, 13, 14, 15, 18, 19, 17, 21, 22, 23, 24, 25, 28, 29, 27 };
         HashSet<int> _handledChannels = new HashSet<int>();
 
         public NoteDetector noteDetector;

@@ -1301,7 +1301,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 496827473}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6b71dcf67cf0a824c90d10ced5752f82, type: 3}
+  m_Script: {fileID: 11500000, guid: ba6e8a91c1fbb574c813cf282112defe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   notePrefab: {fileID: 937477753}
@@ -1310,8 +1310,8 @@ MonoBehaviour:
   matchColors:
   - {r: 1, g: 0.747, b: 0.5019608, a: 1}
   - {r: 0.5019608, g: 0.74509805, b: 1, a: 1}
-  handledChannels: 100000001a000000
   noteDetector: {fileID: 1109075197}
+  spawnerId: 1
 --- !u!4 &496827476
 Transform:
   m_ObjectHideFlags: 0
@@ -2356,7 +2356,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1050941999}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6b71dcf67cf0a824c90d10ced5752f82, type: 3}
+  m_Script: {fileID: 11500000, guid: ba6e8a91c1fbb574c813cf282112defe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   notePrefab: {fileID: 1055963435}
@@ -2365,8 +2365,8 @@ MonoBehaviour:
   matchColors:
   - {r: 1, g: 0.5019608, b: 0, a: 1}
   - {r: 0, g: 0.5019608, b: 1, a: 1}
-  handledChannels: 0b0000000c0000000d0000000e0000000f00000012000000130000001100000015000000160000001700000018000000190000001c0000001d0000001b000000
   noteDetector: {fileID: 1109075197}
+  spawnerId: 0
 --- !u!4 &1050942001
 Transform:
   m_ObjectHideFlags: 0
