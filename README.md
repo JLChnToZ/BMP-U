@@ -1,7 +1,7 @@
 # BananaBeats
 (Formly named: Be-Music-Player Unity Edition)
 
-**Yet-Another Unity-based [https://en.wikipedia.org/wiki/Be-Music_Source](Be-Music Script/Source) (BMS) Player**
+**Yet-Another Unity-based [Be-Music Script/Source](https://en.wikipedia.org/wiki/Be-Music_Source) (BMS) Player**
 
 This project aims to parse BMS scores and allows everyone to play with them as a rhythm game. You may play with your BMS track with keyboard, game controllers or even with touch screen.
 
@@ -45,7 +45,7 @@ This application uses following products:
 - **[Makinas Font（マキナス）](http://moji-waku.com/makinas/)** by [もじワク研究](http://moji-waku.com) - [LICENSE](http://moji-waku.com/mj_work_license/)
 - **[5 Identification Mono Font](http://www.dafont.com/5identification-mono.font)** by [Winter Design Studio](http://www.dafont.com/winty5.d4560)
 - **[VideoStreamer & VideoStreamer.NET](http://fr.sfml-dev.org/forums/index.php?topic=12305.0)** by Brown Star - [LICENSE](https://bitbucket.org/zsbzsb/videostreamer/src/df763ea34e6e8be6576dea3fb7843a7e1c193dda/license.txt)
-- **[https://bitbucket.org/ddreaper/unity-ui-extensions](Unity UI Extensions)** - [https://bitbucket.org/ddreaper/unity-ui-extensions/src/13e291bef4ff636f49f34b4a949cc0fc7d8edd9d/LICENSE](LICENSE)
+- **[Unity UI Extensions](https://bitbucket.org/ddreaper/unity-ui-extensions)** - [LICENSE](https://bitbucket.org/ddreaper/unity-ui-extensions/src/13e291bef4ff636f49f34b4a949cc0fc7d8edd9d/LICENSE)
 
 Except the components mentioned above, the whole application (or game) in open-sourced under [Artistic License 2.0](LICENSE).
 
