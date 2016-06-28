@@ -21,7 +21,6 @@ Currently this project is still in alpha stage, therefore the features are still
 ## Pending features
 
 - **Online ranking**: It is not critical but players will be happy to compare the result online each other.
-- **Proper options UI**: Currently the only way to configue the key mappings is in the launch game menu, it will be not able to change after the game starts until the player re-launch the game. In the other hand, it would be better if player can change the channel orders and save or load multiple configuation.
 
 ## How to Play
 

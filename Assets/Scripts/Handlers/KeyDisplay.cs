@@ -43,6 +43,8 @@ public class KeyDisplay : MonoBehaviour {
         var mappedChannels = noteSpawner.MappedChannels;
         float delta = 0.5F, angle = 0;
         var position = Vector3.zero;
+        var keyMapping = NoteLayoutOptionsHandler.KeyMapping;
+        KeyCode keyCode;
         for(int i = 0, l = mappedChannels.Count; i < l; i++) {
             if(l > 1) delta = (float)i / (l - 1);
             angle = Mathf.Lerp(startAngle + 3, endAngle - 3, delta) * Mathf.Deg2Rad;
@@ -52,7 +54,7 @@ public class KeyDisplay : MonoBehaviour {
             go.transform.SetParent(transform, false);
             go.transform.localPosition = position;
             var text = go.GetComponent<Text>();
-            text.text = string.Format("Key\n{0}", mappedChannels[i]);
+            text.text = keyMapping.TryGetValue(mappedChannels[i], out keyCode) ? keyCode.ToString() : string.Empty;
             instances.Add(text);
             go.SetActive(true);
         }

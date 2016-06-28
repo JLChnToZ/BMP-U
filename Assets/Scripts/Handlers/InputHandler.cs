@@ -2,35 +2,28 @@
 using UnityEngine;
 
 public class InputHandler: MonoBehaviour {
-    [Serializable]
-    struct InputMapping {
-        public string inputButtonName;
-        public int channelId;
-    }
-
     struct MappingStatus {
-        public string inputButtonName;
+        public KeyCode keyCode;
         public int channelId;
         public bool previousState;
     }
 
     public BMS.NoteDetector noteDetector;
-
-    [SerializeField]
-    InputMapping[] inputMappings;
-
+    
     MappingStatus[] mappingStatus;
     int length;
 
     void Awake() {
-        length = inputMappings.Length;
+        var keyMapping = NoteLayoutOptionsHandler.KeyMapping;
+        length = keyMapping.Count;
         mappingStatus = new MappingStatus[length];
-        for(int i = 0, l = inputMappings.Length; i < l; i++)
-            mappingStatus[i] = new MappingStatus {
-                inputButtonName = inputMappings[i].inputButtonName,
-                channelId = inputMappings[i].channelId
+        int i = 0;
+        foreach(var kv in keyMapping) {
+            mappingStatus[i++] = new MappingStatus {
+                keyCode = kv.Value,
+                channelId = kv.Key
             };
-        inputMappings = new InputMapping[0];
+        }
     }
 
     void Update() {
@@ -38,7 +31,7 @@ public class InputHandler: MonoBehaviour {
         bool currentState;
         for(int i = 0; i < length; i++) {
             mapState = mappingStatus[i];
-            currentState = Input.GetButton(mapState.inputButtonName);
+            currentState = Input.GetKey(mapState.keyCode);
             if(currentState != mapState.previousState)
                 noteDetector.OnClick(mapState.channelId, currentState);
             mapState.previousState = currentState;
