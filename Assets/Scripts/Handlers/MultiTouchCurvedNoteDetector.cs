@@ -3,15 +3,13 @@ using System.Collections.Generic;
 using BMS;
 using BMS.Visualization;
 
+[RequireComponent(typeof(NoteSpawnerSP))]
 public class MultiTouchCurvedNoteDetector : MonoBehaviour {
     public Camera hitTestCamera;
     public NoteDetector noteDetector;
-    public NoteSpawner noteSpawner;
+    public NoteSpawnerSP noteSpawner;
 
-    [Range(0, 360F)]
-    public float startAngle = 0F, endAngle = 360F;
     public float startLength, endLength;
-    public Vector3 centroid;
 
     readonly Dictionary<int, int> touchMapping = new Dictionary<int, int>();
     int mouseMapping;
@@ -75,13 +73,13 @@ public class MultiTouchCurvedNoteDetector : MonoBehaviour {
     int DetectIndex(Vector3 position, IList<int> mapping) {
         int mappingCount = mapping.Count;
         if(mappingCount <= 0) return -1;
-        Vector3 localPosition = hitTestCamera.ScreenToWorldPoint(position, Vector3.Distance(hitTestCamera.transform.position, centroid));
-        float distance = Vector2.Distance(localPosition, centroid);
+        Vector3 localPosition = hitTestCamera.ScreenToWorldPoint(position, Vector3.Distance(hitTestCamera.transform.position, noteSpawner.centroid));
+        float distance = Vector2.Distance(localPosition, noteSpawner.centroid);
         if(distance < startLength || distance > endLength) return -1;
-        float anglePerSlot = (endAngle - startAngle) / mappingCount;
-        float angle = Mathf.Repeat(Mathf.Atan2(localPosition.y - centroid.y, localPosition.x - centroid.x) * Mathf.Rad2Deg, 360F) + anglePerSlot / 2;
-        if(angle < startAngle || angle > endAngle + anglePerSlot) return -1;
-        return Mathf.FloorToInt(Mathf.Clamp(Mathf.InverseLerp(startAngle, endAngle + anglePerSlot, angle) * mappingCount, 0, mappingCount - 1));
+        float anglePerSlot = (noteSpawner.clampRangeEnd - noteSpawner.clampRangeStart) / mappingCount;
+        float angle = Mathf.Repeat(Mathf.Atan2(localPosition.y - noteSpawner.centroid.y, localPosition.x - noteSpawner.centroid.x) * Mathf.Rad2Deg, 360F) + anglePerSlot / 2;
+        if(angle < noteSpawner.clampRangeStart || angle > noteSpawner.clampRangeEnd + anglePerSlot) return -1;
+        return Mathf.FloorToInt(Mathf.Clamp(Mathf.InverseLerp(noteSpawner.clampRangeStart, noteSpawner.clampRangeEnd + anglePerSlot, angle) * mappingCount, 0, mappingCount - 1));
     }
 
     void HandleTouch(int i, IList<int> mapping, bool isDown) {

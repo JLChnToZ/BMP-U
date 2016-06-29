@@ -51,7 +51,7 @@ class NoteLayoutOptionsHandler: MonoBehaviour {
     [SerializeField, Multiline]
     string keyMappingDescFormat;
 
-    public static void Initialize() {
+    public static void Reset() {
         if(initialized) return;
         // Default: 1/2/3/4/5/8/9 = Normal, 6 = Scratch, 7 = FreeZone
         for(int i = 0, l = usableChannels.Length, channel; i < l; i++) {
@@ -80,6 +80,7 @@ class NoteLayoutOptionsHandler: MonoBehaviour {
     void Awake() {
         presetsHandler.OnPresetChange = Load;
         presetsHandler.OnPresetRequest = ApplyAndSave;
+        presetsHandler.OnReset = ResetAndApply;
         foreach(var channel in usableChannels) {
             var go = Instantiate(itemPrefab);
             go.transform.SetParent(unusedList.Content, false);
@@ -88,7 +89,6 @@ class NoteLayoutOptionsHandler: MonoBehaviour {
             elm.parent = this;
             currentMapping.Add(channel, elm);
         }
-        Initialize();
         AssignToDisplay();
         var keyCodeList = new List<string>(Enum.GetNames(typeof(KeyCode)));
         keyMappingDropdown.AddOptions(keyCodeList);
@@ -96,10 +96,8 @@ class NoteLayoutOptionsHandler: MonoBehaviour {
     }
 
     public void Load(byte[] source) {
-        if(source == null || source.Length == 0) {
-            Initialize();
+        if(source == null || source.Length == 0)
             return;
-        }
         using(var stream = new MemoryStream(source))
             Load(new BinaryReader(stream));
     }
@@ -156,6 +154,12 @@ class NoteLayoutOptionsHandler: MonoBehaviour {
 
     public void Apply() {
         presetsHandler.SetRequest(null, ApplyAndSave());
+    }
+
+    public void ResetAndApply() {
+        Reset();
+        AssignToDisplay();
+        Apply();
     }
 
     public byte[] ApplyAndSave() {

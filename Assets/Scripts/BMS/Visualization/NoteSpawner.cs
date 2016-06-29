@@ -12,9 +12,9 @@ namespace BMS.Visualization {
 
         public BMSManager bmsManager;
         [NonSerialized]
-        bool bmsLoadedCalled;
+        protected bool bmsLoadedCalled;
         [NonSerialized]
-        int[] channels = new int[0];
+        protected int[] channels = new int[0];
         NoteHandler[] longNoteHandlers = new NoteHandler[0];
 
         [SerializeField]
@@ -35,7 +35,7 @@ namespace BMS.Visualization {
             get { return new ReadOnlyCollection<int>(channels); }
         }
 
-        void Start() {
+        protected virtual void Start() {
             hasColors = matchColors.Length > 0;
             _handledChannels.UnionWith(handledChannels);
             foreach(var channel in _handledChannels) {
@@ -47,7 +47,7 @@ namespace BMS.Visualization {
             bmsManager.OnBMSLoaded += BMSLoaded;
         }
 
-        void OnDestroy() {
+        protected virtual void OnDestroy() {
             if(bmsManager != null) {
                 bmsManager.OnPreNoteEvent -= PreNoteEvent;
                 bmsManager.OnGameStarted -= OnGameStarted;
@@ -59,7 +59,7 @@ namespace BMS.Visualization {
             bmsLoadedCalled = true;
         }
 
-        void OnGameStarted() {
+        protected virtual void OnGameStarted() {
             currentColor = -1;
             currentMatchingTime = TimeSpan.Zero;
             foreach(var handler in spawnedNoteHandlers) {
@@ -70,7 +70,7 @@ namespace BMS.Visualization {
             matchingTimeNoteHandlers.Clear();
         }
 
-        void PreNoteEvent(TimeSpan timePos, int channelId, int dataId) {
+        protected virtual void PreNoteEvent(TimeSpan timePos, int channelId, int dataId) {
             bool isLongNote = bmsManager.LongNoteType > 0 && _handledChannels.Contains(channelId - 40);
             if(isLongNote) channelId -= 40;
             if(!_handledChannels.Contains(channelId)) return;
@@ -116,12 +116,12 @@ namespace BMS.Visualization {
             noteHandler.gameObject.name = string.Format("NOTE #{0:0000}:{1:0000} @{2}", channelId, dataId, timePos);
 #endif
         }
-
+        
         public Color CurrentMatchColor {
             get { return currentColor < 0 ? defaultColor : matchColors[currentColor % matchColors.Length]; }
         }
 
-        void LateUpdate() {
+        protected virtual void LateUpdate() {
             if(bmsLoadedCalled) {
                 bmsLoadedCalled = false;
                 var _channels = new List<int>(handledChannels);
@@ -134,7 +134,7 @@ namespace BMS.Visualization {
             }
         }
 
-        NoteHandler GetFreeNoteHandler() {
+        protected virtual NoteHandler GetFreeNoteHandler() {
             NoteHandler result = null;
             while(noteHandlers.Count > 0 && (result == null || !result.IsIdle))
                 result = noteHandlers.Dequeue();
@@ -148,7 +148,7 @@ namespace BMS.Visualization {
             return result;
         }
 
-        public void RecycleNote(NoteHandler note) {
+        public virtual void RecycleNote(NoteHandler note) {
             if(note != null)
                 noteHandlers.Enqueue(note);
         }

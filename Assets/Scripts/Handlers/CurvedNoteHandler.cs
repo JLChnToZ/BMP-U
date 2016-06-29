@@ -9,14 +9,12 @@ public class CurvedNoteHandler: NoteHandler {
     float timeBetween, endTimeBetween, endDelta;
     Color baseColor = Color.white;
 
+    [NonSerialized]
     public Vector3 centroid;
-    [Range(0F, 360F)]
-    public float clampRangeStart = 0F;
-    [Range(0F, 360F)]
-    public float clampRangeEnd = 360F;
-    public float startDistance = 0F;
-    public float targetDistance = 1F;
-    public float offset = 1F;
+    [NonSerialized]
+    public float clampRangeStart, clampRangeEnd;
+    [NonSerialized]
+    public float startDistance, targetDistance, offset;
 
     float delta1 = 0, delta2 = 0;
 
@@ -25,6 +23,7 @@ public class CurvedNoteHandler: NoteHandler {
     public SpriteRenderer targetPointInd;
     public SpriteRenderer scoreInd;
 
+    [NonSerialized]
     public ScoreDisplayPack scoreDisplayPack;
 
     public ParticleSystem particles;

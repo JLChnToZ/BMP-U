@@ -9,6 +9,7 @@ class PresetHandler: MonoBehaviour {
     readonly Dictionary<string, byte[]> presets = new Dictionary<string, byte[]>();
     bool initialized = false;
     public string path = "../presets.dat";
+    public Action OnReset;
     public Action<byte[]> OnPresetChange;
     public Func<byte[]> OnPresetRequest;
     [SerializeField]
@@ -16,13 +17,14 @@ class PresetHandler: MonoBehaviour {
     [SerializeField]
     InputField presetsName;
     [SerializeField]
-    Button addButton, removeButton;
+    Button addButton, removeButton, resetButton;
     int oldIndex = -1;
 
     void Awake() {
         presetsDisplay.onValueChanged.AddListener(SelectionChanged);
         addButton.onClick.AddListener(AddClick);
         removeButton.onClick.AddListener(RemoveClick);
+        resetButton.onClick.AddListener(ResetClick);
     }
 
     void SelectionChanged(int index) {
@@ -56,14 +58,18 @@ class PresetHandler: MonoBehaviour {
     void RemoveClick() {
         if(oldIndex < 0) return;
         int index = oldIndex;
-        if(oldIndex < presetsDisplay.options.Count - 2) oldIndex++;
-        else oldIndex--;
         SelectionChanged();
         presets.Remove(presetsDisplay.options[index].text);
         presetsDisplay.options.RemoveAt(index);
-        if(oldIndex > index) oldIndex = index;
-        presetsName.text = presets.Count == 0 ? "" : presetsDisplay.options[oldIndex].text;
+        if(oldIndex >= presets.Count)
+            oldIndex--;
+        presetsName.text = presets.Count == 0 ? "Default" : presetsDisplay.options[oldIndex].text;
         Save();
+    }
+
+    void ResetClick() {
+        if(OnReset != null)
+            OnReset.Invoke();
     }
 
     void Start() {
@@ -84,6 +90,8 @@ class PresetHandler: MonoBehaviour {
             oldIndex = 0;
             presets.Add("Default", null);
             presetsDisplay.options.Add(new Dropdown.OptionData("Default"));
+            if(OnReset != null)
+                OnReset.Invoke();
         }
         if(oldIndex >= 0) {
             presetsDisplay.value = oldIndex;
@@ -95,10 +103,8 @@ class PresetHandler: MonoBehaviour {
     public void SetRequest(string presetName, byte[] preset) {
         if(preset == null)
             return;
-        if(string.IsNullOrEmpty(presetName)) {
-            if(oldIndex < 0) return;
-            presetName = presetsDisplay.options[oldIndex].text;
-        }
+        if(string.IsNullOrEmpty(presetName))
+            presetName = oldIndex < 0 ? "Default" : presetsDisplay.options[oldIndex].text;
         if(!presets.ContainsKey(presetName)) {
             presetsDisplay.options.Add(new Dropdown.OptionData(presetName));
             oldIndex = presetsDisplay.options.Count - 1;
@@ -109,7 +115,7 @@ class PresetHandler: MonoBehaviour {
     }
 
     void ForceRequestPreset() {
-        if(oldIndex != -1 && OnPresetRequest != null && initialized) {
+        if(OnPresetRequest != null && initialized) {
             var preset = OnPresetRequest();
             presets[presetsDisplay.options[oldIndex].text] = preset;
             Save();

@@ -11,7 +11,7 @@ using BMS.Visualization;
 public class KeyDisplay : MonoBehaviour {
 
     public BMSManager bmsManager;
-    public NoteSpawner noteSpawner;
+    public NoteSpawnerSP noteSpawner;
 
     public GameObject prefab;
 
@@ -19,9 +19,7 @@ public class KeyDisplay : MonoBehaviour {
     public float fadeSpeed;
 
     readonly HashSet<Text> instances = new HashSet<Text>();
-
-    [Range(0, 360F)]
-    public float startAngle = 0F, endAngle = 360F;
+    
     public float distance;
 
     Coroutine fadeCoroutine;
@@ -47,7 +45,7 @@ public class KeyDisplay : MonoBehaviour {
         KeyCode keyCode;
         for(int i = 0, l = mappedChannels.Count; i < l; i++) {
             if(l > 1) delta = (float)i / (l - 1);
-            angle = Mathf.Lerp(startAngle + 3, endAngle - 3, delta) * Mathf.Deg2Rad;
+            angle = Mathf.Lerp(noteSpawner.clampRangeStart + 3, noteSpawner.clampRangeEnd - 3, delta) * Mathf.Deg2Rad;
             var go = Instantiate(prefab);
             position.x = Mathf.Cos(angle) * distance;
             position.y = Mathf.Sin(angle) * distance;

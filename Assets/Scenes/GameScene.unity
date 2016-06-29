@@ -1288,11 +1288,8 @@ MonoBehaviour:
   hitTestCamera: {fileID: 1258345987}
   noteDetector: {fileID: 1109075197}
   noteSpawner: {fileID: 496827475}
-  startAngle: 70
-  endAngle: 110
   startLength: 1.5
   endLength: 2.5
-  centroid: {x: 0, y: -0.85, z: 0}
 --- !u!114 &496827475
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1312,6 +1309,14 @@ MonoBehaviour:
   - {r: 0.5019608, g: 0.74509805, b: 1, a: 1}
   noteDetector: {fileID: 1109075197}
   spawnerId: 1
+  clampRangeStart: 70
+  clampRangeEnd: 110
+  startDistance: 30
+  targetDistance: 0.1
+  offset: 1.9
+  maxNoteDistance: 360
+  centroid: {x: 0, y: -1, z: 0}
+  scoreDisplayPack: {fileID: 11400000, guid: 3f88466b5221e754baf9e743bf54c732, type: 2}
 --- !u!4 &496827476
 Transform:
   m_ObjectHideFlags: 0
@@ -2221,17 +2226,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5476c5e4327db684e97ad784abb80c81, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  centroid: {x: 0, y: -1, z: 0}
-  clampRangeStart: 70
-  clampRangeEnd: 110
-  startDistance: 30
-  targetDistance: 0.1
-  offset: 1.9
   startNoteHandler: {fileID: 833815135}
   endNoteHander: {fileID: 2052446800}
   targetPointInd: {fileID: 1270292047}
   scoreInd: {fileID: 75603199}
-  scoreDisplayPack: {fileID: 11400000, guid: 3f88466b5221e754baf9e743bf54c732, type: 2}
   particles: {fileID: 1424890801}
 --- !u!4 &937477756
 Transform:
@@ -2367,6 +2365,14 @@ MonoBehaviour:
   - {r: 0, g: 0.5019608, b: 1, a: 1}
   noteDetector: {fileID: 1109075197}
   spawnerId: 0
+  clampRangeStart: 210
+  clampRangeEnd: 330
+  startDistance: 30
+  targetDistance: 0.1
+  offset: 1.9
+  maxNoteDistance: 15
+  centroid: {x: 0, y: 1, z: 0}
+  scoreDisplayPack: {fileID: 11400000, guid: 3f88466b5221e754baf9e743bf54c732, type: 2}
 --- !u!4 &1050942001
 Transform:
   m_ObjectHideFlags: 0
@@ -2396,11 +2402,8 @@ MonoBehaviour:
   hitTestCamera: {fileID: 1258345987}
   noteDetector: {fileID: 1109075197}
   noteSpawner: {fileID: 1050942000}
-  startAngle: 210
-  endAngle: 330
   startLength: 1.5
   endLength: 2.5
-  centroid: {x: 0, y: 0.85, z: 0}
 --- !u!1 &1052466147
 GameObject:
   m_ObjectHideFlags: 0
@@ -2502,17 +2505,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5476c5e4327db684e97ad784abb80c81, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  centroid: {x: 0, y: 1, z: 0}
-  clampRangeStart: 210
-  clampRangeEnd: 330
-  startDistance: 30
-  targetDistance: 0.1
-  offset: 1.9
   startNoteHandler: {fileID: 1339190855}
   endNoteHander: {fileID: 1052466149}
   targetPointInd: {fileID: 1791634853}
   scoreInd: {fileID: 1957927930}
-  scoreDisplayPack: {fileID: 11400000, guid: 3f88466b5221e754baf9e743bf54c732, type: 2}
   particles: {fileID: 1424890801}
 --- !u!120 &1055963439
 LineRenderer:
@@ -2643,47 +2639,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   noteDetector: {fileID: 1109075197}
-  inputMappings:
-  - inputButtonName: Key1
-    channelId: 10
-  - inputButtonName: Key2
-    channelId: 11
-  - inputButtonName: Key3
-    channelId: 12
-  - inputButtonName: Key4
-    channelId: 13
-  - inputButtonName: Key5
-    channelId: 14
-  - inputButtonName: Key6
-    channelId: 15
-  - inputButtonName: Key7
-    channelId: 16
-  - inputButtonName: Key8
-    channelId: 17
-  - inputButtonName: Key9
-    channelId: 18
-  - inputButtonName: Key10
-    channelId: 19
-  - inputButtonName: Key11
-    channelId: 20
-  - inputButtonName: Key12
-    channelId: 21
-  - inputButtonName: Key13
-    channelId: 22
-  - inputButtonName: Key14
-    channelId: 23
-  - inputButtonName: Key15
-    channelId: 24
-  - inputButtonName: Key16
-    channelId: 25
-  - inputButtonName: Key17
-    channelId: 26
-  - inputButtonName: Key18
-    channelId: 27
-  - inputButtonName: Key19
-    channelId: 28
-  - inputButtonName: Key20
-    channelId: 29
 --- !u!1 &1121550744
 GameObject:
   m_ObjectHideFlags: 0
@@ -4105,8 +4060,6 @@ MonoBehaviour:
   prefab: {fileID: 1791410177}
   fadeDelay: 5
   fadeSpeed: 10
-  startAngle: 210
-  endAngle: 330
   distance: 440
 --- !u!1 &1671102498
 GameObject:
@@ -4157,8 +4110,6 @@ MonoBehaviour:
   prefab: {fileID: 1791410177}
   fadeDelay: 5
   fadeSpeed: 10
-  startAngle: 70
-  endAngle: 110
   distance: 420
 --- !u!1 &1791410177
 GameObject:
