@@ -9,6 +9,10 @@ class NoteLayoutOptionUIElement: MonoBehaviour {
 
     void Start() {
         display.text = index.ToString();
+        OnEnable();
+    }
+
+    void OnEnable() {
         KeyCode keyCode;
         if(NoteLayoutOptionsHandler.KeyMapping.TryGetValue(index, out keyCode))
             keyCodeDisplay.text = keyCode.ToString();

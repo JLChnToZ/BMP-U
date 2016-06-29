@@ -67,7 +67,7 @@ public class CurvedNoteHandler: NoteHandler {
 
     protected override void NoteClicked(TimeSpan timePosition, int channel, int data, int flag) {
         base.NoteClicked(timePosition, channel, data, flag);
-        if(firstNoteClicked || secondNoteClicked) {
+        if(firstNoteClicked || secondNoteClicked || isMissed) {
             scoreInd.sprite = scoreDisplayPack.images[resultFlag < 0 ? scoreDisplayPack.images.Length - 1 : resultFlag];
             if(channel == channelId)
                 particles.Emit(new ParticleSystem.EmitParams { position = startNoteHandler.transform.position }, UnityRandom.Range(3, 5));
@@ -99,7 +99,7 @@ public class CurvedNoteHandler: NoteHandler {
             delta = timeDelta / timeBetween;
         }
 
-        if(clicked) {
+        if(clicked || isMissed) {
             if(isLongNote ? secondNoteClicked : true) {
                 endDelta = Mathf.Lerp(endDelta, 1, Time.deltaTime * 5);
                 handler.color = new Color(1, 1, 1, 0);// new Color(baseColor.r, baseColor.g, baseColor.b, 1 - endDelta);
@@ -125,7 +125,7 @@ public class CurvedNoteHandler: NoteHandler {
 
         if(cycleDone) return;
 
-        if(clicked) {
+        if(clicked || isMissed) {
             if(isFirst && isLongNote) handler.transform.localPosition = Vector3.up * offset + Vector3.forward * targetDistance;
         } else if(overTime) {
             handler.transform.localPosition = Vector3.up * offset + Vector3.back * (targetDistance + Mathf.Abs(targetDistance - startDistance) * Mathf.Pow(delta, 0.5F) / 16);

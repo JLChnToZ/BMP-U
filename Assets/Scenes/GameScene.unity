@@ -2624,8 +2624,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bmsManager: {fileID: 1155440623}
-  startTimeOffsetSeconds: 0.5
-  endTimeOffsetSeconds: 0.5
+  startTimeOffsetSeconds: 0.3
+  endTimeOffsetSeconds: 0.31
   autoMode: 0
 --- !u!114 &1109075198
 MonoBehaviour:
@@ -2869,14 +2869,14 @@ MonoBehaviour:
   placeHolderTexture: {fileID: 8400000, guid: 8615cd369f4523246bc9700504142414, type: 2}
   maxScore: 1000000
   noteOffsetThesholds:
-  - -0.5
-  - -0.4
   - -0.3
-  - -0.16
-  - 0.16
+  - -0.2
+  - -0.1
+  - -0.033
+  - 0.033
+  - 0.1
+  - 0.2
   - 0.3
-  - 0.4
-  - 0.5
   scoreWeight:
   - 1
   - 0.75

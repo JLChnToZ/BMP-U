@@ -17,6 +17,7 @@ namespace BMS.Visualization {
         protected bool longNoteRegistered = false;
         protected bool firstNoteClicked = false;
         protected bool secondNoteClicked = false;
+        protected bool isMissed = false;
         protected bool cycleDone = false;
         protected int resultFlag = -1;
         public bool IsIdle {
@@ -35,6 +36,7 @@ namespace BMS.Visualization {
             this.noteId = noteId;
             this.delta = delta;
             isIdle = false;
+            isMissed = false;
             cycleDone = false;
             longNoteRegistered = false;
             firstNoteClicked = false;
@@ -56,6 +58,8 @@ namespace BMS.Visualization {
                 if(bmsManager.IsValidFlag(flag)) {
                     if(handleN1) firstNoteClicked = true;
                     if(handle) secondNoteClicked = true;
+                } else {
+                    if(handle) isMissed = true;
                 }
 
                 if(handle && noteDetector != null) {
