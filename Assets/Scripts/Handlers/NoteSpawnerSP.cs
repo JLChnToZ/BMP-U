@@ -16,7 +16,7 @@ public class NoteSpawnerSP: NoteSpawner {
     public ScoreDisplayPack scoreDisplayPack;
 
     void Awake() {
-        NoteLayoutOptionsHandler.Reset();
+        NoteLayoutOptionsHandler.Reset(false);
         switch(spawnerId) {
             case 0:
                 handledChannels = NoteLayoutOptionsHandler.LowerDeck.ToArray();

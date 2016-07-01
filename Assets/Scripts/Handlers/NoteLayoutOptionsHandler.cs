@@ -51,8 +51,10 @@ class NoteLayoutOptionsHandler: MonoBehaviour {
     [SerializeField, Multiline]
     string keyMappingDescFormat;
 
-    public static void Reset() {
-        if(initialized) return;
+    public static void Reset(bool forced) {
+        if(initialized && !forced) return;
+        upperDeck.Clear();
+        lowerDeck.Clear();
         // Default: 1/2/3/4/5/8/9 = Normal, 6 = Scratch, 7 = FreeZone
         for(int i = 0, l = usableChannels.Length, channel; i < l; i++) {
             channel = usableChannels[i];
@@ -144,6 +146,8 @@ class NoteLayoutOptionsHandler: MonoBehaviour {
             t.SetParent(lowerDeckList.Content, false);
             t.SetAsLastSibling();
         }
+        foreach(var kv in currentMapping)
+            kv.Value.OnKeyEdited(kv.Key, keyMapping[kv.Key]);
     }
 
     void OnMapKey(int index) {
@@ -157,7 +161,7 @@ class NoteLayoutOptionsHandler: MonoBehaviour {
     }
 
     public void ResetAndApply() {
-        Reset();
+        Reset(true);
         AssignToDisplay();
         Apply();
     }
