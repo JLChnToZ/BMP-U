@@ -113,6 +113,7 @@ namespace BMS {
         readonly HashSet<MovieTexture> playingMovieTextures = new HashSet<MovieTexture>();
         readonly HashSet<MovieTextureHolder> playingMovieTextureHolders = new HashSet<MovieTextureHolder>();
         readonly HashSet<int> handledChannels = new HashSet<int>();
+        readonly Dictionary<int, int> autoPlayLNState = new Dictionary<int, int>();
         TimingHelper mainTimingHelper;
         TimingHelper preTimingHelper;
         DateTime startTime;
@@ -236,6 +237,7 @@ namespace BMS {
                     preTimingHelper.Reset();
                     beatResetHelper.Reset();
                     bpmChangeHelper.Reset();
+                    autoPlayLNState.Clear();
                     if(noteScoreCount != null && noteScoreCount.Length > 0)
                         Array.Clear(noteScoreCount, 0, noteScoreCount.Length);
                     bpmBasePointBeatFlow = 0;
@@ -375,8 +377,17 @@ namespace BMS {
                 case 6: ChangeBGA(-1, eventId); break;
                 case 7: ChangeBGA(1, eventId); break;
                 default:
-                    if(!handledChannels.Contains(channel))
-                        PlayWAV(eventId);
+                    if(!handledChannels.Contains(channel)) {
+                        bool shouldPlayWav = true;
+                        if(lnType > 0 && channel >= 50 && channel < 70) {
+                            int lnState;
+                            if(!autoPlayLNState.TryGetValue(channel, out lnState))
+                                lnState = 0;
+                            shouldPlayWav = lnState != eventId;
+                            autoPlayLNState[channel] = lnState > 0 ? 0 : eventId;
+                        }
+                        if(shouldPlayWav) PlayWAV(eventId);
+                    }
                     if(OnNoteEvent != null)
                         OnNoteEvent.Invoke(timePosition, channel, eventId);
                     break;

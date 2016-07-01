@@ -159,7 +159,7 @@ namespace BMS {
         }
 
         public void OnClick(int channel, bool isDown) {
-            if(!bmsManager.GetAllAdoptedChannels().Contains(channel)) return;
+            if(autoMode || !bmsManager.GetAllAdoptedChannels().Contains(channel)) return;
             if(channel >= 50) channel -= 40;
             HandleNoteEvent(channel, true, isDown);
         }
