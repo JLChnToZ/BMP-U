@@ -31,9 +31,6 @@ public class InfoHandler : MonoBehaviour {
     float combosValue;
 
     bool bmsLoaded, stageFileLoaded, gameStarted, gameEnded, pauseChanged, startOnLoad;
-
-    [SerializeField, Multiline]
-    string resultFormat = "";
     
     void Start () {
         if(bmsManager) {
@@ -63,8 +60,8 @@ public class InfoHandler : MonoBehaviour {
     void Update() {
         if(bmsLoaded) {
             bmsLoaded = false;
-            infoDisplay.text = string.Format("{0} - {1}\nLevel: {2}", bmsManager.Title, bmsManager.Artist, bmsManager.PlayLevel);
-            infoDisplay2.text = string.Format("{0}\n{1}", bmsManager.SubArtist, bmsManager.Comments);
+            infoDisplay.text = string.Format(LanguageLoader.GetText(17), bmsManager.Title, bmsManager.Artist, bmsManager.PlayLevel);
+            infoDisplay2.text = string.Format(LanguageLoader.GetText(18), bmsManager.SubArtist, bmsManager.Comments);
             if(startOnLoad) {
                 bmsManager.IsStarted = true;
                 startOnLoad = false;
@@ -79,7 +76,7 @@ public class InfoHandler : MonoBehaviour {
         if(gameEnded) {
             gameEnded = false;
             panel.gameObject.SetActive(true);
-            resultText.text = string.Format(resultFormat,
+            resultText.text = string.Format(LanguageLoader.GetText(21),
                 bmsManager.Score,
                 bmsManager.MaxCombos,
                 bmsManager.GetNoteScoreCount(0),
@@ -140,7 +137,7 @@ public class InfoHandler : MonoBehaviour {
             durationBar.anchorMax = anchorPos;
         }
         if(debugInfoDisplay)
-            debugInfoDisplay.text = string.Format("{0:0.0}BPM \t{1}POLY \tACCU.{2:0.0}MS \t{3:0.0}FPS", bmsManager.BPM, bmsManager.Polyphony, bmsManager.Accuracy, 1 / Time.unscaledDeltaTime);
+            debugInfoDisplay.text = string.Format(LanguageLoader.GetText(28), bmsManager.BPM, bmsManager.Polyphony, bmsManager.Accuracy, 1 / Time.unscaledDeltaTime);
     }
 
     void OnBMSLoaded() {

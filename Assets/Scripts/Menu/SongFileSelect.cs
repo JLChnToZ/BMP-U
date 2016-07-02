@@ -26,7 +26,7 @@ public class SongFileSelect : MonoBehaviour {
         if(this.songInfo.Equals(songInfo) && gameObject.activeInHierarchy && gameObject.activeSelf)
             return parent != null && parent.SelectedSongInternalIndex == songInfo.index ? -1 : 0;
         this.songInfo = songInfo;
-        text.text = string.Format("{0} (Lv.{1})\n{2}\n{3}\n{4:#.#}BPM", songInfo.name, songInfo.level, songInfo.artist, songInfo.genre, songInfo.bpm);
+        text.text = string.Format(LanguageLoader.GetText(1), songInfo.name, songInfo.level, songInfo.artist, songInfo.genre, songInfo.bpm);
         rawImage.enabled = songInfo.background;
         rawImage.texture = songInfo.background;
 

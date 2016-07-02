@@ -274,9 +274,6 @@ MonoBehaviour:
   panel: {fileID: 519087244}
   resultText: {fileID: 2078205314}
   pausePanel: {fileID: 1471511402}
-  resultFormat: "Score: {0:0000000}\r\nMax. Combos: {1}\r\n<color=#FFFF00FF>Bravo!</color>
-    x{2}\r\n<color=#00FF00FF>OK</color> x{3}\r\n<color=#00FFFFFF>NotBad</color> x{4}\r\n<color=#8800FFFF>NG</color>
-    x{5}\n\nCrystal Quality: <size=28>{6}</size>"
 --- !u!114 &92738951
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1226,7 +1223,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 483486921}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 708705254, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
+  m_Script: {fileID: 11500000, guid: 1719038a067f9fa4e925ce6915d1877f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -1251,6 +1248,7 @@ MonoBehaviour:
     m_VerticalOverflow: 1
     m_LineSpacing: 1
   m_Text: Continue
+  langId: 25
 --- !u!222 &483486924
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1609,7 +1607,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 698140352}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 708705254, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
+  m_Script: {fileID: 11500000, guid: 1719038a067f9fa4e925ce6915d1877f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -1634,6 +1632,7 @@ MonoBehaviour:
     m_VerticalOverflow: 1
     m_LineSpacing: 1
   m_Text: Back
+  langId: 23
 --- !u!222 &698140355
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2805,7 +2804,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1140749594}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 708705254, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
+  m_Script: {fileID: 11500000, guid: 1719038a067f9fa4e925ce6915d1877f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -2830,6 +2829,7 @@ MonoBehaviour:
     m_VerticalOverflow: 1
     m_LineSpacing: 1
   m_Text: Pause
+  langId: 19
 --- !u!222 &1140749597
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -3453,7 +3453,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1385838597}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 708705254, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
+  m_Script: {fileID: 11500000, guid: 1719038a067f9fa4e925ce6915d1877f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -3478,6 +3478,7 @@ MonoBehaviour:
     m_VerticalOverflow: 1
     m_LineSpacing: 1
   m_Text: Restart
+  langId: 22
 --- !u!222 &1385838600
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -3844,7 +3845,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1583737628}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 708705254, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
+  m_Script: {fileID: 11500000, guid: 1719038a067f9fa4e925ce6915d1877f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -3869,6 +3870,7 @@ MonoBehaviour:
     m_VerticalOverflow: 1
     m_LineSpacing: 1
   m_Text: Replay
+  langId: 24
 --- !u!222 &1583737631
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -3979,7 +3981,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1644577685}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 708705254, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
+  m_Script: {fileID: 11500000, guid: 1719038a067f9fa4e925ce6915d1877f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -4004,6 +4006,7 @@ MonoBehaviour:
     m_VerticalOverflow: 1
     m_LineSpacing: 1
   m_Text: Quit
+  langId: 26
 --- !u!222 &1644577688
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -4791,7 +4794,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1956491420}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 708705254, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
+  m_Script: {fileID: 11500000, guid: 1719038a067f9fa4e925ce6915d1877f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -4816,6 +4819,7 @@ MonoBehaviour:
     m_VerticalOverflow: 1
     m_LineSpacing: 1
   m_Text: HERE
+  langId: 27
 --- !u!222 &1956491423
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -4922,7 +4926,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1961750252}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 708705254, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
+  m_Script: {fileID: 11500000, guid: 1719038a067f9fa4e925ce6915d1877f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -4947,6 +4951,7 @@ MonoBehaviour:
     m_VerticalOverflow: 1
     m_LineSpacing: 1
   m_Text: Result
+  langId: 20
 --- !u!222 &1961750255
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -5040,7 +5045,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 2031537035}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 708705254, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
+  m_Script: {fileID: 11500000, guid: 1719038a067f9fa4e925ce6915d1877f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -5065,6 +5070,7 @@ MonoBehaviour:
     m_VerticalOverflow: 1
     m_LineSpacing: 1
   m_Text: Paused
+  langId: 19
 --- !u!222 &2031537038
 CanvasRenderer:
   m_ObjectHideFlags: 0

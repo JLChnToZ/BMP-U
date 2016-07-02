@@ -48,8 +48,6 @@ class NoteLayoutOptionsHandler: MonoBehaviour {
     Text keyMappingDescDisplay;
     [SerializeField]
     Dropdown keyMappingDropdown;
-    [SerializeField, Multiline]
-    string keyMappingDescFormat;
 
     public static void Reset(bool forced) {
         if(initialized && !forced) return;
@@ -75,7 +73,7 @@ class NoteLayoutOptionsHandler: MonoBehaviour {
             keyCode = KeyCode.None;
         keyMappingDropdown.value = Array.IndexOf(keyCodeValues, keyCode);
         selectedChannel = channel;
-        keyMappingDescDisplay.text = string.Format(keyMappingDescFormat, channel);
+        keyMappingDescDisplay.text = string.Format(LanguageLoader.GetText(14), channel);
         keyMapMenu.gameObject.SetActive(true);
     }
 
@@ -146,8 +144,9 @@ class NoteLayoutOptionsHandler: MonoBehaviour {
             t.SetParent(lowerDeckList.Content, false);
             t.SetAsLastSibling();
         }
+        KeyCode k;
         foreach(var kv in currentMapping)
-            kv.Value.OnKeyEdited(kv.Key, keyMapping[kv.Key]);
+            kv.Value.OnKeyEdited(kv.Key, keyMapping.TryGetValue(kv.Key, out k) ? k : KeyCode.None);
     }
 
     void OnMapKey(int index) {

@@ -1,0 +1,31 @@
+Makinas-Scrap-5
+{0} (Lv.{1})\n{2}\n{3}\n{4:#.#}BPM
+Song Name\nArtist\nGenre\nLevel\nBPM
+Options
+Auto Mode
+Note Speed
+Note layouts
+Upper Deck
+Lower Deck
+Unused
+* Drag the channel numbers to reorder and/or enable/disable them.\n* Click on the button below channel numbers to configure key mapping.
+Presets
+Default
+Reset
+Edit Keycode for {0}
+Done
+Now Loading
+{0} - {1}\nLevel: {2}
+{0}\n{1}
+Pause
+Result
+Score: {0:0000000}\nMax. Combos: {1}\n<color=#FFFF00FF>Bravo!</color> x{2}\n<color=#00FF00FF>OK</color> x{3}\n<color=#00FFFFFF>NotBad</color> x{4}\n<color=#8800FFFF>NG</color> x{5}\n  Crystal Quality: <size=28>{6}</size>
+Retart
+Back
+Replay
+Continue
+Quit
+HERE
+{0:0.0}BPM \t{1}POLY \tACCU.{2:0.0}MS \t{3:0.0}FPS
+Start!
+Language
