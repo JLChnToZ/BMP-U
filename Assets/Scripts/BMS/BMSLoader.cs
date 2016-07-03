@@ -1,10 +1,29 @@
 ﻿using System;
+using System.Text;
+using System.Security.Cryptography;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 using UnityEngine;
 
 namespace BMS {
+    internal class BMSHashGenerator {
+        Encoding encoding;
+        HashAlgorithm hashAlgorithm;
+
+        public BMSHashGenerator(Encoding encoding, HashAlgorithm hashAlgorithm) {
+            this.hashAlgorithm = hashAlgorithm ?? MD5.Create();
+            this.encoding = encoding ?? Encoding.Default;
+        }
+
+        public string GetHash(string[] content) {
+            var groupedBMS = string.Join("\n", content);
+            var bytes = encoding.GetBytes(groupedBMS);
+            var hash = hashAlgorithm.ComputeHash(bytes);
+            return Convert.ToBase64String(hash);
+        }
+    }
+
     public partial class BMSManager: MonoBehaviour {
         string[] bmsContent;
         bool bmsLoaded = false;
@@ -41,6 +60,10 @@ namespace BMS {
                 ClearDataObjects(false, direct);
             if(res)
                 ReloadResources();
+        }
+
+        public string GetHash(Encoding encoding, HashAlgorithm hashAlgorithm) {
+            return new BMSHashGenerator(encoding, hashAlgorithm).GetHash(bmsContent);
         }
     }
 }

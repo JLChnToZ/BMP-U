@@ -65,8 +65,7 @@ public class SelectSongManager : MonoBehaviour {
     Coroutine loadBMSFilesCoroutine;
     void LoadBMSInThread() {
         loadingDisplay.gameObject.SetActive(true);
-        if(bmsManager == null)
-            bmsManager = gameObject.GetComponent<BMSManager>() ?? gameObject.AddComponent<BMSManager>();
+        gameObject.GetOrAddComponent(ref bmsManager);
 
         itemsDisplay.markLoaded = false;
         SongInfoLoader.LoadBMSInThread(bmsManager, OnLoadCacheInfo, OnAddSong);

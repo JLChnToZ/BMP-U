@@ -102,12 +102,46 @@ public static class HelperFunctions {
             source.Remove(item);
     }
 
+    public static T GetOrAddComponent<T>(this GameObject gameObject) where T : Component {
+        if(!gameObject) return null;
+        T component = gameObject.GetComponent<T>();
+        if(component) return component;
+        return gameObject.AddComponent<T>();
+    }
+
+    public static bool GetOrAddComponent<T>(this GameObject gameObject, ref T field) where T : Component {
+        if(field || !gameObject) return false;
+        field = gameObject.GetComponent<T>();
+        if(field) return false;
+        field = gameObject.AddComponent<T>();
+        return true;
+    }
+
     public static int mod(this int x, int m) {
         return (int)(((float)x % m + m) % m);
     }
 
     public static float mod(this float x, float m) {
         return (x % m + m) % m;
+    }
+
+    static readonly char[] defaultBaseChars = "0123456789abcdefghijklmnopqrstuvwxyz".ToCharArray();
+    public static string ToBaseString(this long value, int toBase = 0, char[] baseChars = null) {
+        var result = new List<char>();
+        if(baseChars == null)
+            baseChars = defaultBaseChars;
+        if(toBase <= 0)
+            toBase = baseChars.Length;
+        do {
+            result.Add(baseChars[value % toBase]);
+            value /= toBase;
+        } while(value > 0);
+        result.Reverse();
+        return new string(result.ToArray());
+    }
+
+    public static string ToBaseString(this int value, int toBase = 0, char[] baseChars = null) {
+        return ToBaseString((long)value, toBase, baseChars);
     }
 
     public static string MakeRelative(string fromPath, string toPath) {

@@ -95,6 +95,8 @@ public class InfoHandler : MonoBehaviour {
                     graphDisplay.texture = graphHandler.Texture;
                 graphDisplay.enabled = graphDisplay.texture;
             }
+            if(!Loader.autoMode)
+                RecordsManager.Instance.CreateRecord(bmsManager);
         }
         if(gameStarted) {
             gameStarted = false;
