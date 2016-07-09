@@ -125,6 +125,7 @@ namespace BMS {
         float currentTimeSignature = 4;
         float accuracy = 0;
         bool isStarted, isPaused;
+        bool tightMode;
 
         // Score and combos
         [SerializeField]
@@ -150,6 +151,7 @@ namespace BMS {
 
         public int Combos { get { return combos; } }
         public int MaxCombos { get { return maxCombos; } }
+        public int MaxScore { get { return maxScore; } }
         public int Score { get { return score; } }
         public float Accuracy { get { return accuracy; } }
 
@@ -208,6 +210,11 @@ namespace BMS {
             return noteScoreCount[index];
         }
 
+        public bool TightMode {
+            get { return tightMode; }
+            set { tightMode = value; }
+        }
+
         public event StateChangedEvent OnGameStarted;
         public event StateChangedEvent OnGameEnded;
         public event StateChangedEvent OnPauseChanged;
@@ -224,7 +231,8 @@ namespace BMS {
                 bool _isStarted = value && bmsLoaded;
                 if(isStarted == _isStarted) return;
                 if(_isStarted) {
-                    timePosition = preOffset = TimeSpan.Zero;
+                    var preWaitTime = startPos - TimeSpan.FromSeconds(3);
+                    timePosition = preOffset = preWaitTime < TimeSpan.Zero ? preWaitTime : TimeSpan.Zero;
                     startTime = DateTime.Now;
                     combos = maxCombos = 0;
                     score = 0;
@@ -459,7 +467,14 @@ namespace BMS {
                 accuracy = (float)timeDiff.TotalMilliseconds;
             }
             if(IsValidFlag(resultFlag)) {
-                int addScore = Mathf.FloorToInt(scorePerNote * scoreWeight[resultFlag]) + comboBonus[combos];
+                int addScore = 0;
+                if(tightMode) {
+                    float seconds = (float)timeDiff.TotalSeconds;
+                    float temp = 1 - seconds / (seconds < 0 ? noteOffsetThesholds[0] : noteOffsetThesholds.Last());
+                    addScore = Mathf.FloorToInt(scorePerNote * temp) + comboBonus[combos];
+                } else {
+                    addScore = Mathf.FloorToInt(scorePerNote * scoreWeight[resultFlag]) + comboBonus[combos];
+                }
                 if(endNotePos.HasValue) {
                     var lnHolder = GetHolder(channel);
                     lnHolder.ResetRemainTime();

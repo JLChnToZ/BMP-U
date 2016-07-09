@@ -8,6 +8,7 @@ using JLChnToZ.Toolset.Singleton;
 public class Loader : SingletonBehaviour<Loader> {
     public static string songPath;
     public static bool autoMode = false;
+    public static int judgeMode = 0;
     public static float speed = 1;
 
     public int sceneIndex;
@@ -46,6 +47,7 @@ public class Loader : SingletonBehaviour<Loader> {
         bmsManager.InitializeNoteScore();
 
         noteDetector.autoMode = autoMode;
+        bmsManager.TightMode = judgeMode == 1;
         bmsManager.IsStarted = true;
     }
 }

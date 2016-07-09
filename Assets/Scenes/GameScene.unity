@@ -274,6 +274,7 @@ MonoBehaviour:
   panel: {fileID: 519087244}
   resultText: {fileID: 2078205314}
   pausePanel: {fileID: 1471511402}
+  dummyBGA: {fileID: 302655679}
 --- !u!114 &92738951
 MonoBehaviour:
   m_ObjectHideFlags: 0

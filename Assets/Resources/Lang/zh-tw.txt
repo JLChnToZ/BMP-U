@@ -29,3 +29,7 @@ Makinas-Scrap-5
 {0:0.0}BPM \t{1}POLY \tACCU.{2:0.0}MS \t{3:0.0}FPS
 開始!
 語言設定
+判定模式
+一般\n嚴判\n無競爭
+<size=28><color=#FFFF00FF>合格!</color></size>
+<size=28><color=#8800FFFF>不合格!</color></size>

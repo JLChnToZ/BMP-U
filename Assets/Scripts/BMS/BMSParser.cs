@@ -23,6 +23,7 @@ namespace BMS {
         string stageFilePath;
         Texture stageFile;
         TimeSpan duration;
+        TimeSpan startPos;
 
         public string Title { get { return title; } }
         public string Artist { get { return artist; } }
@@ -37,6 +38,7 @@ namespace BMS {
         public Texture StageFile { get { return stageFile; } }
         public int LongNoteType { get { return lnType; } }
         public TimeSpan Duration { get { return duration; } }
+        public TimeSpan StartPosition { get { return startPos; } }
         public string StageFilePath { get { return stageFilePath; } }
         public bool StageFileLoaded { get { return stageFileLoaded; } }
 
@@ -109,6 +111,7 @@ namespace BMS {
                 }
                 if(parseBody) {
                     duration = TimeSpan.Zero;
+                    startPos = TimeSpan.MaxValue;
                     timeLines.Clear();
                     bpms.Clear();
                     preTimingHelper = new TimingHelper(preEventOffset);
@@ -296,8 +299,12 @@ namespace BMS {
                     preTimingHelper.AddTimelineHandle(timeLineKV.Value, timeLineKV.Key);
                     if(timeLineKV.Key < 30 || (timeLineKV.Key > 50 && timeLineKV.Key < 70)) {
                         var kfs = timeLineKV.Value.KeyFrames;
-                        if(kfs.Count > 0 && kfs[kfs.Count - 1].TimePosition > duration)
-                            duration = kfs[kfs.Count - 1].TimePosition;
+                        if(kfs.Count > 0) {
+                            if(kfs[0].TimePosition < startPos)
+                                startPos = kfs[0].TimePosition;
+                            if(kfs[kfs.Count - 1].TimePosition > duration)
+                                duration = kfs[kfs.Count - 1].TimePosition;
+                        }
                     }
                 }
                 bpms[TimeSpan.Zero] = bpm;

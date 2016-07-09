@@ -11,6 +11,11 @@ public class MaiStyleBeatFlowHandler : MonoBehaviour {
     public Color color2;
     public AnimationCurve colorTransformCurve = AnimationCurve.Linear(0, 0, 1, 1);
     public ColorToneHandler colorToneHandler;
+    [SerializeField]
+    float notStartedScale = 1.6F;
+    
+    bool gameStarted;
+    Vector3 currentScale;
 
     SpriteRenderer _renderer;
     new SpriteRenderer renderer {
@@ -22,12 +27,26 @@ public class MaiStyleBeatFlowHandler : MonoBehaviour {
     }
 
     void Start () {
+        transform.localScale = currentScale = Vector3.one * notStartedScale;
+        bmsManager.OnGameStarted += GameStarted;
+        bmsManager.OnGameEnded += GameEnded;
         bmsManager.OnBeatFlow += BeatFlow;
 	}
 
     void OnDestroy() {
-        if(bmsManager != null)
+        if(bmsManager != null) {
             bmsManager.OnBeatFlow -= BeatFlow;
+            bmsManager.OnGameEnded -= GameEnded;
+            bmsManager.OnBeatFlow -= BeatFlow;
+        }
+    }
+
+    void GameStarted() {
+        gameStarted = true;
+    }
+
+    void GameEnded() {
+        gameStarted = false;
     }
 
     void BeatFlow(float beat, float measure) {
@@ -35,6 +54,8 @@ public class MaiStyleBeatFlowHandler : MonoBehaviour {
     }
 
     void Update() {
+        currentScale = Vector3.Lerp(currentScale, Vector3.one * (gameStarted ? 1 : notStartedScale), Time.deltaTime * 10);
+        transform.localScale = currentScale;
         if(!colorToneHandler) return;
         float a;
         var resultColor = colorToneHandler.ResultColor;

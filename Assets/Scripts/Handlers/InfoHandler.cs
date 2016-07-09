@@ -27,10 +27,12 @@ public class InfoHandler : MonoBehaviour {
 
     public RectTransform pausePanel;
 
+    public GameObject dummyBGA;
+
     int displayingScore, displayCombos, targetCombos;
     float combosValue;
 
-    bool bmsLoaded, stageFileLoaded, gameStarted, gameEnded, pauseChanged, startOnLoad;
+    bool bmsLoaded, stageFileLoaded, gameStarted, gameEnded, pauseChanged, startOnLoad, backgroundChanged;
     
     void Start () {
         if(bmsManager) {
@@ -39,12 +41,15 @@ public class InfoHandler : MonoBehaviour {
             bmsManager.OnGameStarted += OnGameStarted;
             bmsManager.OnGameEnded += OnGameEnded;
             bmsManager.OnPauseChanged += OnPauseChanged;
+            bmsManager.OnChangeBackground += OnChangeBackground;
         }
         if(graphDisplay) {
             if(graphHandler)
                 graphHandler.size = graphDisplay.rectTransform.rect.size;
             graphDisplay.enabled = false;
         }
+        scoreDisplay.enabled = Loader.judgeMode != 2;
+        comboDisplay.enabled = Loader.judgeMode != 2;
     }
 
     void OnDestroy() {
@@ -54,6 +59,7 @@ public class InfoHandler : MonoBehaviour {
             bmsManager.OnGameStarted -= OnGameStarted;
             bmsManager.OnGameEnded -= OnGameEnded;
             bmsManager.OnPauseChanged -= OnPauseChanged;
+            bmsManager.OnChangeBackground -= OnChangeBackground;
         }
     }
 
@@ -76,37 +82,53 @@ public class InfoHandler : MonoBehaviour {
         if(gameEnded) {
             gameEnded = false;
             panel.gameObject.SetActive(true);
-            resultText.text = string.Format(LanguageLoader.GetText(21),
-                bmsManager.Score,
-                bmsManager.MaxCombos,
-                bmsManager.GetNoteScoreCount(0),
-                bmsManager.GetNoteScoreCount(1),
-                bmsManager.GetNoteScoreCount(2),
-                bmsManager.GetNoteScoreCount(3),
-                string.Format(
-                    "<color=#{0}>{1}</color>",
-                    ColorUtility.ToHtmlStringRGBA(bmsManager.RankColor),
-                    bmsManager.RankString
-                )
-            );
+            if(Loader.judgeMode != 2)
+                resultText.text = string.Format(LanguageLoader.GetText(21),
+                    bmsManager.Score,
+                    bmsManager.MaxCombos,
+                    bmsManager.GetNoteScoreCount(0),
+                    bmsManager.GetNoteScoreCount(1),
+                    bmsManager.GetNoteScoreCount(2),
+                    bmsManager.GetNoteScoreCount(3),
+                    string.Format(
+                        "<color=#{0}>{1}</color>",
+                        ColorUtility.ToHtmlStringRGBA(bmsManager.RankColor),
+                        bmsManager.RankString
+                    )
+                );
             bgTexture.enabled = bgTexture.texture != null;
             if(graphDisplay) {
                 if(graphHandler)
                     graphDisplay.texture = graphHandler.Texture;
                 graphDisplay.enabled = graphDisplay.texture;
             }
-            if(!Loader.autoMode)
-                RecordsManager.Instance.CreateRecord(bmsManager);
+            var recordsManager = RecordsManager.Instance;
+            if(Loader.judgeMode == 2) {
+                var hash = bmsManager.GetHash(SongInfoLoader.CurrentEncoding, recordsManager.HashAlgorithm);
+                var records = recordsManager.GetRecords(hash);
+                bool pass = bmsManager.Score >= bmsManager.MaxScore / 2;
+                if(pass && records != null && records.Length > 0)
+                    pass = bmsManager.Score >= records[0].score;
+                resultText.text = LanguageLoader.GetText(pass ? 33 : 34);
+            }
+            if(!Loader.autoMode) {
+                recordsManager.CreateRecord(bmsManager);
+            }
         }
         if(gameStarted) {
             gameStarted = false;
             panel.gameObject.SetActive(false);
             pausePanel.gameObject.SetActive(false);
+            dummyBGA.SetActive(true);
             bgTexture.enabled = false;
         }
         if(pauseChanged) {
             pauseChanged = false;
             pausePanel.gameObject.SetActive(bmsManager.IsPaused);
+        }
+        if(backgroundChanged) {
+            backgroundChanged = false;
+            dummyBGA.SetActive(false);
         }
         float t = Time.deltaTime * 10;
         if(bmsManager.Score < displayingScore)
@@ -162,6 +184,11 @@ public class InfoHandler : MonoBehaviour {
 
     void OnPauseChanged() {
         pauseChanged = true;
+    }
+
+    void OnChangeBackground(Texture texture, int channel, BGAObject? bga, int eventId) {
+        if(texture != null && !(texture is RenderTexture))
+            backgroundChanged = true;
     }
 
     public void AgainClick() {

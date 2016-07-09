@@ -43,6 +43,10 @@ public class RecordsManager {
     SqliteConnection connection;
     HashAlgorithm hashAlgorithm;
 
+    public HashAlgorithm HashAlgorithm {
+        get { return hashAlgorithm; }
+    }
+
     private RecordsManager() {
         hashAlgorithm = SHA512.Create();
         connection = new SqliteConnection(string.Format("URI=file:{0}", SongInfoLoader.GetAbsolutePath("../records.dat")));
@@ -87,12 +91,12 @@ public class RecordsManager {
         using(var command = connection.CreateCommand()) {
             command.CommandText = commandText;
             var parameters = command.Parameters;
-            parameters.Add(bmsManager.GetHash(SongInfoLoader.CurrentEncoding, hashAlgorithm));
-            parameters.Add(GetAdoptedChannelHash(bmsManager.GetAllAdoptedChannels()));
-            parameters.Add(playerName);
-            parameters.Add(bmsManager.MaxCombos);
-            parameters.Add(bmsManager.Score);
-            parameters.Add(timeHash);
+            parameters.Add(new SqliteParameter(DbType.String, (object)bmsManager.GetHash(SongInfoLoader.CurrentEncoding, hashAlgorithm)));
+            parameters.Add(new SqliteParameter(DbType.String, (object)GetAdoptedChannelHash(bmsManager.GetAllAdoptedChannels())));
+            parameters.Add(new SqliteParameter(DbType.String, (object)playerName));
+            parameters.Add(new SqliteParameter(DbType.Int32, (object)bmsManager.MaxCombos));
+            parameters.Add(new SqliteParameter(DbType.Int32, (object)bmsManager.Score));
+            parameters.Add(new SqliteParameter(DbType.String, (object)timeHash));
             command.ExecuteNonQuery();
         }
     }
@@ -103,7 +107,7 @@ public class RecordsManager {
         using(var command = connection.CreateCommand()) {
             command.CommandText = commandText;
             var parameters = command.Parameters;
-            parameters.Add(bmsHash);
+            parameters.Add(new SqliteParameter(DbType.String, (object)bmsHash));
             using(var reader = command.ExecuteReader()) {
                 while(reader.Read())
                     result.Add(new Record(
