@@ -137,7 +137,7 @@ public class InfoHandler : MonoBehaviour {
         scoreDisplay.text = displayingScore.ToString("0000000");
 
         if(targetCombos != bmsManager.Combos) {
-            combosValue = Mathf.Clamp(combosValue + 0.5F * (bmsManager.Combos - targetCombos), 0, 2.25F);
+            combosValue = combosValue + bmsManager.Combos - targetCombos;
             targetCombos = bmsManager.Combos;
         } else {
             combosValue = Mathf.Lerp(combosValue, 0, t / 4);
@@ -146,7 +146,7 @@ public class InfoHandler : MonoBehaviour {
             displayCombos = targetCombos;
         displayCombos = Mathf.FloorToInt(Mathf.Lerp(displayCombos, bmsManager.Combos, t));
         comboDisplay.text = (bmsManager.IsStarted && displayCombos >= 3) ? displayCombos.ToString() : "";
-        comboDisplay.transform.localScale = Vector3.one * (1 + combosValue / 1.5F);
+        comboDisplay.transform.localScale = Vector3.one * (1 + Mathf.Log(Mathf.Max(0, combosValue) + 1, 8));
         if(bmsManager.IsLoadingResources) {
             var anchorMax = loadingBar.anchorMax;
             anchorMax.x = bmsManager.LoadResourceProgress;

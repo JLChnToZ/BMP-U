@@ -2001,7 +2001,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1711238156}
   m_Direction: 2
   m_Value: 0.9999991
-  m_Size: 0.908573
+  m_Size: 0.9096329
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -3810,7 +3810,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: 'BananaBeats - Alpha Build. 20160709
+  m_Text: 'BananaBeats - Alpha Build. 20160720
 
     (C) JLChnToZ, 2013-2016. Licensed under Artistic License 2.0'
 --- !u!222 &782679362
