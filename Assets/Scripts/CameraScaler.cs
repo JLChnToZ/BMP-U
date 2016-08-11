@@ -24,13 +24,13 @@ public class CameraScaler : MonoBehaviour {
 
     void CalculateMaxScale() {
         if(displays == null || displays.Length < 1) return;
-        float maxScale = float.PositiveInfinity;
+        float maxScale = float.NegativeInfinity;
         foreach(var display in displays) {
             if(!display.isActiveAndEnabled) continue;
             Vector2 scale = display.transform.localScale;
-            maxScale = Mathf.Min(maxScale, 1 / scale.x);
+            maxScale = Mathf.Max(maxScale, scale.x);
         }
-        if(maxScale == float.PositiveInfinity) return;
+        if(maxScale < 0) return;
         referenceScale = maxScale / 2F;
     }
 }
