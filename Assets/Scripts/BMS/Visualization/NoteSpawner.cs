@@ -4,6 +4,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace BMS.Visualization {
+    public enum ColoringMode {
+        None,
+        Timing,
+        Channel,
+    }
+
     public class NoteSpawner: MonoBehaviour {
         public GameObject notePrefab;
         public Queue<NoteHandler> noteHandlers = new Queue<NoteHandler>();
@@ -21,6 +27,7 @@ namespace BMS.Visualization {
         Color defaultColor = Color.white;
         [SerializeField]
         Color[] matchColors = new Color[0];
+        public ColoringMode coloringMode;
         [NonSerialized]
         bool hasColors;
         static int currentColor;
@@ -96,20 +103,33 @@ namespace BMS.Visualization {
                 noteHandler.RegisterLongNoteEnd(timePos, dataId);
 
             if(isLongNote ? createNew : true) {
-                noteHandler.SetColor(defaultColor);
-                if(hasColors) {
-                    if(currentMatchingTime != timePos)
-                        matchingTimeNoteHandlers.Clear();
-                    currentMatchingTime = timePos;
-                    matchingTimeNoteHandlers.Add(noteHandler);
-                    if(matchingTimeNoteHandlers.Count > 1) {
-                        if(matchingTimeNoteHandlers.Count == 2) {
-                            currentColor++;
-                            foreach(var nh in matchingTimeNoteHandlers)
-                                nh.SetMatchColor();
+                switch(coloringMode) {
+                    case ColoringMode.Timing:
+                        noteHandler.SetColor(defaultColor);
+                        if(hasColors) {
+                            if(currentMatchingTime != timePos)
+                                matchingTimeNoteHandlers.Clear();
+                            currentMatchingTime = timePos;
+                            matchingTimeNoteHandlers.Add(noteHandler);
+                            if(matchingTimeNoteHandlers.Count > 1) {
+                                if(matchingTimeNoteHandlers.Count == 2) {
+                                    currentColor++;
+                                    foreach(var nh in matchingTimeNoteHandlers)
+                                        nh.SetMatchColor();
+                                }
+                                noteHandler.SetMatchColor();
+                            }
                         }
-                        noteHandler.SetMatchColor();
-                    }
+                        break;
+                    case ColoringMode.Channel:
+                        if(hasColors) {
+                            int colorId = Array.IndexOf(handledChannels, channelId);
+                            noteHandler.SetColor(matchColors[colorId > 0 ? colorId % matchColors.Length : 0]);
+                        }
+                        break;
+                    default:
+                        noteHandler.SetColor(defaultColor);
+                        break;
                 }
             }
 #if UNITY_EDITOR || DEBUG

@@ -9,6 +9,7 @@ public class Loader : SingletonBehaviour<Loader> {
     public static string songPath;
     public static bool autoMode = false;
     public static int gameMode = 0;
+    public static BMS.Visualization.ColoringMode colorMode = BMS.Visualization.ColoringMode.Timing;
     public static int judgeMode = 0;
     public static float speed = 1;
 
@@ -16,6 +17,7 @@ public class Loader : SingletonBehaviour<Loader> {
 
     public BMS.BMSManager bmsManager;
     public BMS.NoteDetector noteDetector;
+    public BMS.Visualization.NoteSpawner[] noteSpaawners;
 
     public void LoadScene(string sceneName) {
         SceneManager.LoadScene(sceneName);
@@ -48,6 +50,8 @@ public class Loader : SingletonBehaviour<Loader> {
         bmsManager.InitializeNoteScore();
 
         noteDetector.autoMode = autoMode;
+        foreach(var spawner in noteSpaawners)
+            spawner.coloringMode = colorMode;
         bmsManager.TightMode = judgeMode == 1;
         bmsManager.IsStarted = true;
     }

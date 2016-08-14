@@ -346,7 +346,7 @@ namespace BMS {
                 foreach(var ln in lnHolders.Values)
                     ln.Update(timePosition);
                 if(OnBeatFlow != null) {
-                    float beatFlow = (float)(timePosition - bpmBasePoint).TotalMinutes * currentBPM + bpmBasePointBeatFlow;
+                    float beatFlow = (float)(timePosition - bpmBasePoint).Ticks / TimeSpan.TicksPerMinute * currentBPM + bpmBasePointBeatFlow;
                     OnBeatFlow.Invoke(Mathf.Repeat(beatFlow, 1), Mathf.Repeat(beatFlow, currentTimeSignature));
                 }
                 if(mainTimingHelper.IsEnded && soundPlayer.Polyphony <= 0)
@@ -365,7 +365,7 @@ namespace BMS {
         }
 
         void OnBpmChange(TimeSpan timePosition, float newBpm) {
-            bpmBasePointBeatFlow = (float)(timePosition - bpmBasePoint).TotalMinutes * currentBPM;
+            bpmBasePointBeatFlow += (float)(timePosition - bpmBasePoint).Ticks / TimeSpan.TicksPerMinute * currentBPM;
             bpmBasePoint = timePosition;
             currentBPM = newBpm;
             if(OnChangeBPM != null)

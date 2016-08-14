@@ -35,3 +35,5 @@ Makinas-Scrap-5
 <size=28><color=#8800FFFF>不合格!</color></size>
 遊戲模式
 BananaBeats 原創模式\nBMS 經典模式
+上色模式
+無上色\n相同時間\n相同位置

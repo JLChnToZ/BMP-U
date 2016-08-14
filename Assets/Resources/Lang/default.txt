@@ -35,3 +35,5 @@ Normal\nTight\nCompetition-Free
 <size=28><color=#8800FFFF>Fail!</color></size>
 Game Mode
 BananaBeats Original\nBMS Classic
+Coloring Mode
+No Coloring\nTiming\nChannel

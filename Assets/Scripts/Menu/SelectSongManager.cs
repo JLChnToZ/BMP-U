@@ -15,6 +15,7 @@ public class SelectSongManager : MonoBehaviour {
     public RectTransform loadingDisplay;
     public RectTransform loadingPercentageDisplay;
     public Dropdown gameMode;
+    public Dropdown colorMode;
     public Toggle autoModeToggle;
     public Dropdown judgeModeDropDown;
     public Slider speedSlider;
@@ -29,6 +30,7 @@ public class SelectSongManager : MonoBehaviour {
         SongInfoLoader.CurrentCodePage = 932; // Hardcoded to Shift-JIS as most of BMS are encoded by this.
         LoadBMSInThread();
         gameMode.value = Loader.gameMode;
+        colorMode.value = (int)Loader.colorMode;
         autoModeToggle.isOn = Loader.autoMode;
         judgeModeDropDown.value = Loader.judgeMode;
         speedSlider.value = Loader.speed;
@@ -44,6 +46,10 @@ public class SelectSongManager : MonoBehaviour {
 
     public void GameModeChange(int index) {
         Loader.gameMode = index;
+    }
+
+    public void ColorModeChange(int index) {
+        Loader.colorMode = (BMS.Visualization.ColoringMode)index;
     }
 
     public void ToggleAuto(bool state) {
