@@ -8,6 +8,7 @@ using JLChnToZ.Toolset.Singleton;
 public class Loader : SingletonBehaviour<Loader> {
     public static string songPath;
     public static bool autoMode = false;
+    public static int gameMode = 0;
     public static int judgeMode = 0;
     public static float speed = 1;
 

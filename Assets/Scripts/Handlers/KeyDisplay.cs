@@ -11,7 +11,7 @@ using BMS.Visualization;
 public class KeyDisplay : MonoBehaviour {
 
     public BMSManager bmsManager;
-    public NoteSpawnerSP noteSpawner;
+    public NoteSpawner noteSpawner;
 
     public GameObject prefab;
 
@@ -38,24 +38,50 @@ public class KeyDisplay : MonoBehaviour {
     }
 
     void GameStarted() {
+        if(!noteSpawner) return;
         var mappedChannels = noteSpawner.MappedChannels;
         float delta = 0.5F, angle = 0;
         var position = Vector3.zero;
         var keyMapping = NoteLayoutOptionsHandler.KeyMapping;
         KeyCode keyCode;
-        for(int i = 0, l = mappedChannels.Count; i < l; i++) {
-            if(l > 1) delta = (float)i / (l - 1);
-            angle = Mathf.Lerp(noteSpawner.clampRangeStart + 3, noteSpawner.clampRangeEnd - 3, delta) * Mathf.Deg2Rad;
-            var go = Instantiate(prefab);
-            position.x = Mathf.Cos(angle) * distance;
-            position.y = Mathf.Sin(angle) * distance;
-            go.transform.SetParent(transform, false);
-            go.transform.localPosition = position;
-            var text = go.GetComponent<Text>();
-            text.text = keyMapping.TryGetValue(mappedChannels[i], out keyCode) ? keyCode.ToString() : string.Empty;
-            instances.Add(text);
-            go.SetActive(true);
+        float clampStart = 0, clampEnd = 0;
+        NoteSpawnerSP noteSpawnerSP = noteSpawner as NoteSpawnerSP;
+        if(noteSpawnerSP) {
+            clampStart = noteSpawnerSP.clampRangeStart;
+            clampEnd = noteSpawnerSP.clampRangeEnd;
+            for(int i = 0, l = mappedChannels.Count; i < l; i++) {
+                if(l > 1) delta = (float)i / (l - 1);
+                angle = Mathf.Lerp(clampStart + 3, clampEnd - 3, delta) * Mathf.Deg2Rad;
+                var go = Instantiate(prefab);
+                position.x = Mathf.Cos(angle) * distance;
+                position.y = Mathf.Sin(angle) * distance;
+                go.transform.SetParent(transform, false);
+                go.transform.localPosition = position;
+                var text = go.GetComponent<Text>();
+                text.text = keyMapping.TryGetValue(mappedChannels[i], out keyCode) ? keyCode.ToString() : string.Empty;
+                instances.Add(text);
+                go.SetActive(true);
+            }
         }
+        NoteSpawnerClassic noteSpawnerClassic = noteSpawner as NoteSpawnerClassic;
+        if(noteSpawnerClassic) {
+            clampStart = noteSpawnerClassic.clampRangeStart;
+            clampEnd = noteSpawnerClassic.clampRangeEnd;
+            for(int i = 0, l = mappedChannels.Count; i < l; i++) {
+                if(l > 1) delta = (float)i / (l - 1);
+                angle = Mathf.Lerp(clampStart, clampEnd, delta);
+                var go = Instantiate(prefab);
+                position.x = Mathf.Lerp(clampStart, clampEnd, delta) * 215;
+                position.y = distance;
+                go.transform.SetParent(transform, false);
+                go.transform.localPosition = position;
+                var text = go.GetComponent<Text>();
+                text.text = keyMapping.TryGetValue(mappedChannels[i], out keyCode) ? keyCode.ToString() : string.Empty;
+                instances.Add(text);
+                go.SetActive(true);
+            }
+        }
+
         fadeCoroutine = StartCoroutine(FadeOutCoroutine());
     }
 

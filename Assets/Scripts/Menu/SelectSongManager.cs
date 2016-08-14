@@ -14,6 +14,7 @@ public class SelectSongManager : MonoBehaviour {
     public SelectSongScrollContent itemsDisplay;
     public RectTransform loadingDisplay;
     public RectTransform loadingPercentageDisplay;
+    public Dropdown gameMode;
     public Toggle autoModeToggle;
     public Dropdown judgeModeDropDown;
     public Slider speedSlider;
@@ -27,6 +28,7 @@ public class SelectSongManager : MonoBehaviour {
 	void Start() {
         SongInfoLoader.CurrentCodePage = 932; // Hardcoded to Shift-JIS as most of BMS are encoded by this.
         LoadBMSInThread();
+        gameMode.value = Loader.gameMode;
         autoModeToggle.isOn = Loader.autoMode;
         judgeModeDropDown.value = Loader.judgeMode;
         speedSlider.value = Loader.speed;
@@ -38,6 +40,10 @@ public class SelectSongManager : MonoBehaviour {
     void OnDestroy() {
         if(itemsDisplay != null)
             itemsDisplay.OnChangeBackground -= ChangeBackground;
+    }
+
+    public void GameModeChange(int index) {
+        Loader.gameMode = index;
     }
 
     public void ToggleAuto(bool state) {
@@ -65,7 +71,10 @@ public class SelectSongManager : MonoBehaviour {
 
     public void StartGame() {
         if(itemsDisplay.SelectedSongInternalIndex >= 0)
-            SceneManager.LoadScene("GameScene");
+            switch(Loader.gameMode) {
+                case 0: SceneManager.LoadScene("GameScene"); break;
+                case 1: SceneManager.LoadScene("ClassicGameScene"); break;
+            }
     }
     
     Coroutine loadBMSFilesCoroutine;

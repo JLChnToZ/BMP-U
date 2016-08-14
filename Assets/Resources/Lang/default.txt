@@ -33,3 +33,5 @@ Judgement Mode
 Normal\nTight\nCompetition-Free
 <size=28><color=#FFFF00FF>Pass!</color></size>
 <size=28><color=#8800FFFF>Fail!</color></size>
+Game Mode
+BananaBeats Original\nBMS Classic
