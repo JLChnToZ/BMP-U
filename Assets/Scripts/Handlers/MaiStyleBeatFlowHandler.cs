@@ -13,7 +13,9 @@ public class MaiStyleBeatFlowHandler : MonoBehaviour {
     public ColorToneHandler colorToneHandler;
     [SerializeField]
     float notStartedScale = 1.6F;
-    
+    [SerializeField]
+    bool useMeasureFlow = false;
+
     bool gameStarted;
     Vector3 currentScale;
 
@@ -35,7 +37,7 @@ public class MaiStyleBeatFlowHandler : MonoBehaviour {
 
     void OnDestroy() {
         if(bmsManager != null) {
-            bmsManager.OnBeatFlow -= BeatFlow;
+            bmsManager.OnGameStarted -= GameStarted;
             bmsManager.OnGameEnded -= GameEnded;
             bmsManager.OnBeatFlow -= BeatFlow;
         }
@@ -50,7 +52,10 @@ public class MaiStyleBeatFlowHandler : MonoBehaviour {
     }
 
     void BeatFlow(float beat, float measure) {
-        renderer.color = Color.Lerp(color1, color2, colorTransformCurve.Evaluate(beat));
+        if(useMeasureFlow)
+            renderer.color = Color.Lerp(color1, color2, colorTransformCurve.Evaluate(measure / bmsManager.TimeSignature));
+        else
+            renderer.color = Color.Lerp(color1, color2, colorTransformCurve.Evaluate(beat));
     }
 
     void Update() {

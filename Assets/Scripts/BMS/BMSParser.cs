@@ -315,7 +315,7 @@ namespace BMS {
                 var timeSigns = new Dictionary<TimeSpan, float>();
                 timeSigns[TimeSpan.Zero] = 1;
                 foreach(var tsObj in timeSigMapping)
-                    timeSigns[results[new MeasureBeat(tsObj.Key, 0, tsObj.Value)]] = tsObj.Value / 4;
+                    timeSigns[results[new MeasureBeat(tsObj.Key, 0, tsObj.Value)]] = tsObj.Value * 4;
                 beatResetHelper = new TimeSpanHandle<float>(timeSigns);
                 beatResetHelper.OnNotified += OnBeatReset;
             } catch(ThreadAbortException) {

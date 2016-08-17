@@ -154,6 +154,7 @@ namespace BMS {
         public int MaxScore { get { return maxScore; } }
         public int Score { get { return score; } }
         public float Accuracy { get { return accuracy; } }
+        public float TimeSignature { get { return currentTimeSignature; } }
 
         public Color RankColor {
             get {
