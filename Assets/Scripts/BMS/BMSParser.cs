@@ -313,7 +313,7 @@ namespace BMS {
                 bpmChangeHelper = new TimeSpanHandle<float>(bpms);
                 bpmChangeHelper.OnNotified += OnBpmChange;
                 var timeSigns = new Dictionary<TimeSpan, float>();
-                timeSigns[TimeSpan.Zero] = 1;
+                timeSigns[TimeSpan.Zero] = 4;
                 foreach(var tsObj in timeSigMapping)
                     timeSigns[results[new MeasureBeat(tsObj.Key, 0, tsObj.Value)]] = tsObj.Value * 4;
                 beatResetHelper = new TimeSpanHandle<float>(timeSigns);

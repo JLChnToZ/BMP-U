@@ -77,6 +77,16 @@ namespace BMS {
             }
         }
 
+        void OnApplicationFocus(bool state) {
+            if(!autoMode && bmsManager != null && bmsManager.IsStarted)
+                bmsManager.IsPaused = true;
+        }
+
+        void OnApplicationPause(bool state) {
+            if(bmsManager != null && bmsManager.IsStarted)
+                bmsManager.IsPaused = true;
+        }
+
         void OnBMSLoaded() {
             preQueueMapper.ClearHandles();
             postQueueMapper.ClearHandles();
