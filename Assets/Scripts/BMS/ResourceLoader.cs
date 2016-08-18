@@ -3,6 +3,9 @@ using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 
+using NAudio;
+using NAudio.Wave;
+
 #if UNITY_STANDALONE_WIN
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -51,9 +54,13 @@ namespace BMS {
         IEnumerator LoadWavRes(ResourceObject resource, Action callback) {
             var finfo = FindRes(resource, ".wav");
             if(finfo != null) {
-                var audioLoader = new WWW(new Uri(finfo.FullName).AbsoluteUri);
-                yield return audioLoader;
-                resource.value = audioLoader.GetAudioClip(false, false);
+                if(finfo.Extension.EndsWith("ogg", StringComparison.OrdinalIgnoreCase)) {
+                    var audioLoader = new WWW(new Uri(finfo.FullName).AbsoluteUri);
+                    yield return audioLoader;
+                    resource.value = audioLoader.GetAudioClip(false, false);
+                }
+                if(resource.value == null)
+                    resource.value = ReadAudioClipExtended(finfo);
             }
             if(callback != null) callback.Invoke();
             yield break;
@@ -76,6 +83,19 @@ namespace BMS {
             }
             if(callback != null) callback.Invoke();
             yield break;
+        }
+
+        static AudioClip ReadAudioClipExtended(FileInfo finfo) {
+            using(var fReader = new AudioFileReader(finfo.FullName)) {
+                int length = (int)fReader.Length;
+                var waveFormat = fReader.WaveFormat;
+                AudioClip clip = AudioClip.Create(finfo.Name, length, waveFormat.Channels, waveFormat.SampleRate, false);
+                float[] data = new float[length];
+                fReader.Read(data, 0, length);
+                clip.SetData(data, 0);
+                clip.LoadAudioData();
+                return clip;
+            }
         }
 
         #region Platform specific implementations of reading bitmap
