@@ -362,6 +362,7 @@ namespace BMS {
         void OnBeatReset(TimeSpan timePosition, float newTimeSignature) {
             bpmBasePointBeatFlow = 0;
             bpmBasePoint = timePosition;
+            currentTimeSignature = newTimeSignature;
         }
 
         void OnBpmChange(TimeSpan timePosition, float newBpm) {
