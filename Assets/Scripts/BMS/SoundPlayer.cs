@@ -66,12 +66,12 @@ namespace BMS {
         public void PauseChanged(bool isPaused) {
             if(this.isPaused == isPaused) return;
             if(isPaused) {
+                RecycleInUseAudioSources();
                 var temp = new HashSet<InUseAudioSource>(inUseAudioSources.Keys);
                 foreach(var audioSource in temp) {
                     inUseAudioSources[audioSource] = audioSource.audioSource.time;
                     audioSource.audioSource.Stop();
                 }
-                RecycleInUseAudioSources();
             } else {
                 foreach(var audioSource in inUseAudioSources) {
                     audioSource.Key.audioSource.Play();
@@ -96,7 +96,7 @@ namespace BMS {
             if(inUseAudioSources.ContainsKey(new InUseAudioSource(id))) {
                 audioSource = audioSourceIdMapping[id];
                 changingAudioSource.Add(audioSource);
-                audioSource.Stop();
+                // audioSource.Stop();
                 audioSource.time = 0;
             } else {
                 audioSource = GetFreeAudioSource();
@@ -106,7 +106,7 @@ namespace BMS {
             audioSource.volume = volume;
             inUseAudioSources[new InUseAudioSource(audioSource, id)] = 0;
             audioSourceIdMapping[id] = audioSource;
-            if(!isPaused)
+            if(!isPaused && !audioSource.isPlaying)
                 audioSource.Play();
             #if UNITY_EDITOR
             audioSource.gameObject.name = string.Format("WAV{0:000} {1}", id, debugName);
@@ -123,6 +123,9 @@ namespace BMS {
                 inUseAudioSources.Remove(audioSource);
                 audioSourceIdMapping.Remove(audioSource.id);
                 freeAudioSources.Enqueue(audioSource.audioSource);
+#if UNITY_EDITOR
+                audioSource.audioSource.gameObject.name = "-";
+#endif
             }
         }
 

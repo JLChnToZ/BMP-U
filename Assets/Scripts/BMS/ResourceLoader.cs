@@ -53,14 +53,14 @@ namespace BMS {
 
         IEnumerator LoadWavRes(ResourceObject resource, Action callback) {
             var finfo = FindRes(resource, ".wav");
-            if(finfo != null) {
-                if(finfo.Extension.EndsWith("ogg", StringComparison.OrdinalIgnoreCase)) {
-                    var audioLoader = new WWW(new Uri(finfo.FullName).AbsoluteUri);
-                    yield return audioLoader;
-                    resource.value = audioLoader.GetAudioClip(false, false);
-                }
-                if(resource.value == null)
+            if(finfo != null && finfo.Exists) {
+                try {
                     resource.value = ReadAudioClipExtended(finfo);
+                } catch(Exception ex) {
+                    Debug.LogWarningFormat("Exception thrown while loading \"{0}\": {1}\n{2}", finfo.Name, ex.Source, ex.StackTrace);
+                }
+            } else {
+                Debug.LogWarningFormat("Resource {0} not found.", resource.path);
             }
             if(callback != null) callback.Invoke();
             yield break;
@@ -87,13 +87,12 @@ namespace BMS {
 
         static AudioClip ReadAudioClipExtended(FileInfo finfo) {
             using(var fReader = new AudioFileReader(finfo.FullName)) {
-                int length = (int)fReader.Length;
-                var waveFormat = fReader.WaveFormat;
+                int length = (int)(fReader.Length / sizeof(float));
+                WaveFormat waveFormat = fReader.WaveFormat;
                 AudioClip clip = AudioClip.Create(finfo.Name, length, waveFormat.Channels, waveFormat.SampleRate, false);
                 float[] data = new float[length];
                 fReader.Read(data, 0, length);
                 clip.SetData(data, 0);
-                clip.LoadAudioData();
                 return clip;
             }
         }
