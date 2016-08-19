@@ -89,7 +89,8 @@ namespace BMS {
             using(var fReader = new AudioFileReader(finfo.FullName)) {
                 int length = (int)(fReader.Length / sizeof(float));
                 WaveFormat waveFormat = fReader.WaveFormat;
-                AudioClip clip = AudioClip.Create(finfo.Name, length, waveFormat.Channels, waveFormat.SampleRate, false);
+                int channels = waveFormat.Channels;
+                AudioClip clip = AudioClip.Create(finfo.Name, length / channels, channels, waveFormat.SampleRate, false);
                 float[] data = new float[length];
                 fReader.Read(data, 0, length);
                 clip.SetData(data, 0);

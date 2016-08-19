@@ -96,8 +96,8 @@ namespace BMS {
             if(inUseAudioSources.ContainsKey(new InUseAudioSource(id))) {
                 audioSource = audioSourceIdMapping[id];
                 changingAudioSource.Add(audioSource);
-                // audioSource.Stop();
-                audioSource.time = 0;
+                audioSource.Stop();
+                // audioSource.time = 0;
             } else {
                 audioSource = GetFreeAudioSource();
                 changingAudioSource.Add(audioSource);
