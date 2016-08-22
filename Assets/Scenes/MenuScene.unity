@@ -2463,8 +2463,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1711238157}
   m_HandleRect: {fileID: 1711238156}
   m_Direction: 2
-  m_Value: 1
-  m_Size: 0.83406913
+  m_Value: 0
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -4738,7 +4738,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: 'BananaBeats - Alpha Build. 20160820
+  m_Text: 'BananaBeats - Alpha Build. 20160822
 
     (C) JLChnToZ, 2013-2016. Licensed under Artistic License 2.0'
 --- !u!222 &782679362
