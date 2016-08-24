@@ -3850,7 +3850,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 233462376}
   m_Direction: 0
   m_Value: 0
-  m_Size: 0.8162429
+  m_Size: 0.8159729
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -4738,7 +4738,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: 'BananaBeats - Alpha Build. 20160822
+  m_Text: 'BananaBeats - Alpha Build. 20160824
 
     (C) JLChnToZ, 2013-2016. Licensed under Artistic License 2.0'
 --- !u!222 &782679362
@@ -13943,7 +13943,7 @@ RectTransform:
   m_RootOrder: 0
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0.0000076293945}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &2029048573

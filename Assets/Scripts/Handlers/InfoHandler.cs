@@ -21,6 +21,8 @@ public class InfoHandler : MonoBehaviour {
 
     public RectTransform loadingBar;
     public RectTransform durationBar;
+    public Image fpsBar, polyphonyBar, accuracyBar;
+    public Text fpsText, polyphonyText, accuracyText, bpmText;
 
     public RectTransform panel;
     public Text resultText;
@@ -64,6 +66,7 @@ public class InfoHandler : MonoBehaviour {
     }
 
     void Update() {
+        bool triggerLoadingbar = bmsLoaded;
         if(bmsLoaded) {
             bmsLoaded = false;
             infoDisplay.text = string.Format(LanguageLoader.GetText(17), bmsManager.Title, bmsManager.Artist, bmsManager.PlayLevel);
@@ -147,7 +150,7 @@ public class InfoHandler : MonoBehaviour {
         displayCombos = Mathf.FloorToInt(Mathf.Lerp(displayCombos, bmsManager.Combos, t));
         comboDisplay.text = (bmsManager.IsStarted && displayCombos >= 3) ? displayCombos.ToString() : "";
         comboDisplay.transform.localScale = Vector3.one * (1 + Mathf.Log(Mathf.Max(0, combosValue) + 1, 8));
-        if(bmsManager.IsLoadingResources) {
+        if(bmsManager.IsLoadingResources || triggerLoadingbar) {
             var anchorMax = loadingBar.anchorMax;
             anchorMax.x = bmsManager.LoadResourceProgress;
             loadingBar.anchorMax = anchorMax;
@@ -160,8 +163,14 @@ public class InfoHandler : MonoBehaviour {
             durationBar.anchorMin = anchorPos;
             durationBar.anchorMax = anchorPos;
         }
-        if(debugInfoDisplay)
-            debugInfoDisplay.text = string.Format(LanguageLoader.GetText(28), bmsManager.BPM, bmsManager.Polyphony, bmsManager.Accuracy, 1 / Time.unscaledDeltaTime);
+        float deltaTime = Time.unscaledDeltaTime;
+        if(fpsBar) UpdateVerticalBar(fpsBar, deltaTime * 10F);
+        if(fpsText) fpsText.text = string.Format("{0:0} FPS", 1 / deltaTime);
+        if(polyphonyBar) UpdateVerticalBar(polyphonyBar, bmsManager.Polyphony / 255F);
+        if(polyphonyText) polyphonyText.text = string.Format("{0} POLY", bmsManager.Polyphony);
+        if(accuracyBar) UpdateHorzBar(accuracyBar, bmsManager.Accuracy / 50F);
+        if(accuracyText) accuracyText.text = string.Format("{0:+0000;-0000}MS", bmsManager.Accuracy);
+        if(bpmText) bpmText.text = string.Format("{0:0.0}BPM", bmsManager.BPM);
     }
 
     void OnBMSLoaded() {
@@ -189,6 +198,36 @@ public class InfoHandler : MonoBehaviour {
     void OnChangeBackground(Texture texture, int channel, BGAObject? bga, int eventId) {
         if(texture != null && !(texture is RenderTexture))
             backgroundChanged = true;
+    }
+
+    void UpdateVerticalBar(Image image, float percentage) {
+        var transform = image.rectTransform;
+        if(percentage < 0) {
+            transform.anchorMin = new Vector2(transform.anchorMin.x, -Mathf.Clamp01(-percentage));
+            transform.anchorMax = new Vector2(transform.anchorMax.x, 0);
+        } else {
+            transform.anchorMin = new Vector2(transform.anchorMin.x, 0);
+            transform.anchorMax = new Vector2(transform.anchorMax.x, Mathf.Clamp01(percentage));
+        }
+        SetImageColor(image, percentage);
+    }
+
+    void UpdateHorzBar(Image image, float percentage) {
+        var transform = image.rectTransform;
+        if(percentage < 0) {
+            transform.anchorMin = new Vector2(-Mathf.Clamp01(-percentage), transform.anchorMin.y);
+            transform.anchorMax = new Vector2(0, transform.anchorMax.y);
+        } else {
+            transform.anchorMin = new Vector2(0, transform.anchorMin.y);
+            transform.anchorMax = new Vector2(Mathf.Clamp01(percentage), transform.anchorMax.y);
+        }
+        SetImageColor(image, percentage);
+    }
+
+    void SetImageColor(Image image, float percentage) {
+        percentage = Mathf.Clamp01(Mathf.Abs(percentage));
+        if(percentage < 0.5) image.color = Color.Lerp(Color.green, Color.yellow, percentage * 2);
+        else image.color = Color.Lerp(Color.yellow, Color.red, percentage * 2 - 1);
     }
 
     public void AgainClick() {
