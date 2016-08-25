@@ -6,7 +6,7 @@ using UnityEngine;
 using ThreadPriority = System.Threading.ThreadPriority;
 
 public class SmartCoroutineLoadBalancer {
-    public const float defaultTheshold = 60F;
+    public const float defaultTheshold = 0;
 
     static readonly object forceLoadObj = new object();
 
@@ -16,22 +16,51 @@ public class SmartCoroutineLoadBalancer {
 
     public static Coroutine StartCoroutine(MonoBehaviour component, IEnumerator routine, float theshold = defaultTheshold) {
         if(routine == null) return null;
-        return component.StartCoroutine(SmartCoroutine(routine, theshold));
+        return component.StartCoroutine(new SmartCoroutine(routine, theshold));
     }
 
-    private static IEnumerator SmartCoroutine(IEnumerator routine, float theshold) {
-        theshold = theshold > 0 ? 1 / theshold : float.NegativeInfinity;
+    private class SmartCoroutine: IEnumerator, IDisposable {
+        readonly IEnumerator route;
+        readonly float theshold;
+        bool next;
         object current;
-        DateTime previous = DateTime.Now, snapshot;
-        while(routine.MoveNext()) {
-            current = routine.Current;
-            snapshot = DateTime.Now;
-            if(current != null || (float)(snapshot - previous).Ticks / TimeSpan.TicksPerSecond >= theshold) {
-                previous = snapshot;
-                yield return current == forceLoadObj ? null : current;
-            }
+
+        public SmartCoroutine(IEnumerator route, float theshold) {
+            this.route = route;
+            this.theshold = theshold;
         }
-        yield break;
+
+        public object Current {
+            get { return current; }
+        }
+
+        public bool MoveNext() {
+            long startTicks = DateTime.UtcNow.Ticks;
+            while(next = route.MoveNext()) {
+                current = route.Current;
+                var subRoute = current as IEnumerator;
+                if(subRoute != null) {
+                    current = new SmartCoroutine(subRoute, theshold);
+                    break;
+                }
+                if(current != null)
+                    break;
+                if((float)(DateTime.UtcNow.Ticks - startTicks) / TimeSpan.TicksPerSecond >= (theshold <= 0 ? Time.maximumDeltaTime : theshold))
+                    break;
+            }
+            return next;
+        }
+
+        public void Reset() {
+            next = false;
+            route.Reset();
+        }
+
+        public void Dispose() {
+            var disposable = route as IDisposable;
+            if(disposable != null)
+                disposable.Dispose();
+        }
     }
 }
 

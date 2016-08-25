@@ -38,7 +38,7 @@ namespace BMS {
         Coroutine reloadResourceCoroutine;
         void ReloadResources() {
             if(reloadResourceCoroutine != null) StopCoroutine(reloadResourceCoroutine);
-            reloadResourceCoroutine = SmartCoroutineLoadBalancer.StartCoroutine(this, ReloadResourcesCoroutine(resourcePath));
+            reloadResourceCoroutine = SmartCoroutineLoadBalancer.StartCoroutine(this, ReloadResourcesCoroutine(resourcePath), Time.maximumDeltaTime);
         }
 
         public bool IsLoadingResources {
@@ -55,31 +55,10 @@ namespace BMS {
             var resLoader = new ResourceLoader(path);
             totalResources = wavObjects.Count + bmpObjects.Count;
             loadedResources = 0;
-            int waitingLoaders = 0;
-            System.Action onResLoaded = () => {
-                loadedResources++;
-                waitingLoaders--;
-            };
-            foreach(var wav in wavObjects.Values) {
-                var route = resLoader.LoadResource(wav, onResLoaded);
-                if(route != null) {
-                    waitingLoaders++;
-                    StartCoroutine(route);
-                } else
-                    loadedResources++;
-                yield return null;
-            }
-            foreach(var bmp in bmpObjects.Values) {
-                var route = resLoader.LoadResource(bmp, onResLoaded);
-                if(route != null) {
-                    waitingLoaders++;
-                    StartCoroutine(route);
-                } else
-                    loadedResources++;
-                yield return null;
-            }
-            while(waitingLoaders > 0)
-                yield return SmartCoroutineLoadBalancer.ForceLoadYieldInstruction;
+            foreach(var wav in wavObjects.Values)
+                yield return resLoader.LoadResource(wav, () => loadedResources++);
+            foreach(var bmp in bmpObjects.Values)
+                yield return resLoader.LoadResource(bmp, () => loadedResources++);
             reloadResourceCoroutine = null;
             yield break;
         }
