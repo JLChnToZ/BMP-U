@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Data;
 using System.Collections.Generic;
 using System.Security.Cryptography;
-using Mono.Data.Sqlite;
+using System.Linq;
 
 using BMSManager = BMS.BMSManager;
 
@@ -40,7 +39,7 @@ public class RecordsManager {
         }
     }
 
-    SqliteConnection connection;
+    Database database;
     HashAlgorithm hashAlgorithm;
 
     public HashAlgorithm HashAlgorithm {
@@ -49,8 +48,7 @@ public class RecordsManager {
 
     private RecordsManager() {
         hashAlgorithm = SHA512.Create();
-        connection = new SqliteConnection(string.Format("URI=file:{0}", SongInfoLoader.GetAbsolutePath("../records.dat")));
-        connection.Open();
+        database = new Database(SongInfoLoader.GetAbsolutePath("../" + sqlitePath));
         InitTable();
     }
 
@@ -68,10 +66,7 @@ public class RecordsManager {
             "`hash`," +
             "`player_name`" +
             ");";
-        using(var command = connection.CreateCommand()) {
-            command.CommandText = commandText;
-            command.ExecuteNonQuery();
-        }
+        database.RunSql(commandText);
     }
 
     static int GetAdoptedChannelHash(ICollection<int> adoptedChannels) {
@@ -88,44 +83,29 @@ public class RecordsManager {
     public void CreateRecord(BMSManager bmsManager, string playerName = "Player") {
         const string commandText = "INSERT INTO `records`(`hash`, `channel_config`, `player_name`, `combos`, `score`, `record_id`) VALUES (?, ?, ?, ?, ?, ?);";
         var timeHash = DateTime.UtcNow.Ticks.ToBaseString(32);
-        using(var command = connection.CreateCommand()) {
-            command.CommandText = commandText;
-            var parameters = command.Parameters;
-            parameters.Add(new SqliteParameter(DbType.String, (object)bmsManager.GetHash(SongInfoLoader.CurrentEncoding, hashAlgorithm)));
-            parameters.Add(new SqliteParameter(DbType.String, (object)GetAdoptedChannelHash(bmsManager.GetAllAdoptedChannels())));
-            parameters.Add(new SqliteParameter(DbType.String, (object)playerName));
-            parameters.Add(new SqliteParameter(DbType.Int32, (object)bmsManager.MaxCombos));
-            parameters.Add(new SqliteParameter(DbType.Int32, (object)bmsManager.Score));
-            parameters.Add(new SqliteParameter(DbType.String, (object)timeHash));
-            command.ExecuteNonQuery();
-        }
+        database.RunSql(commandText,
+            bmsManager.GetHash(SongInfoLoader.CurrentEncoding, hashAlgorithm),
+            GetAdoptedChannelHash(bmsManager.GetAllAdoptedChannels()),
+            playerName,
+            bmsManager.MaxCombos,
+            bmsManager.Score,
+            timeHash
+        );
     }
 
     public Record[] GetRecords(string bmsHash) {
         const string commandText = "SELECT `player_name`, `channel_config`, `combos`, `score`, `time`, `record_id` FROM `records` WHERE `hash` = ? ORDER BY `score` DESC;";
-        var result = new List<Record>();
-        using(var command = connection.CreateCommand()) {
-            command.CommandText = commandText;
-            var parameters = command.Parameters;
-            parameters.Add(new SqliteParameter(DbType.String, (object)bmsHash));
-            using(var reader = command.ExecuteReader()) {
-                while(reader.Read())
-                    result.Add(new Record(
-                        reader.GetString(0),
-                        reader.GetInt32(1),
-                        reader.GetInt32(2),
-                        reader.GetInt32(3),
-                        reader.GetDateTime(4),
-                        reader.GetString(5)
-                    ));
-                reader.Close();
-            }
-        }
-        return result.ToArray();
+        return database.QuerySql(commandText).Select(record => new Record(
+            record.GetString(0),
+            record.GetInt32(1),
+            record.GetInt32(2),
+            record.GetInt32(3),
+            record.GetDateTime(4),
+            record.GetString(5)
+        )).ToArray();
     }
 
     ~RecordsManager() {
-        if(connection != null)
-            connection.Dispose();
+        database.Dispose();
     }
 }
