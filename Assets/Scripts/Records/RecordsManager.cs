@@ -95,7 +95,7 @@ public class RecordsManager {
 
     public Record[] GetRecords(string bmsHash) {
         const string commandText = "SELECT `player_name`, `channel_config`, `combos`, `score`, `time`, `record_id` FROM `records` WHERE `hash` = ? ORDER BY `score` DESC;";
-        return database.QuerySql(commandText).Select(record => new Record(
+        return database.QuerySql(commandText, bmsHash).Select(record => new Record(
             record.GetString(0),
             record.GetInt32(1),
             record.GetInt32(2),

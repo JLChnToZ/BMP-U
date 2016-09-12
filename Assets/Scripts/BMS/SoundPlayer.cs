@@ -91,7 +91,7 @@ namespace BMS {
             isPaused = false;
         }
 
-        public void PlaySound(AudioClip audio, int id, string debugName = "") {
+        public void PlaySound(AudioClip audio, int id, float pitch = 1, string debugName = "") {
             AudioSource audioSource = null;
             if(inUseAudioSources.ContainsKey(new InUseAudioSource(id))) {
                 audioSource = audioSourceIdMapping[id];
@@ -106,6 +106,7 @@ namespace BMS {
             audioSource.volume = volume;
             inUseAudioSources[new InUseAudioSource(audioSource, id)] = 0;
             audioSourceIdMapping[id] = audioSource;
+            audioSource.pitch = pitch;
             if(!isPaused && !audioSource.isPlaying)
                 audioSource.Play();
             #if UNITY_EDITOR
