@@ -92,7 +92,6 @@ namespace BMS {
                 playingMovieTextures.Add(movTexture);
             } else if(res.value is MovieTextureHolder) {
                 var movTH = res.value as MovieTextureHolder;
-                movTH.StartCoroutine = StartCoroutine;
                 movTH.Play();
                 playingMovieTextureHolders.Add(movTH);
                 if(movTH.Output == null)

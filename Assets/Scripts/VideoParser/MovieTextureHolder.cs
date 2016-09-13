@@ -15,8 +15,6 @@ public class MovieTextureHolder: ScriptableObject {
     [NonSerialized]
     byte[] frame;
 
-    public Func<IEnumerator, Coroutine> StartCoroutine;
-
     public bool Loaded {
         get { return loaded; }
     }
@@ -71,29 +69,24 @@ public class MovieTextureHolder: ScriptableObject {
     public void Play() {
         if(!loaded || videoStream == null) return;
         videoStream.Play();
-        StartCoroutine.Invoke(ReadFrameCoroutine());
+        MovieTexturePlayer.GetOrCreate(false).Register(this);
     }
 
     public void Pause() {
         if(!loaded || videoStream == null) return;
         videoStream.Pause();
+        Unregister();
     }
 
     public void Stop() {
         if(!loaded || videoStream == null) return;
         videoStream.Stop();
+        Unregister();
     }
 
-    IEnumerator ReadFrameCoroutine() {
-        long timeStart = DateTime.Now.Ticks, timeEnd;
-        yield return null;
-        while(loaded && videoStream != null && videoStream.CurrentState == PlayState.Playing) {
-            timeEnd = DateTime.Now.Ticks;
-            videoStream.Update(timeEnd - timeStart);
-            timeStart = timeEnd;
-            yield return null;
-        }
-        yield break;
+    public void ReadFrame(long ticksDiff) {
+        if(loaded && videoStream != null && videoStream.CurrentState == PlayState.Playing)
+            videoStream.Update(ticksDiff);
     }
 
     void OnDestroy() {
@@ -105,6 +98,12 @@ public class MovieTextureHolder: ScriptableObject {
         }
         if(outputTexture)
             Destroy(outputTexture);
+        Unregister();
+    }
+
+    void Unregister() {
+        var player = MovieTexturePlayer.Instance;
+        if(player) player.Unregister(this);
     }
 }
 #else
@@ -141,6 +140,10 @@ public class MovieTextureHolder:ScriptableObject {
 
     public void Stop() {
         throw new NotSupportedException();
+    }
+    
+    public void ReadFrame(long ticksDiff) {
+
     }
 }
 #endif
