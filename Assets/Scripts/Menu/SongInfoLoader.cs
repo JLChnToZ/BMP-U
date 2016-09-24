@@ -383,8 +383,8 @@ public static class SongInfoComparer {
 
     static int FinalCompare(ref Entry lhs, ref Entry rhs, int val) {
         if(val != 0) return val;
-        if(lhs.isDirectory && !rhs.isDirectory) return -1;
-        if(!lhs.isDirectory && rhs.isDirectory) return 1;
+        if(lhs.isParentDirectory || (lhs.isDirectory && !rhs.isDirectory)) return -1;
+        if(rhs.isParentDirectory || (!lhs.isDirectory && rhs.isDirectory)) return 1;
         string lhsDisplay = lhs.isDirectory ? lhs.dirInfo.Name : lhs.songInfo.name;
         string rhsDisplay = rhs.isDirectory ? rhs.dirInfo.Name : rhs.songInfo.name;
         return string.Compare(lhsDisplay, rhsDisplay, StringComparison.InvariantCultureIgnoreCase);

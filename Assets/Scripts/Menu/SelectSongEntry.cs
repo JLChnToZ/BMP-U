@@ -50,7 +50,7 @@ public class SelectSongEntry: MonoBehaviour {
 
     void UpdateDisplay() {
         if(isDirectory) {
-            songName.text = isParentDirectory ? "Back" : dirInfo.Name;
+            songName.text = (isParentDirectory ? "<< " : "") + dirInfo.Name;
             artist.text = string.Empty;
             otherInfo.text = string.Empty;
             banner.gameObject.SetActive(false);
