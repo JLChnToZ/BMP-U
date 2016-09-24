@@ -4,11 +4,12 @@ using UnityEngine;
 using UnityEngine.Events;
 
 #if UNITY_EDITOR
-// A little hack to use same signature in editor mode.
-using ThreadHandler = UnityEditor.EditorApplication;
-using Action = UnityEditor.EditorApplication.CallbackFunction;
+using UnityEditor;
 #else
+using System.Collections;
+using System.Collections.Generic;
 using UnityObject = UnityEngine.Object;
+using DisruptorUnity3d;
 #endif
 
 /// <summary>
@@ -48,14 +49,14 @@ public static class ThreadHelper {
     /// </remarks>
     public static void InitThreadHandler() {
 #if !UNITY_EDITOR
-        if(ThreadHandler) return;
+        if(threadHandler) return;
         try {
             var go = new GameObject {
                 isStatic = true,
                 hideFlags = HideFlags.HideAndDontSave
             };
             UnityObject.DontDestroyOnLoad(go);
-            ThreadHandler = go.AddComponent<UnityThreadHandler>();
+            threadHandler = go.AddComponent<UnityThreadHandler>();
         } catch {
             Debug.LogError(InitThreadErrorMsg);
         }
@@ -75,32 +76,52 @@ public static class ThreadHelper {
             callback.Invoke();
             return;
         }
-        Action wrapped = null;
+#if UNITY_EDITOR
+        EditorApplication.CallbackFunction wrapped = null;
         wrapped = () => {
-            ThreadHandler.update -= wrapped;
+            EditorApplication.update -= wrapped;
             try {
                 callback.Invoke();
             } catch(Exception ex) {
                 Debug.LogException(ex);
             }
         };
-        ThreadHandler.update += wrapped;
+        EditorApplication.update += wrapped;
+#else
+        threadHandler.Enqueue(callback);
+#endif
+    }
+
+    public static float Theshold {
+#if UNITY_EDITOR
+        get { return 0; }
+        set { }
+#else
+        get { return timeTheshold; }
+        set {
+            timeTheshold = value;
+            if(threadHandler && threadHandler.threadCoroutine != null)
+                threadHandler.threadCoroutine.theshold = timeTheshold;
+        }
+#endif
     }
 
 #if UNITY_EDITOR
     static ThreadHelper() {
-        ThreadHandler.update += GetUnityThread;
+        EditorApplication.update += GetUnityThread;
     }
 
     private static void GetUnityThread() {
         if(unityThread == null)
             unityThread = Thread.CurrentThread;
-        ThreadHandler.update -= GetUnityThread;
+        EditorApplication.update -= GetUnityThread;
     }
 #else
-    static UnityThreadHandler ThreadHandler;
+    static float timeTheshold;
+    static UnityThreadHandler threadHandler;
+
     class UnityThreadHandler: MonoBehaviour {
-        public event Action update;
+        public ThreadCoroutine threadCoroutine;
 
         void Awake() {
             if(unityThread == null)
@@ -108,9 +129,55 @@ public static class ThreadHelper {
         }
 
         void Update() {
-            if(update != null)
-                update.Invoke();
+            if(threadCoroutine != null && threadCoroutine.isWaiting && !threadCoroutine.isRunning) {
+                threadCoroutine.isRunning = true;
+                StartCoroutine(threadCoroutine);
+            }
         }
+
+        public void Enqueue(UnityAction method) {
+            if(threadCoroutine == null)
+                threadCoroutine = new ThreadCoroutine(timeTheshold);
+            threadCoroutine.Enqueue(method);
+        }
+    }
+
+    class ThreadCoroutine: IEnumerator {
+        readonly RingBuffer<UnityAction> methodQueue = new RingBuffer<UnityAction>(10);
+        public float theshold;
+        public bool isWaiting, isRunning;
+
+        public ThreadCoroutine(float theshold) {
+            this.theshold = theshold;
+        }
+
+        public void Enqueue(UnityAction method) {
+            if(method != null)
+                methodQueue.Enqueue(method);
+            isWaiting = true;
+        }
+
+        public object Current {
+            get { return null; }
+        }
+
+        public bool MoveNext() {
+            float startTime = Time.realtimeSinceStartup;
+            while(methodQueue.Count > 0) {
+                isWaiting = false;
+                try {
+                    methodQueue.Dequeue().Invoke();
+                } catch(Exception ex) {
+                    Debug.LogException(ex);
+                }
+                if(Time.realtimeSinceStartup - startTime >= (theshold <= 0 ? Time.maximumDeltaTime : theshold))
+                    return true;
+            }
+            isRunning = false;
+            return false;
+        }
+
+        public void Reset() { }
     }
 #endif
 }

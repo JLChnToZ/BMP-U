@@ -92,15 +92,20 @@ namespace DisruptorUnity3d {
         public int Count { get { return (int)(_producerCursor.ReadFullFence() - _consumerCursor.ReadFullFence()); } }
 
         private static int NextPowerOfTwo(int x) {
-            var result = 2;
-            while(result < x) {
-                result <<= 1;
+            if(x == 0) return 0;
+            unchecked {
+                uint n = (uint)x;
+                n--;
+                n |= n >> 0x01;
+                n |= n >> 0x02;
+                n |= n >> 0x04;
+                n |= n >> 0x08;
+                n |= n >> 0x10;
+                return (int)(n + 1);
             }
-            return result;
         }
-
-
     }
+
     public static class Volatile {
         private const int CacheLineSize = 64;
 

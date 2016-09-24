@@ -20,8 +20,11 @@ namespace BMS {
         int playLevel, rank, lnType;
         float volume;
         bool stageFileLoaded;
+        bool bannerFileLoaded;
         string stageFilePath;
+        string bannerFilePath;
         Texture stageFile;
+        Texture bannerFile;
         TimeSpan duration;
         TimeSpan startPos;
 
@@ -36,10 +39,13 @@ namespace BMS {
         public int Rank { get { return rank; } }
         public float Volume { get { return volume; } }
         public Texture StageFile { get { return stageFile; } }
+        public Texture BannerFile { get { return bannerFile; } }
         public int LongNoteType { get { return lnType; } }
         public TimeSpan Duration { get { return duration; } }
         public TimeSpan StartPosition { get { return startPos; } }
         public string StageFilePath { get { return stageFilePath; } }
+        public string BannerFilePath { get { return bannerFilePath; } }
+        public bool BannerFileLoaded { get { return bannerFileLoaded; } }
         public bool StageFileLoaded { get { return stageFileLoaded; } }
 
         readonly Dictionary<int, TimeLine> timeLines = new Dictionary<int, TimeLine>();
@@ -48,10 +54,11 @@ namespace BMS {
         TimeSpanHandle<float> bpmChangeHelper;
         
         bool parseHeader, parseBody, parseResHeader, parseAll, hasRandom;
-        ResourceObject stageFileObject;
+        ResourceObject stageFileObject, bannerFileObject;
         Thread loadBMSThread;
 
         public event Action OnStageFileLoaded;
+        public event Action OnBannerFileLoaded;
 
         public bool HasRandom {
             get { return hasRandom; }
@@ -73,8 +80,10 @@ namespace BMS {
                 loadBMSThread = new Thread(ReloadTimelineInThread) {
                     Priority = ThreadPriority.BelowNormal
                 };
-                if(parseHeader)
+                if(parseHeader) {
+                    bannerFileLoaded = false;
                     stageFileLoaded = false;
+                }
                 StartCoroutine(ReloadTimelineHelperCoroutine(parseHeader, parseBody));
                 loadBMSThread.Start();
             } else {
@@ -94,6 +103,17 @@ namespace BMS {
                         OnStageFileLoaded.Invoke();
                 } else
                     stageFileLoaded = true;
+
+                bannerFileObject = null;
+                while(bannerFileObject == null && !bmsLoaded) yield return null;
+                if(bannerFileObject != null) {
+                    yield return StartCoroutine(new ResourceLoader(resourcePath).LoadResource(bannerFileObject));
+                    bannerFile = bannerFileObject.texture;
+                    bannerFileLoaded = true;
+                    if(OnBannerFileLoaded != null)
+                        OnBannerFileLoaded.Invoke();
+                } else
+                    bannerFileLoaded = true;
             }
             yield break;
         }
@@ -101,7 +121,8 @@ namespace BMS {
         void ReloadTimelineInThread() {
             try {
                 if(parseHeader) {
-                    title = artist = genre = "Unknown";
+                    title = string.Empty;
+                    artist = genre = "Unknown";
                     subTitle = subArtist = comments = string.Empty;
                     playerCount = 1;
                     bpm = currentBPM = 130;
@@ -181,6 +202,7 @@ namespace BMS {
                             case "#rank": int.TryParse(param1, out rank); continue;
                             case "#volwav": if(float.TryParse(param1, out volume)) volume /= 100F; continue;
                             case "#stagefile": stageFileObject = new ResourceObject(-1, ResourceType.bmp, stageFilePath = param1); continue;
+                            case "#banner": bannerFileObject = new ResourceObject(-2, ResourceType.bmp, bannerFilePath = param1); continue;
                             case "#lntype": int.TryParse(param1, out lnType); continue;
                         }
 

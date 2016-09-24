@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
+using FitMode = UnityEngine.UI.ContentSizeFitter.FitMode;
+
 public class LayoutElementAdapter: MonoBehaviour, ILayoutElement {
-
     public RectTransform child;
-
+    public FitMode restrictWidth = FitMode.PreferredSize;
+    public FitMode restrictHeight = FitMode.PreferredSize;
+    
     public float flexibleHeight {
         get { return 0; }
     }
@@ -22,19 +21,19 @@ public class LayoutElementAdapter: MonoBehaviour, ILayoutElement {
     }
 
     public float minHeight {
-        get { return 0; }
+        get { return restrictHeight == FitMode.MinSize && child ? child.rect.height : -1; }
     }
 
     public float minWidth {
-        get { return 0; }
+        get { return restrictWidth == FitMode.MinSize && child ? child.rect.width : -1; }
     }
 
     public float preferredHeight {
-        get { return child ? child.rect.height : 0; }
+        get { return restrictHeight == FitMode.PreferredSize && child ? child.rect.height : -1; }
     }
 
     public float preferredWidth {
-        get { return child ? child.rect.width : 0; }
+        get { return restrictWidth == FitMode.PreferredSize && child ? child.rect.width : -1; }
     }
 
     public void CalculateLayoutInputHorizontal() {

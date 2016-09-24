@@ -4,16 +4,15 @@ using UnityEngine.SceneManagement;
 
 using BMS;
 
-using System.Collections;
-using System.Collections.Generic;
-using System;
-
-public class SelectSongManager : MonoBehaviour {
+public class SelectSongManager: MonoBehaviour {
     static int savedSortMode;
-
-    public SelectSongScrollContent itemsDisplay;
+    
     public RectTransform loadingDisplay;
     public RectTransform loadingPercentageDisplay;
+    public RectTransform optionsPanel;
+    public RectTransform detailsPanel;
+    public Button optionsButton;
+    public Button optionsBackButton;
     public Dropdown gameMode;
     public Dropdown colorMode;
     public Toggle autoModeToggle;
@@ -22,26 +21,60 @@ public class SelectSongManager : MonoBehaviour {
     public Dropdown sortMode;
     public RawImage background;
     public ColorRampLevel colorSet;
-    string dataPath;
+    public Button startGameButton;
+
+    [SerializeField]
+    NoteLayoutOptionsHandler layoutOptionsHandler;
 
     public BMSManager bmsManager;
 
-	void Start() {
-        SongInfoLoader.CurrentCodePage = 932; // Hardcoded to Shift-JIS as most of BMS are encoded by this.
-        LoadBMSInThread();
+    SongInfo? currentInfo;
+
+    void Awake() {
+        if(!bmsManager) bmsManager = GetComponent<BMSManager>();
+        if(!bmsManager) bmsManager = gameObject.AddComponent<BMSManager>();
+        SongInfoLoader.SetBMSManager(bmsManager);
+
         gameMode.value = Loader.gameMode;
+        gameMode.onValueChanged.AddListener(GameModeChange);
         colorMode.value = (int)Loader.colorMode;
+        colorMode.onValueChanged.AddListener(ColorModeChange);
         autoModeToggle.isOn = Loader.autoMode;
+        autoModeToggle.onValueChanged.AddListener(ToggleAuto);
         judgeModeDropDown.value = Loader.judgeMode;
+        judgeModeDropDown.onValueChanged.AddListener(JudgeModeChange);
         speedSlider.value = Loader.speed;
+        speedSlider.onValueChanged.AddListener(ChangeSpeed);
         sortMode.value = savedSortMode;
-        itemsDisplay.OnChangeBackground += ChangeBackground;
-        itemsDisplay.OnSongInfoRemoved += SongInfoLoader.RemoveSongInfo;
+        sortMode.onValueChanged.AddListener(ChangeSortMode);
+        startGameButton.onClick.AddListener(StartGame);
+        optionsButton.onClick.AddListener(ShowOptions);
+        optionsBackButton.onClick.AddListener(HideOptions);
+
+        currentInfo = SongInfoLoader.SelectedSong;
+        SongInfoLoader.OnSelectionChanged += SelectionChanged;
+    }
+
+    void Start() {
+        SongInfoLoader.CurrentCodePage = 932; // Hardcoded to Shift-JIS as most of BMS are encoded by this.
+        SongInfoLoader.ReloadDirectory();
+        InternalHideOptions();
     }
 
     void OnDestroy() {
-        if(itemsDisplay != null)
-            itemsDisplay.OnChangeBackground -= ChangeBackground;
+        SongInfoLoader.OnSelectionChanged -= SelectionChanged;
+    }
+
+    void SelectionChanged(SongInfo? newInfo) {
+        bool changed = false;
+        if(currentInfo.HasValue != newInfo.HasValue)
+            changed = true;
+        else if(newInfo.HasValue && currentInfo.Value.filePath != newInfo.Value.filePath)
+            changed = true;
+        if(changed) {
+            HideOptions();
+        }
+        currentInfo = newInfo;
     }
 
     public void GameModeChange(int index) {
@@ -66,68 +99,36 @@ public class SelectSongManager : MonoBehaviour {
 
     public void ChangeSortMode(int mode) {
         savedSortMode = mode;
-        switch(savedSortMode) {
-            case 0: itemsDisplay.Sort(SongInfoComparer.SortMode.Name); break;
-            case 1: itemsDisplay.Sort(SongInfoComparer.SortMode.Artist); break;
-            case 2: itemsDisplay.Sort(SongInfoComparer.SortMode.Genre); break;
-            case 3: itemsDisplay.Sort(SongInfoComparer.SortMode.Level); break;
-            case 4: itemsDisplay.Sort(SongInfoComparer.SortMode.BPM); break;
+        switch(mode) {
+            case 0: SongInfoLoader.CurrentSortMode = SongInfoComparer.SortMode.Name; break;
+            case 1: SongInfoLoader.CurrentSortMode = SongInfoComparer.SortMode.Artist; break;
+            case 2: SongInfoLoader.CurrentSortMode = SongInfoComparer.SortMode.Genre; break;
+            case 3: SongInfoLoader.CurrentSortMode = SongInfoComparer.SortMode.Level; break;
+            case 4: SongInfoLoader.CurrentSortMode = SongInfoComparer.SortMode.BPM; break;
         }
     }
 
     public void StartGame() {
-        if(itemsDisplay.SelectedSongInternalIndex >= 0)
-            switch(Loader.gameMode) {
-                case 0: SceneManager.LoadScene("GameScene"); break;
-                case 1: SceneManager.LoadScene("ClassicGameScene"); break;
-            }
-    }
-    
-    Coroutine loadBMSFilesCoroutine;
-    void LoadBMSInThread() {
-        loadingDisplay.gameObject.SetActive(true);
-        gameObject.GetOrAddComponent(ref bmsManager);
-
-        itemsDisplay.markLoaded = false;
-        SongInfoLoader.LoadBMSInThread(bmsManager, OnLoadCacheInfo, OnAddSong);
-        dataPath = Application.dataPath;
-        StartCoroutine(LoadBMSEnd());
-    }
-
-    void OnAddSong(SongInfo songInfo) {
-        if(itemsDisplay != null)
-            itemsDisplay.AddItem(songInfo);
-        else
-            SongInfoLoader.StopLoadBMS();
-    }
-
-    void OnLoadCacheInfo(IEnumerable<SongInfo> songInfos) {
-        if(itemsDisplay != null)
-            itemsDisplay.AddItem(songInfos);
-        else
-            SongInfoLoader.StopLoadBMS();
-    }
-
-    IEnumerator LoadBMSEnd() {
-        Vector2 loadingAnchorMax = loadingPercentageDisplay.anchorMax;
-        while(SongInfoLoader.HasLoadingThreadRunning) {
-            loadingAnchorMax.x = SongInfoLoader.LoadedPercentage;
-            loadingPercentageDisplay.anchorMax = loadingAnchorMax;
-            yield return null;
+        if(string.IsNullOrEmpty(Loader.songPath))
+            return;
+        switch(Loader.gameMode) {
+            case 0: SceneManager.LoadScene("GameScene"); break;
+            case 1: SceneManager.LoadScene("ClassicGameScene"); break;
         }
-        loadingAnchorMax.x = 1;
-        loadingPercentageDisplay.anchorMax = loadingAnchorMax;
-        loadingDisplay.gameObject.SetActive(false);
-        itemsDisplay.markLoaded = true;
-        itemsDisplay.Sort();
-        yield break;
     }
 
-    void ChangeBackground(Texture texture) {
-        background.texture = texture;
-        Color color = texture || itemsDisplay.SelectedSongInfo.index < 0 ? Color.white : colorSet.GetColor(itemsDisplay.SelectedSongInfo.level);
-        color.a /= 2;
-        background.color = color;
+    public void ShowOptions() {
+        detailsPanel.gameObject.SetActive(false);
+        optionsPanel.gameObject.SetActive(true);
     }
 
+    public void HideOptions() {
+        layoutOptionsHandler.Apply();
+        InternalHideOptions();
+    }
+
+    void InternalHideOptions() {
+        detailsPanel.gameObject.SetActive(true);
+        optionsPanel.gameObject.SetActive(false);
+    }
 }

@@ -1,12 +1,17 @@
 ﻿using System;
 using System.Text;
 using System.IO;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading;
 
-using DisruptorUnity3d;
 using UnityEngine;
-using ThreadPriority = System.Threading.ThreadPriority;
+
+using BMS;
+
+using Entry = SongInfoLoader.Entry;
 
 public struct SongInfo:IEquatable<SongInfo>, IComparable<SongInfo> {
     public int index;
@@ -20,6 +25,8 @@ public struct SongInfo:IEquatable<SongInfo>, IComparable<SongInfo> {
     public float bpm;
     public Texture background;
     public string backgroundPath;
+    public Texture banner;
+    public string bannerPath;
 
     public override bool Equals(object obj) {
         if(obj == null || !(obj is SongInfo))
@@ -28,7 +35,7 @@ public struct SongInfo:IEquatable<SongInfo>, IComparable<SongInfo> {
     }
 
     public bool Equals(SongInfo other) {
-        return filePath == other.filePath && background == other.background;
+        return filePath == other.filePath && background == other.background && banner == other.banner;
     }
 
     public override int GetHashCode() {
@@ -44,7 +51,14 @@ public struct SongInfo:IEquatable<SongInfo>, IComparable<SongInfo> {
     }
 }
 
-static class SongInfoLoader {
+public static class SongInfoLoader {
+    static string[] supportedFileTypes = new[] { "*.bms", "*.bme", "*.bml", "*.pms" };
+    public static ICollection<string> SupportedFileTypes {
+        get {
+            return new ReadOnlyCollection<string>(supportedFileTypes);
+        }
+    }
+
     static Encoding encoding = Encoding.Default;
     public static Encoding CurrentEncoding {
         get { return encoding; }
@@ -65,255 +79,331 @@ static class SongInfoLoader {
         return index++;
     }
 
-    static List<SongInfo> cachedSongInfo = new List<SongInfo>();
-    static HashSet<string> cachedSongInfoPaths = new HashSet<string>();
+    static List<Entry> entries = new List<Entry>();
+    static Dictionary<string, Entry> cachedEntries = new Dictionary<string, Entry>();
+    static DirectoryInfo rootDiectory, currentDirectory;
+    static SongInfo? selectedEntry;
 
-    static Thread loadBMSFilesThread;
-    static Action<SongInfo> onAddSongInfo;
-    static Action<IEnumerable<SongInfo>> onAddSongInfoCache;
+    static Coroutine loadResourceCoroutine;
+
+    static Thread readDirectoryThread;
     static float loadedPercentage;
     static string dataPath;
-    static BMS.BMSManager bmsManager;
-    static bool endOfCache = false, cacheLoaded = false, isRemoving = false;
-    static RingBuffer<int> pendingRemoveSongInfos = new RingBuffer<int>(20);
+    static BMSManager bmsManager;
+    static bool ready;
+
+    static SongInfoComparer.SortMode savedSortMode;
+
+    public static event Action OnListUpdated;
+    public static event Action<SongInfo?> OnSelectionChanged;
+
+    public static bool IsReady {
+        get { return ready; }
+    }
 
     public static float LoadedPercentage {
         get { return loadedPercentage; }
     }
 
     public static bool HasLoadingThreadRunning {
-        get { return loadBMSFilesThread != null && loadBMSFilesThread.IsAlive; }
+        get { return readDirectoryThread != null && readDirectoryThread.IsAlive; }
     }
 
-    public static void LoadCacheInThread() {
-        if(cacheLoaded) return;
-        StopLoadBMS();
-        var loadCachethread = new Thread(CacheLoad) {
-            Priority = ThreadPriority.BelowNormal
-        };
-        loadCachethread.Start();
+    public static SongInfoComparer.SortMode CurrentSortMode {
+        get { return savedSortMode; }
+        set {
+            if(savedSortMode == value) return;
+            savedSortMode = value;
+            if(ready) Sort();
+        }
     }
 
+    public static DirectoryInfo CurrentDirectory {
+        get { return currentDirectory; }
+        set {
+            if(value == null || string.Equals(currentDirectory.FullName, value.FullName, StringComparison.Ordinal))
+                return;
+            currentDirectory = value;
+            ReloadDirectory();
+        }
+    }
+
+    public static IList<Entry> Entries {
+        get { return entries.AsReadOnly(); }
+    }
+
+    public static SongInfo? SelectedSong {
+        get { return selectedEntry; }
+        set {
+            selectedEntry = value;
+
+            if(value.HasValue)
+                Loader.songPath = GetAbsolutePath(value.Value.filePath);
+            else
+                Loader.songPath = string.Empty;
+
+            if(OnSelectionChanged != null)
+                OnSelectionChanged.Invoke(value);
+        }
+    }
+
+    public static bool IsRootDirectory {
+        get {
+            return currentDirectory == null ||
+                string.Equals(currentDirectory.FullName, rootDiectory.FullName, StringComparison.Ordinal); 
+        }
+    }
+    
     static SongInfoLoader() {
         GetDataPath();
-    }
-
-    public static void LoadBMSInThread(BMS.BMSManager manager, Action<IEnumerable<SongInfo>> loadCacheSongInfoCallback, Action<SongInfo> addSongInfoCallback) {
-        LoadCacheInThread();
-        StopLoadBMS();
-        onAddSongInfo = addSongInfoCallback;
-        onAddSongInfoCache = loadCacheSongInfoCallback;
-        bmsManager = manager;
-        loadBMSFilesThread = new Thread(LoadBMS) {
-            Priority = ThreadPriority.BelowNormal
-        };
-        loadBMSFilesThread.Start();
-        var saveCacheThread = new Thread(CacheSave) {
-            Priority = ThreadPriority.BelowNormal
-        };
-        saveCacheThread.Start();
-    }
-
-    public static void StopLoadBMS() {
-        if(HasLoadingThreadRunning)
-            loadBMSFilesThread.Abort();
-    }
-
-    static HashSet<FileInfo> RecursiveSearchFiles(DirectoryInfo parent, params string[] filters) {
-        return RecursiveSearchFiles(parent, new HashSet<FileInfo>(), filters);
-    }
-
-    static HashSet<FileInfo> RecursiveSearchFiles(DirectoryInfo parent, HashSet<FileInfo> list, string[] filters) {
-        if(filters == null || filters.Length < 1)
-            list.UnionWith(parent.GetFiles());
-        foreach(var filter in filters)
-            list.UnionWith(parent.GetFiles(filter, SearchOption.TopDirectoryOnly));
-        foreach(var directory in parent.GetDirectories())
-            RecursiveSearchFiles(directory, list, filters);
-        return list;
     }
 
     static void GetDataPath() {
         if(string.IsNullOrEmpty(dataPath))
             dataPath = Application.dataPath.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
+        if(rootDiectory == null)
+            rootDiectory =  new DirectoryInfo(GetAbsolutePath("../BMS"));
+        if(currentDirectory == null)
+            currentDirectory = rootDiectory;
     }
 
     public static string GetAbsolutePath(string path) {
         return Path.IsPathRooted(path) ? path : Path.GetFullPath(Path.Combine(dataPath, path));
     }
 
-    static void CacheLoad() {
-        var cacheFileInfo = new FileInfo(GetAbsolutePath("../cache.dat"));
-        SongInfo songInfo;
-        if(cacheFileInfo.Exists) {
-            try {
-                using(var readStream = cacheFileInfo.OpenRead()) {
-                    var reader = new BinaryReader(readStream);
-                    index = reader.ReadInt32();
-                    while(readStream.Position < readStream.Length) {
-                        try {
-                            songInfo = new SongInfo {
-                                index = reader.ReadInt32(),
-                                filePath = reader.ReadString(),
-                                name = reader.ReadString(),
-                                artist = reader.ReadString(),
-                                subArtist = reader.ReadString(),
-                                genre = reader.ReadString(),
-                                bpm = reader.ReadSingle(),
-                                level = reader.ReadSingle(),
-                                comments = reader.ReadString(),
-                                backgroundPath = reader.ReadString(),
-                            };
-                            var absolutePath = GetAbsolutePath(songInfo.filePath);
-                            if(File.Exists(absolutePath)) {
-                                cachedSongInfo.Add(songInfo);
-                                cachedSongInfoPaths.Add(absolutePath);
-                            }
-                        } catch { }
-                    }
-                }
-            } catch { }
-        }
-        cacheLoaded = true;
+    public static void SetBMSManager(BMSManager bmsManager) {
+        SongInfoLoader.bmsManager = bmsManager;
     }
 
-    static void CacheSave() {
-        while(!cacheLoaded) Thread.Sleep(25);
-        int currentIdx = 0;
-        bool isMax;
-        using(var writeStream = File.Open(GetAbsolutePath("../cache.dat"), FileMode.OpenOrCreate, FileAccess.Write, FileShare.None)) {
-            var writer = new BinaryWriter(writeStream);
-            writer.Write(index);
-            while(true) {
-                while(isMax = (!endOfCache && currentIdx >= cachedSongInfo.Count))
-                    Thread.Sleep(25);
-                if(isMax) {
-                    if(!endOfCache)
-                        continue;
-                    break;
-                }
-                WriteSongInfo(writer, cachedSongInfo[currentIdx]);
-                currentIdx++;
-            }
+    public static SongInfo LoadBMS(FileInfo file) {
+        string bmsContent = string.Empty;
+        using(var fs = file.OpenRead())
+        using(var fsRead = new StreamReader(fs, CurrentEncoding))
+            bmsContent = fsRead.ReadToEnd();
+        bmsManager.LoadBMS(bmsContent, file.Directory.FullName, true);
+        return new SongInfo {
+            index = GetNextIndex(),
+            filePath = HelperFunctions.MakeRelative(dataPath, file.FullName),
+            name = bmsManager.Title,
+            artist = bmsManager.Artist,
+            subArtist = bmsManager.SubArtist,
+            genre = bmsManager.Genre,
+            bpm = bmsManager.BPM,
+            level = bmsManager.PlayLevel,
+            comments = bmsManager.Comments,
+            backgroundPath = bmsManager.StageFilePath,
+            bannerPath = bmsManager.BannerFilePath
+        };
+    }
+
+    public static void ReloadDirectory() {
+        AboartReadDirectory();
+        ThreadHelper.InitThreadHandler();
+        readDirectoryThread = new Thread(ReadDirectoryThread) {
+            IsBackground = true
+        };
+        readDirectoryThread.Start();
+    }
+
+    public static void AboartReadDirectory() {
+        if(readDirectoryThread != null && readDirectoryThread.IsAlive)
+            readDirectoryThread.Abort();
+        readDirectoryThread = null;
+
+        if(loadResourceCoroutine != null) {
+            bmsManager.StopCoroutine(loadResourceCoroutine);
+            loadResourceCoroutine = null;
         }
     }
 
-    static void WriteSongInfo(BinaryWriter writer, SongInfo songInfo) {
-        writer.Write(songInfo.index);
-        writer.Write(songInfo.filePath);
-        writer.Write(songInfo.name);
-        writer.Write(songInfo.artist);
-        writer.Write(songInfo.subArtist);
-        writer.Write(songInfo.genre);
-        writer.Write(songInfo.bpm);
-        writer.Write(songInfo.level);
-        writer.Write(songInfo.comments);
-        writer.Write(songInfo.backgroundPath);
-    }
-
-    public static void RemoveSongInfo(int index) {
-        pendingRemoveSongInfos.Enqueue(index);
-        if(!isRemoving) {
-            isRemoving = true;
-            var thread = new Thread(RemoveSongInfo) {
-                Priority = ThreadPriority.BelowNormal
-            };
-            thread.Start();
-        }
-    }
-
-    static void RemoveSongInfo() {
-        int index;
-        while(pendingRemoveSongInfos.TryDequeue(out index))
-            cachedSongInfo.RemoveAll(songInfo => songInfo.index == index);
-        isRemoving = false;
-    }
-
-    static void LoadBMS() {
+    static void ReadDirectoryThread() {
         try {
-            while(!cacheLoaded) Thread.Sleep(25);
-            if(onAddSongInfoCache != null)
-                onAddSongInfoCache.Invoke(cachedSongInfo);
-            var dirInfo = new DirectoryInfo(Path.Combine(dataPath, "../BMS"));
-            var fileList = RecursiveSearchFiles(dirInfo, "*.bms", "*.bme", "*.bml", "*.pms");
-            SongInfo songInfo;
-            string bmsContent;
-            int i = 0, l = fileList.Count;
-            foreach(var file in fileList) {
-                if(cachedSongInfoPaths.Contains(file.FullName)) continue;
-                if(!file.Exists) continue;
-                bmsContent = string.Empty;
-                using(var fs = file.OpenRead())
-                using(var fsRead = new StreamReader(fs, CurrentEncoding))
-                    bmsContent = fsRead.ReadToEnd();
-                bmsManager.LoadBMS(bmsContent, file.Directory.FullName, true);
-                songInfo = new SongInfo {
-                    index = GetNextIndex(),
-                    filePath = HelperFunctions.MakeRelative(dataPath, file.FullName),
-                    name = bmsManager.Title,
-                    artist = bmsManager.Artist,
-                    subArtist = bmsManager.SubArtist,
-                    genre = bmsManager.Genre,
-                    bpm = bmsManager.BPM,
-                    level = bmsManager.PlayLevel,
-                    comments = bmsManager.Comments,
-                    background = bmsManager.StageFile,
-                    backgroundPath = bmsManager.StageFilePath
-                };
-                cachedSongInfo.Add(songInfo);
-                cachedSongInfoPaths.Add(file.FullName);
-                if(onAddSongInfo != null)
-                    onAddSongInfo.Invoke(songInfo);
-                loadedPercentage = ++i / (float)l;
+            entries.Clear();
+            var supportedFileTypes = SupportedFileTypes;
+            if(!string.Equals(currentDirectory.FullName, rootDiectory.FullName, StringComparison.Ordinal))
+                entries.Add(new Entry {
+                    isDirectory = true,
+                    isParentDirectory = true,
+                    dirInfo = currentDirectory.Parent
+                });
+            foreach(var dirInfo in currentDirectory.GetDirectories())
+                if(supportedFileTypes.Any(filter => dirInfo.GetFiles(filter).Any()) ||
+                    dirInfo.GetDirectories().Any())
+                    entries.Add(new Entry {
+                        isDirectory = true,
+                        dirInfo = dirInfo
+                    });
+            foreach(var fileInfo in supportedFileTypes.SelectMany(filter => currentDirectory.GetFiles(filter))) {
+                Entry current;
+                if(!cachedEntries.TryGetValue(fileInfo.FullName, out current)) {
+                    current = new Entry {
+                        isDirectory = false,
+                        songInfo = LoadBMS(fileInfo)
+                    };
+                    if(string.IsNullOrEmpty(current.songInfo.name))
+                        current.songInfo.name = fileInfo.Name;
+                    cachedEntries.Add(fileInfo.FullName, current);
+                }
+                entries.Add(current);
             }
-            endOfCache = true;
+            SortInThread();
+            ready = true;
+            ThreadHelper.RunInUnityThread(UpdateList);
         } catch(ThreadAbortException) {
         } catch(Exception ex) {
             Debug.LogException(ex);
         }
     }
 
+    public static void Sort() {
+        AboartReadDirectory();
+        readDirectoryThread = new Thread(SortInThread) {
+            IsBackground = true
+        };
+        readDirectoryThread.Start();
+    }
+
+    static void SortInThread() {
+        bool _ready = ready;
+        ready = false;
+        entries.Sort(SongInfoComparer.GetComparer(savedSortMode));
+        if(_ready) {
+            ready = true;
+            ThreadHelper.RunInUnityThread(InvokeListUpdated);
+        }
+    }
+
+    static void UpdateList() {
+        loadResourceCoroutine = SmartCoroutineLoadBalancer.StartCoroutine(bmsManager, LoadResource());
+        InvokeListUpdated();
+        SelectedSong = null;
+    }
+
+    static void InvokeListUpdated() {
+        if(OnListUpdated != null)
+            OnListUpdated.Invoke();
+    }
+
+    static IEnumerator LoadResource() {
+        for(int i = 0; i < entries.Count; i++) {
+            Entry entry = entries[i];
+
+            if(entry.isDirectory) {
+                yield return null;
+                continue;
+            }
+
+            if((entry.songInfo.background || string.IsNullOrEmpty(entry.songInfo.backgroundPath)) &&
+                (entry.songInfo.banner || string.IsNullOrEmpty(entry.songInfo.bannerPath))) {
+                yield return null;
+                continue;
+            }
+
+            FileInfo fileInfo = new FileInfo(GetAbsolutePath(entry.songInfo.filePath));
+            var resourceLoader = new ResourceLoader(fileInfo.Directory.FullName);
+
+            if(!entry.songInfo.background && !string.IsNullOrEmpty(entry.songInfo.backgroundPath)) {
+                Debug.Log(entry.songInfo.backgroundPath);
+                var backgroundObj = new ResourceObject(-1, ResourceType.bmp, entry.songInfo.backgroundPath);
+                yield return SmartCoroutineLoadBalancer.StartCoroutine(bmsManager, resourceLoader.LoadResource(backgroundObj));
+                entry.songInfo.background = backgroundObj.texture;
+            }
+
+            if(!entry.songInfo.banner && !string.IsNullOrEmpty(entry.songInfo.bannerPath)) {
+                Debug.Log(entry.songInfo.bannerPath);
+                var bannerObj = new ResourceObject(-2, ResourceType.bmp, entry.songInfo.bannerPath);
+                yield return SmartCoroutineLoadBalancer.StartCoroutine(bmsManager, resourceLoader.LoadResource(bannerObj));
+                entry.songInfo.banner = bannerObj.texture;
+            }
+
+            entries[i] = entry;
+            cachedEntries[fileInfo.FullName] = entry;
+
+            if(selectedEntry.HasValue &&
+                string.Equals(entry.songInfo.filePath, selectedEntry.Value.filePath, StringComparison.Ordinal)) {
+                selectedEntry = entry.songInfo;
+                if(OnSelectionChanged != null)
+                    OnSelectionChanged.Invoke(selectedEntry);
+            }
+
+            InvokeListUpdated();
+            yield return null;
+        }
+        loadResourceCoroutine = null;
+        yield break;
+    }
+
+    public struct Entry {
+        public bool isDirectory, isParentDirectory;
+        public SongInfo songInfo;
+        public DirectoryInfo dirInfo;
+    }
 }
 
 public static class SongInfoComparer {
-    public static int CompareByName(SongInfo lhs, SongInfo rhs) {
-        return string.Compare(lhs.name, rhs.name, StringComparison.InvariantCultureIgnoreCase);
+    public static int CompareByName(Entry lhs, Entry rhs) {
+        return FinalCompare(ref lhs, ref rhs, string.Compare(lhs.songInfo.name, rhs.songInfo.name, StringComparison.InvariantCultureIgnoreCase));
     }
 
-    public static int CompareByNameInverse(SongInfo lhs, SongInfo rhs) {
-        return string.Compare(rhs.name, lhs.name, StringComparison.InvariantCultureIgnoreCase);
+    public static int CompareByNameInverse(Entry lhs, Entry rhs) {
+        return FinalCompare(ref rhs, ref lhs, string.Compare(rhs.songInfo.name, lhs.songInfo.name, StringComparison.InvariantCultureIgnoreCase));
     }
 
-    public static int CompareByArtist(SongInfo lhs, SongInfo rhs) {
-        return string.Compare(lhs.artist, rhs.artist, StringComparison.InvariantCultureIgnoreCase);
+    public static int CompareByArtist(Entry lhs, Entry rhs) {
+        return FinalCompare(ref lhs, ref rhs, string.Compare(lhs.songInfo.artist, rhs.songInfo.artist, StringComparison.InvariantCultureIgnoreCase));
     }
 
-    public static int CompareByArtistInverse(SongInfo lhs, SongInfo rhs) {
-        return string.Compare(rhs.artist, lhs.artist, StringComparison.InvariantCultureIgnoreCase);
+    public static int CompareByArtistInverse(Entry lhs, Entry rhs) {
+        return FinalCompare(ref lhs, ref rhs, string.Compare(rhs.songInfo.artist, lhs.songInfo.artist, StringComparison.InvariantCultureIgnoreCase));
     }
 
-    public static int CompareByGenre(SongInfo lhs, SongInfo rhs) {
-        return string.Compare(lhs.genre, rhs.genre, StringComparison.InvariantCultureIgnoreCase);
+    public static int CompareByGenre(Entry lhs, Entry rhs) {
+        return FinalCompare(ref lhs, ref rhs, string.Compare(lhs.songInfo.genre, rhs.songInfo.genre, StringComparison.InvariantCultureIgnoreCase));
     }
 
-    public static int CompareByGenreInverse(SongInfo lhs, SongInfo rhs) {
-        return string.Compare(rhs.genre, lhs.genre, StringComparison.InvariantCultureIgnoreCase);
+    public static int CompareByGenreInverse(Entry lhs, Entry rhs) {
+        return FinalCompare(ref lhs, ref rhs, string.Compare(rhs.songInfo.genre, lhs.songInfo.genre, StringComparison.InvariantCultureIgnoreCase));
     }
 
-    public static int CompareByBPM(SongInfo lhs, SongInfo rhs) {
-        return lhs.bpm.CompareTo(rhs.bpm);
+    public static int CompareByBPM(Entry lhs, Entry rhs) {
+        return FinalCompare(ref lhs, ref rhs, lhs.songInfo.bpm.CompareTo(rhs.songInfo.bpm));
     }
 
-    public static int CompareByBPMInverse(SongInfo lhs, SongInfo rhs) {
-        return rhs.bpm.CompareTo(lhs.bpm);
+    public static int CompareByBPMInverse(Entry lhs, Entry rhs) {
+        return FinalCompare(ref lhs, ref rhs, rhs.songInfo.bpm.CompareTo(lhs.songInfo.bpm));
     }
 
-    public static int CompareByLevel(SongInfo lhs, SongInfo rhs) {
-        return lhs.level.CompareTo(rhs.level);
+    public static int CompareByLevel(Entry lhs, Entry rhs) {
+        return FinalCompare(ref lhs, ref rhs, lhs.songInfo.level.CompareTo(rhs.songInfo.level));
     }
 
-    public static int CompareByLevelInverse(SongInfo lhs, SongInfo rhs) {
-        return rhs.level.CompareTo(lhs.level);
+    public static int CompareByLevelInverse(Entry lhs, Entry rhs) {
+        return FinalCompare(ref lhs, ref rhs, rhs.songInfo.level.CompareTo(lhs.songInfo.level));
+    }
+
+    static int FinalCompare(ref Entry lhs, ref Entry rhs, int val) {
+        if(val != 0) return val;
+        if(lhs.isDirectory && !rhs.isDirectory) return -1;
+        if(!lhs.isDirectory && rhs.isDirectory) return 1;
+        string lhsDisplay = lhs.isDirectory ? lhs.dirInfo.Name : lhs.songInfo.name;
+        string rhsDisplay = rhs.isDirectory ? rhs.dirInfo.Name : rhs.songInfo.name;
+        return string.Compare(lhsDisplay, rhsDisplay, StringComparison.InvariantCultureIgnoreCase);
+    }
+
+    public static Comparison<Entry> GetComparer(SortMode sortMode) {
+        switch(sortMode) {
+            case SortMode.Name: return CompareByName;
+            case SortMode.NameInverse: return CompareByNameInverse;
+            case SortMode.Artist: return CompareByArtist;
+            case SortMode.ArtistInverse: return CompareByArtistInverse;
+            case SortMode.Genre: return CompareByGenre;
+            case SortMode.GenreInverse: return CompareByGenreInverse;
+            case SortMode.BPM: return CompareByBPM;
+            case SortMode.BPMInverse: return CompareByBPMInverse;
+            case SortMode.Level: return CompareByLevel;
+            case SortMode.LevelInverse: return CompareByLevelInverse;
+            default: return null;
+        }
     }
 
     public enum SortMode {

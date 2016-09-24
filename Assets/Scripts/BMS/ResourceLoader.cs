@@ -41,6 +41,8 @@ namespace BMS {
             var finfo = new FileInfo(Path.Combine(basePath, resource.path));
             if(finfo.Exists)
                 return finfo;
+            if(!finfo.Directory.Exists)
+                return null;
             string path = finfo.Name;
             string extension = finfo.Extension;
             if(extension.Equals(checkType, StringComparison.OrdinalIgnoreCase)) {
