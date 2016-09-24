@@ -50,7 +50,7 @@ public class SelectSongEntry: MonoBehaviour {
 
     void UpdateDisplay() {
         if(isDirectory) {
-            songName.text = (isParentDirectory ? "<< " : "") + dirInfo.Name;
+            songName.text = isParentDirectory ? string.Concat(dirInfo.Parent.Name, " << ", dirInfo.Name) : dirInfo.Name;
             artist.text = string.Empty;
             otherInfo.text = string.Empty;
             banner.gameObject.SetActive(false);
@@ -58,7 +58,7 @@ public class SelectSongEntry: MonoBehaviour {
             songName.text = songInfo.name;
             artist.text = string.IsNullOrEmpty(songInfo.subArtist) ?
                 songInfo.artist :
-                string.Concat(songInfo.artist, " / " , songInfo.subArtist);
+                string.Concat(songInfo.artist, " / ", songInfo.subArtist);
             otherInfo.text = string.Format("Lv{0} {1}BPM", songInfo.level, songInfo.bpm);
             banner.SetTexture(songInfo.banner);
             banner.gameObject.SetActive(songInfo.banner);
@@ -67,7 +67,7 @@ public class SelectSongEntry: MonoBehaviour {
 
     void OnSelect() {
         if(isDirectory)
-            SongInfoLoader.CurrentDirectory = dirInfo;
+            SongInfoLoader.CurrentDirectory = isParentDirectory ? dirInfo.Parent : dirInfo;
         else
             SongInfoLoader.SelectedSong = songInfo;
     }

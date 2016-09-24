@@ -5870,12 +5870,7 @@ Prefab:
     - target: {fileID: 224000010420470224, guid: c9231e02c0eb7854d9ccdf534b1bcd4b,
         type: 2}
       propertyPath: m_SizeDelta.y
-      value: -4.26667
-      objectReference: {fileID: 0}
-    - target: {fileID: 224000010420470224, guid: c9231e02c0eb7854d9ccdf534b1bcd4b,
-        type: 2}
-      propertyPath: m_SizeDelta.x
-      value: 0
+      value: -6.9333344
       objectReference: {fileID: 0}
     - target: {fileID: 1000011334622354, guid: c9231e02c0eb7854d9ccdf534b1bcd4b, type: 2}
       propertyPath: m_IsActive
@@ -6142,8 +6137,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   child: {fileID: 1398207940}
-  restrictWidth: 1
-  restrictHeight: 1
+  restrictWidth: 0
+  restrictHeight: 2
 --- !u!114 &938105982
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13893,7 +13888,7 @@ RectTransform:
   m_RootOrder: 0
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 35.204605}
+  m_AnchoredPosition: {x: 0, y: 35.2046}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &2029048573

@@ -27,6 +27,7 @@ public struct SongInfo:IEquatable<SongInfo>, IComparable<SongInfo> {
     public string backgroundPath;
     public Texture banner;
     public string bannerPath;
+    public string bmsHash;
 
     public override bool Equals(object obj) {
         if(obj == null || !(obj is SongInfo))
@@ -192,7 +193,8 @@ public static class SongInfoLoader {
             level = bmsManager.PlayLevel,
             comments = bmsManager.Comments,
             backgroundPath = bmsManager.StageFilePath,
-            bannerPath = bmsManager.BannerFilePath
+            bannerPath = bmsManager.BannerFilePath,
+            bmsHash = bmsManager.GetHash(CurrentEncoding, RecordsManager.Instance.HashAlgorithm)
         };
     }
 
@@ -224,7 +226,7 @@ public static class SongInfoLoader {
                 entries.Add(new Entry {
                     isDirectory = true,
                     isParentDirectory = true,
-                    dirInfo = currentDirectory.Parent
+                    dirInfo = currentDirectory
                 });
             foreach(var dirInfo in currentDirectory.GetDirectories())
                 if(supportedFileTypes.Any(filter => dirInfo.GetFiles(filter).Any()) ||
@@ -303,14 +305,12 @@ public static class SongInfoLoader {
             var resourceLoader = new ResourceLoader(fileInfo.Directory.FullName);
 
             if(!entry.songInfo.background && !string.IsNullOrEmpty(entry.songInfo.backgroundPath)) {
-                Debug.Log(entry.songInfo.backgroundPath);
                 var backgroundObj = new ResourceObject(-1, ResourceType.bmp, entry.songInfo.backgroundPath);
                 yield return SmartCoroutineLoadBalancer.StartCoroutine(bmsManager, resourceLoader.LoadResource(backgroundObj));
                 entry.songInfo.background = backgroundObj.texture;
             }
 
             if(!entry.songInfo.banner && !string.IsNullOrEmpty(entry.songInfo.bannerPath)) {
-                Debug.Log(entry.songInfo.bannerPath);
                 var bannerObj = new ResourceObject(-2, ResourceType.bmp, entry.songInfo.bannerPath);
                 yield return SmartCoroutineLoadBalancer.StartCoroutine(bmsManager, resourceLoader.LoadResource(bannerObj));
                 entry.songInfo.banner = bannerObj.texture;
