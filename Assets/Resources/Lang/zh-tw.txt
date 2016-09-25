@@ -19,7 +19,7 @@ Makinas-Scrap-5
 {0}\n{1}
 暫停
 結果
-成續: {0:0000000}\n最大連擊數: {1}\n<color=#FFFF00FF>Bravo!</color> x{2}\n<color=#00FF00FF>OK</color> x{3}\n<color=#00FFFFFF>NotBad</color> x{4}\n<color=#8800FFFF>NG</color> x{5}\n  水晶等級: <size=28>{6}</size>
+成績: {0:0000000}\n最大連擊數: {1}\n<color=#FFFF00FF>Bravo!</color> x{2}\n<color=#00FF00FF>OK</color> x{3}\n<color=#00FFFFFF>NotBad</color> x{4}\n<color=#8800FFFF>NG</color> x{5}\n  水晶等級: <size=28>{6}</size>
 重來
 返回
 重來
@@ -37,3 +37,4 @@ Makinas-Scrap-5
 BananaBeats 原創模式\nBMS 經典模式
 上色模式
 無上色\n相同時間\n相同位置
+最佳成績\n最高分數: {0} <size=28>{4}</size>\n最大連擊: {1}\n遊玩次數: {2}\n上次遊玩時間: {3}

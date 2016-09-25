@@ -356,6 +356,96 @@ CanvasRenderer:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 20607100}
+--- !u!1 &26683214
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 4
+  m_Component:
+  - 224: {fileID: 26683215}
+  - 222: {fileID: 26683218}
+  - 114: {fileID: 26683217}
+  - 114: {fileID: 26683216}
+  m_Layer: 5
+  m_Name: Player Best Text
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &26683215
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 26683214}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 1329491291}
+  m_RootOrder: 3
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 1}
+--- !u!114 &26683216
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 26683214}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15e29ecfd1716c946b7a32884e7cdf07, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_EffectColor: {r: 1, g: 1, b: 1, a: 1}
+  m_EffectDistance: {x: 1, y: 1}
+  m_UseGraphicAlpha: 1
+  iteration: 2
+--- !u!114 &26683217
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 26683214}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 708705254, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
+  m_RaycastTarget: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
+      Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+  m_FontData:
+    m_Font: {fileID: 12800000, guid: c45752faec1ec1844a42f039f3ca39a1, type: 3}
+    m_FontSize: 14
+    m_FontStyle: 0
+    m_BestFit: 0
+    m_MinSize: 10
+    m_MaxSize: 40
+    m_Alignment: 0
+    m_AlignByGeometry: 0
+    m_RichText: 1
+    m_HorizontalOverflow: 0
+    m_VerticalOverflow: 0
+    m_LineSpacing: 1
+  m_Text: Player Best
+--- !u!222 &26683218
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 26683214}
 --- !u!1 &26983959
 GameObject:
   m_ObjectHideFlags: 0
@@ -2011,7 +2101,7 @@ GameObject:
   - 114: {fileID: 338156894}
   - 114: {fileID: 338156896}
   m_Layer: 5
-  m_Name: Text
+  m_Name: Song Info Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2308,8 +2398,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1711238157}
   m_HandleRect: {fileID: 1711238156}
   m_Direction: 2
-  m_Value: 0
-  m_Size: 0.9191079
+  m_Value: 1
+  m_Size: 0.8417427
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -8282,6 +8372,7 @@ RectTransform:
   - {fileID: 1358293295}
   - {fileID: 1037613589}
   - {fileID: 338156893}
+  - {fileID: 26683215}
   m_Father: {fileID: 967536130}
   m_RootOrder: 0
   m_AnchorMin: {x: 0, y: 1}
@@ -9019,7 +9110,7 @@ MonoBehaviour:
     m_Top: 0
     m_Bottom: 0
   m_ChildAlignment: 1
-  m_Spacing: 0
+  m_Spacing: 5
   m_ChildForceExpandWidth: 1
   m_ChildForceExpandHeight: 0
 --- !u!114 &1398207942
@@ -9136,6 +9227,8 @@ MonoBehaviour:
   background: {fileID: 1136040966}
   banner: {fileID: 633839006}
   songDetails: {fileID: 338156894}
+  playerBest: {fileID: 26683217}
+  rankControl: {fileID: 11400000, guid: be2f9338fa35a0f428607f2d7da4b6ff, type: 2}
 --- !u!1 &1409954171
 GameObject:
   m_ObjectHideFlags: 0
@@ -12267,6 +12360,7 @@ MonoBehaviour:
   colorSet: {fileID: 11400000, guid: 5c77cef25971cd94ea90435d6a10c28c, type: 2}
   startGameButton: {fileID: 766616017}
   layoutOptionsHandler: {fileID: 938105982}
+  detailsDisplay: {fileID: 1403384249}
   bmsManager: {fileID: 0}
 --- !u!114 &1796728081
 MonoBehaviour:
@@ -13888,7 +13982,7 @@ RectTransform:
   m_RootOrder: 0
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 35.2046}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &2029048573

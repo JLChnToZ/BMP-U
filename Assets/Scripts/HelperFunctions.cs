@@ -176,4 +176,10 @@ public static class HelperFunctions {
         var result = string.Join(Path.DirectorySeparatorChar.ToString(), relativePath.ToArray());
         return result;
     }
+
+    readonly static DateTime Epoch0Time = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+    public static DateTime EpochToDateTime(long epoch) {
+        return (Epoch0Time + new TimeSpan(epoch * TimeSpan.TicksPerSecond)).ToLocalTime();
+    }
 }

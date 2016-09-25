@@ -25,6 +25,8 @@ public class SelectSongManager: MonoBehaviour {
 
     [SerializeField]
     NoteLayoutOptionsHandler layoutOptionsHandler;
+    [SerializeField]
+    SongInfoDetails detailsDisplay;
 
     public BMSManager bmsManager;
 
@@ -124,6 +126,7 @@ public class SelectSongManager: MonoBehaviour {
 
     public void HideOptions() {
         layoutOptionsHandler.Apply();
+        detailsDisplay.ReloadRecord();
         InternalHideOptions();
     }
 

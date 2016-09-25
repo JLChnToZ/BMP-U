@@ -23,12 +23,18 @@ class NoteLayoutOptionsHandler: MonoBehaviour {
 
     int selectedChannel = -1;
 
+    static int channelHash;
+
     public static IList<int> UpperDeck {
         get { return upperDeck.AsReadOnly(); }
     }
 
     public static IList<int> LowerDeck {
         get { return lowerDeck.AsReadOnly(); }
+    }
+
+    public static int ChannelHash {
+        get { return channelHash; }
     }
 
     public static Dictionary<int, KeyCode> KeyMapping {
@@ -147,6 +153,8 @@ class NoteLayoutOptionsHandler: MonoBehaviour {
         KeyCode k;
         foreach(var kv in currentMapping)
             kv.Value.OnKeyEdited(kv.Key, keyMapping.TryGetValue(kv.Key, out k) ? k : KeyCode.None);
+        
+        channelHash = RecordsManager.GetAdoptedChannelHash(upperDeck.Concat(lowerDeck).ToArray());
     }
 
     void OnMapKey(int index) {

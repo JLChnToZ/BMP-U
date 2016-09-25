@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
+using System.Collections.Generic;
 
 public class SongInfoDetails: MonoBehaviour {
 
@@ -10,14 +10,22 @@ public class SongInfoDetails: MonoBehaviour {
     RawImageFitter banner;
     [SerializeField]
     Text songDetails;
+    [SerializeField]
+    Text playerBest;
+    [SerializeField]
+    RankControl rankControl;
 
     GameObject bannerParent;
+    SongInfo songInfo;
 
     void Awake() {
         bannerParent = banner.transform.parent.gameObject;
-        OnUpdateInfo(SongInfoLoader.SelectedSong);
         SongInfoLoader.OnSelectionChanged += OnUpdateInfo;
         LanguageLoader.OnLanguageChange += OnChangeLang;
+    }
+
+    void Start() {
+        OnUpdateInfo(SongInfoLoader.SelectedSong);
     }
 
     void OnDestroy() {
@@ -31,7 +39,7 @@ public class SongInfoDetails: MonoBehaviour {
 
     void OnUpdateInfo(SongInfo? newInfo) {
         bool hasInfo = newInfo.HasValue;
-        SongInfo songInfo = newInfo.GetValueOrDefault();
+        songInfo = newInfo.GetValueOrDefault();
         if(!songInfo.banner && songInfo.background)
             songInfo.banner = songInfo.background;
         background.SetTexture(songInfo.background);
@@ -48,5 +56,41 @@ public class SongInfoDetails: MonoBehaviour {
             songInfo.bpm,
             songInfo.comments
         ) : string.Empty;
+        ReloadRecord();
+    }
+
+    public void ReloadRecord() {
+        if(Loader.judgeMode == 2) {
+            // Competition-Free mode will not bring out any result here
+            playerBest.text = string.Empty;
+            return;
+        }
+        RecordsManager.Record? record = GetCurrentrecord(songInfo.bmsHash);
+        var recordContent = record.GetValueOrDefault();
+        playerBest.text = record.HasValue ? string.Format(
+            LanguageLoader.GetText(39),
+            recordContent.score,
+            recordContent.combos,
+            recordContent.playCount,
+            recordContent.timeStamp,
+            GetFormattedRankString(rankControl, recordContent.score)
+        ) : string.Empty;
+    }
+
+    public static RecordsManager.Record? GetCurrentrecord(string bmsHash) {
+        if(string.IsNullOrEmpty(bmsHash))
+            return null;
+        return RecordsManager.Instance.GetRecord(bmsHash, NoteLayoutOptionsHandler.ChannelHash);
+    }
+
+    public static string GetFormattedRankString(RankControl rankControl, float score) {
+        string rankString;
+        Color rankColor;
+        rankControl.GetRank(score, out rankString, out rankColor);
+        return string.Format(
+            "<color=#{0}>{1}</color>",
+            ColorUtility.ToHtmlStringRGBA(rankColor),
+            rankString
+        );
     }
 }

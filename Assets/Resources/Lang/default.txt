@@ -37,3 +37,4 @@ Game Mode
 BananaBeats Original\nBMS Classic
 Coloring Mode
 No Coloring\nTiming\nChannel
+Player Best\nMax Score: {0} <size=28>{4}</size>\nMax Combos: {1}\nPlay Count: {2}\nLast Played: {3}

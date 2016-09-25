@@ -5,7 +5,8 @@ using System.IO;
 
 [RequireComponent(typeof(RectTransform))]
 public class SelectSongEntry: MonoBehaviour {
-
+    [SerializeField]
+    Text directory;
     [SerializeField]
     Text songName;
     [SerializeField]
@@ -16,6 +17,8 @@ public class SelectSongEntry: MonoBehaviour {
     Button selectButton;
     [SerializeField]
     RawImageFitter banner;
+    [SerializeField]
+    RankControl rankControl;
 
     SelectSongScrollView parent;
 
@@ -48,12 +51,14 @@ public class SelectSongEntry: MonoBehaviour {
         UpdateDisplay();
     }
 
-    void UpdateDisplay() {
+    public void UpdateDisplay() {
+        directory.enabled = isDirectory;
+        songName.enabled = !isDirectory;
+        artist.enabled = !isDirectory;
+        otherInfo.enabled = !isDirectory;
+        banner.gameObject.SetActive(!isDirectory);
         if(isDirectory) {
-            songName.text = isParentDirectory ? string.Concat(dirInfo.Parent.Name, " << ", dirInfo.Name) : dirInfo.Name;
-            artist.text = string.Empty;
-            otherInfo.text = string.Empty;
-            banner.gameObject.SetActive(false);
+            directory.text = isParentDirectory ? string.Concat(dirInfo.Parent.Name, " << ", dirInfo.Name) : dirInfo.Name;
         } else {
             songName.text = songInfo.name;
             artist.text = string.IsNullOrEmpty(songInfo.subArtist) ?
@@ -62,6 +67,11 @@ public class SelectSongEntry: MonoBehaviour {
             otherInfo.text = string.Format("Lv{0} {1}BPM", songInfo.level, songInfo.bpm);
             banner.SetTexture(songInfo.banner);
             banner.gameObject.SetActive(songInfo.banner);
+
+            var record = SongInfoDetails.GetCurrentrecord(songInfo.bmsHash);
+            if(record.HasValue)
+                otherInfo.text += string.Format(" <size=28>{0}</size>",
+                    SongInfoDetails.GetFormattedRankString(rankControl, record.Value.score));
         }
     }
 

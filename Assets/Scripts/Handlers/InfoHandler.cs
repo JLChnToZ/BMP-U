@@ -108,10 +108,11 @@ public class InfoHandler : MonoBehaviour {
             var recordsManager = RecordsManager.Instance;
             if(Loader.judgeMode == 2) {
                 var hash = bmsManager.GetHash(SongInfoLoader.CurrentEncoding, recordsManager.HashAlgorithm);
-                var records = recordsManager.GetRecords(hash);
+                int channelHash = RecordsManager.GetAdoptedChannelHash(bmsManager.GetAllAdoptedChannels());
+                var records = recordsManager.GetRecord(hash, channelHash);
                 bool pass = bmsManager.Score >= bmsManager.MaxScore / 2;
-                if(pass && records != null && records.Length > 0)
-                    pass = bmsManager.Score >= records[0].score;
+                if(pass && records != null)
+                    pass = bmsManager.Score >= records.Value.score;
                 resultText.text = LanguageLoader.GetText(pass ? 33 : 34);
             }
             if(!Loader.autoMode) {
