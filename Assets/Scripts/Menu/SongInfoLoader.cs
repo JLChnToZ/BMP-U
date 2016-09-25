@@ -95,6 +95,7 @@ public static class SongInfoLoader {
 
     static SongInfoComparer.SortMode savedSortMode;
 
+    public static event Action OnStartLoading;
     public static event Action OnListUpdated;
     public static event Action<SongInfo?> OnSelectionChanged;
 
@@ -200,6 +201,9 @@ public static class SongInfoLoader {
 
     public static void ReloadDirectory() {
         AboartReadDirectory();
+        ready = false;
+        if(OnStartLoading != null)
+            OnStartLoading.Invoke();
         ThreadHelper.InitThreadHandler();
         readDirectoryThread = new Thread(ReadDirectoryThread) {
             IsBackground = true

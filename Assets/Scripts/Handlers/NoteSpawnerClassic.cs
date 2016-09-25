@@ -22,6 +22,7 @@ public class NoteSpawnerClassic: NoteSpawner {
                 break;
             case 1:
                 handledChannels = NoteLayoutOptionsHandler.UpperDeck.ToArray();
+                Array.Reverse(handledChannels); // It's left-side right
                 break;
         }
         originalClampRangeStart = clampRangeStart;

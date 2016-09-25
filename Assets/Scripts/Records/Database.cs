@@ -70,6 +70,7 @@ public class Database: IDisposable {
     }
 
     private static void AppendParameters(SqliteParameterCollection collection, object[] parameters) {
+        if(parameters == null || parameters.Length < 1) return;
         foreach(var parameter in parameters) {
             SqliteParameter sqliteParam = parameter as SqliteParameter;
             if(sqliteParam != null) {
@@ -104,5 +105,50 @@ public class Database: IDisposable {
     public void Dispose() {
         connection.Close();
         connection.Dispose();
+    }
+}
+
+public static class DataRecord {
+    public static bool GetValueAsBoolean(this IDataRecord dataRecord, int index) {
+        return Convert.ToBoolean(dataRecord.GetValue(index));
+    }
+    public static byte GetValueAsByte(this IDataRecord dataRecord, int index) {
+        return Convert.ToByte(dataRecord.GetValue(index));
+    }
+    public static sbyte GetValueAsSByte(this IDataRecord dataRecord, int index) {
+        return Convert.ToSByte(dataRecord.GetValue(index));
+    }
+    public static ushort GetValueAsUInt16(this IDataRecord dataRecord, int index) {
+        return Convert.ToUInt16(dataRecord.GetValue(index));
+    }
+    public static short GetValueAsInt16(this IDataRecord dataRecord, int index) {
+        return Convert.ToInt16(dataRecord.GetValue(index));
+    }
+    public static uint GetValueAsUInt32(this IDataRecord dataRecord, int index) {
+        return Convert.ToUInt32(dataRecord.GetValue(index));
+    }
+    public static int GetValueAsInt32(this IDataRecord dataRecord, int index) {
+        return Convert.ToInt32(dataRecord.GetValue(index));
+    }
+    public static ulong GetValueAsUInt64(this IDataRecord dataRecord, int index) {
+        return Convert.ToUInt64(dataRecord.GetValue(index));
+    }
+    public static long GetValueAsInt64(this IDataRecord dataRecord, int index) {
+        return Convert.ToInt64(dataRecord.GetValue(index));
+    }
+    public static float GetValueAsSingle(this IDataRecord dataRecord, int index) {
+        return Convert.ToSingle(dataRecord.GetValue(index));
+    }
+    public static double GetValueAsDouble(this IDataRecord dataRecord, int index) {
+        return Convert.ToDouble(dataRecord.GetValue(index));
+    }
+    public static char GetValueAsChar(this IDataRecord dataRecord, int index) {
+        return Convert.ToChar(dataRecord.GetValue(index));
+    }
+    public static DateTime GetValueAsDateTime(this IDataRecord dataRecord, int index) {
+        return Convert.ToDateTime(dataRecord.GetValue(index));
+    }
+    public static string GetValueAsString(this IDataRecord dataRecord, int index) {
+        return Convert.ToString(dataRecord.GetValue(index));
     }
 }

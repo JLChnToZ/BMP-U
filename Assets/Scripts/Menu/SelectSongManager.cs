@@ -28,6 +28,8 @@ public class SelectSongManager: MonoBehaviour {
     [SerializeField]
     NoteLayoutOptionsHandler layoutOptionsHandler;
     [SerializeField]
+    PresetHandler layoutPresetsHandler;
+    [SerializeField]
     SongInfoDetails detailsDisplay;
 
     public BMSManager bmsManager;
@@ -60,7 +62,10 @@ public class SelectSongManager: MonoBehaviour {
         optionsBackButton.onClick.AddListener(HideOptions);
 
         currentInfo = SongInfoLoader.SelectedSong;
+        SongInfoLoader.OnStartLoading += OnLoadingChanged;
+        SongInfoLoader.OnListUpdated += OnLoadingChanged;
         SongInfoLoader.OnSelectionChanged += SelectionChanged;
+        OnLoadingChanged();
     }
 
     void Start() {
@@ -70,7 +75,13 @@ public class SelectSongManager: MonoBehaviour {
     }
 
     void OnDestroy() {
+        SongInfoLoader.OnStartLoading -= OnLoadingChanged;
+        SongInfoLoader.OnListUpdated -= OnLoadingChanged;
         SongInfoLoader.OnSelectionChanged -= SelectionChanged;
+    }
+
+    void OnLoadingChanged() {
+        loadingDisplay.gameObject.SetActive(!SongInfoLoader.IsReady);
     }
 
     void SelectionChanged(SongInfo? newInfo) {
@@ -140,6 +151,7 @@ public class SelectSongManager: MonoBehaviour {
 
     public void HideOptions() {
         layoutOptionsHandler.Apply();
+        layoutPresetsHandler.Save();
         detailsDisplay.ReloadRecord();
         InternalHideOptions();
     }

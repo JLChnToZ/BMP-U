@@ -154,11 +154,11 @@ public class RecordsManager {
         foreach(var result in database.QuerySql(commandText, bmsHash, playerName, channelConfig)) {
             return new Record(
                 result.GetString(0),
-                Convert.ToInt32(result.GetValue(1)),
-                Convert.ToInt32(result.GetValue(2)),
-                Convert.ToInt32(result.GetValue(3)),
-                HelperFunctions.EpochToDateTime(Convert.ToInt64(result.GetValue(4))),
-                Convert.ToInt32(result.GetValue(5))
+                result.GetValueAsInt32(1),
+                result.GetValueAsInt32(2),
+                result.GetValueAsInt32(3),
+                HelperFunctions.EpochToDateTime(result.GetValueAsInt64(4)),
+                result.GetValueAsInt32(5)
             );
         }
         return null;
