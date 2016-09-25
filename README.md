@@ -54,9 +54,10 @@ Except the components mentioned above, the whole application (or game) in open-s
 
 ## Snapshots
 
-![Snapshot](http://i.imgur.com/ioU37sD.png)
-![Snapshot](http://i.imgur.com/zM43rWa.png)
-![Snapshot](http://i.imgur.com/tDvIFNg.png)
+![Snapshot](http://i.imgur.com/mhzURV2.png)
+![Snapshot](http://i.imgur.com/okMG4iN.png)
+![Snapshot](http://i.imgur.com/tKnLB1l.png)
+![Snapshot](http://i.imgur.com/opabqaF.png)
 ![Snapshot](http://i.imgur.com/TSvI0Y3.png)
 
 ## References
