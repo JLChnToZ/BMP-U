@@ -2531,8 +2531,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1711238157}
   m_HandleRect: {fileID: 1711238156}
   m_Direction: 2
-  m_Value: 1
-  m_Size: 0.7464759
+  m_Value: 0
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -11072,7 +11072,7 @@ RectTransform:
   m_RootOrder: 0
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 300}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!1 &1606190545
@@ -12876,6 +12876,7 @@ MonoBehaviour:
   colorSet: {fileID: 11400000, guid: 5c77cef25971cd94ea90435d6a10c28c, type: 2}
   startGameButton: {fileID: 766616017}
   layoutOptionsHandler: {fileID: 938105982}
+  layoutPresetsHandler: {fileID: 938105983}
   detailsDisplay: {fileID: 1403384249}
   bmsManager: {fileID: 0}
 --- !u!114 &1796728081
