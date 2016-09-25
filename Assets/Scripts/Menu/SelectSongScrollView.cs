@@ -69,4 +69,10 @@ public class SelectSongScrollView: MonoBehaviour {
         content.sizeDelta = new Vector2(content.sizeDelta.x, sizePerEntry.y * entries.Count);
         OnScroll(scroller.normalizedPosition);
     }
+
+    public void RefreshDisplay() {
+        foreach(var entry in entryDisplay)
+            if(entry.gameObject.activeSelf)
+                entry.UpdateDisplay();
+    }
 }

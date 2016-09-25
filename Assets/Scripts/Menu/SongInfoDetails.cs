@@ -84,6 +84,8 @@ public class SongInfoDetails: MonoBehaviour {
     }
 
     public static string GetFormattedRankString(RankControl rankControl, float score) {
+        if(Loader.judgeMode == 2)
+            return LanguageLoader.GetText(score > 500000 ? 33 : 34);
         string rankString;
         Color rankColor;
         rankControl.GetRank(score, out rankString, out rankColor);

@@ -67,7 +67,7 @@ public class SelectSongEntry: MonoBehaviour {
             otherInfo.text = string.Format("Lv{0} {1}BPM", songInfo.level, songInfo.bpm);
             banner.SetTexture(songInfo.banner);
             banner.gameObject.SetActive(songInfo.banner);
-
+            
             var record = SongInfoDetails.GetCurrentrecord(songInfo.bmsHash);
             if(record.HasValue)
                 otherInfo.text += string.Format(" <size=28>{0}</size>",

@@ -115,9 +115,9 @@ public class RecordsManager {
 
         OpenDatabase();
         foreach(var record in database.QuerySql(queryCommandText, bmsHash, playerName, channelConfig)) {
-            playCount += record.GetInt32(0);
-            maxCombos = Math.Max(maxCombos, record.GetInt32(1));
-            maxScore = Math.Max(maxScore, record.GetInt32(2));
+            playCount += record.GetValueAsInt32(0);
+            maxCombos = Math.Max(maxCombos, record.GetValueAsInt32(1));
+            maxScore = Math.Max(maxScore, record.GetValueAsInt32(2));
         }
 
         if(playCount > 0) {

@@ -157,6 +157,7 @@ class NoteLayoutOptionsHandler: MonoBehaviour {
         AssignToDisplay();
         foreach(var chn in unusedChannels)
             currentMapping[chn].transform.SetParent(unusedList.Content, false);
+        CalculateChannelHash();
         initialized = true;
     }
 
@@ -175,7 +176,9 @@ class NoteLayoutOptionsHandler: MonoBehaviour {
         KeyCode k;
         foreach(var kv in currentMapping)
             kv.Value.OnKeyEdited(kv.Key, keyMapping.TryGetValue(kv.Key, out k) ? k : KeyCode.None);
-        
+    }
+
+    void CalculateChannelHash() {
         channelHash = RecordsManager.GetAdoptedChannelHash(upperDeck.Concat(lowerDeck).ToArray());
     }
 
@@ -203,6 +206,7 @@ class NoteLayoutOptionsHandler: MonoBehaviour {
         lowerDeck.Clear();
         foreach(var child in lowerDeckList.Content.Cast<Transform>())
             lowerDeck.Add(child.GetComponent<NoteLayoutOptionUIElement>().index);
+        CalculateChannelHash();
         return Save();
     }
 

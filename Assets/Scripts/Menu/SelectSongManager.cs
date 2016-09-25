@@ -28,7 +28,7 @@ public class SelectSongManager: MonoBehaviour {
     [SerializeField]
     NoteLayoutOptionsHandler layoutOptionsHandler;
     [SerializeField]
-    PresetHandler layoutPresetsHandler;
+    SelectSongScrollView selectSongScrollView;
     [SerializeField]
     SongInfoDetails detailsDisplay;
 
@@ -138,6 +138,7 @@ public class SelectSongManager: MonoBehaviour {
     public void StartGame() {
         if(string.IsNullOrEmpty(Loader.songPath))
             return;
+        HideOptions();
         switch(Loader.gameMode) {
             case 0: SceneManager.LoadScene("GameScene"); break;
             case 1: SceneManager.LoadScene("ClassicGameScene"); break;
@@ -151,9 +152,9 @@ public class SelectSongManager: MonoBehaviour {
 
     public void HideOptions() {
         layoutOptionsHandler.Apply();
-        layoutPresetsHandler.Save();
-        detailsDisplay.ReloadRecord();
         InternalHideOptions();
+        selectSongScrollView.RefreshDisplay();
+        detailsDisplay.ReloadRecord();
     }
 
     void InternalHideOptions() {
