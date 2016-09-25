@@ -17,7 +17,7 @@ class NoteLayoutOptionsHandler: MonoBehaviour {
     static readonly List<string> keyCodeNames = new List<string>(Enum.GetNames(typeof(KeyCode)));
     static readonly KeyCode[] keyCodeValues = Enum.GetValues(typeof(KeyCode)) as KeyCode[];
     static readonly List<int> upperDeck = new List<int>(), lowerDeck = new List<int>();
-    static bool initialized;
+    static bool initialized, isMapping;
     readonly Dictionary<int, NoteLayoutOptionUIElement> currentMapping = new Dictionary<int, NoteLayoutOptionUIElement>();
     static readonly Dictionary<int, KeyCode> keyMapping = new Dictionary<int, KeyCode>();
 
@@ -54,6 +54,8 @@ class NoteLayoutOptionsHandler: MonoBehaviour {
     Text keyMappingDescDisplay;
     [SerializeField]
     Dropdown keyMappingDropdown;
+    [SerializeField]
+    Button keyMapCloseButton;
 
     public static void Reset(bool forced) {
         if(initialized && !forced) return;
@@ -81,6 +83,13 @@ class NoteLayoutOptionsHandler: MonoBehaviour {
         selectedChannel = channel;
         keyMappingDescDisplay.text = string.Format(LanguageLoader.GetText(14), channel);
         keyMapMenu.gameObject.SetActive(true);
+        isMapping = true;
+    }
+
+    public void HideKeyMapMenu() {
+        selectedChannel = -1;
+        keyMapMenu.gameObject.SetActive(false);
+        isMapping = false;
     }
 
     void Awake() {
@@ -99,6 +108,19 @@ class NoteLayoutOptionsHandler: MonoBehaviour {
         var keyCodeList = new List<string>(Enum.GetNames(typeof(KeyCode)));
         keyMappingDropdown.AddOptions(keyCodeList);
         keyMappingDropdown.onValueChanged.AddListener(OnMapKey);
+        keyMapCloseButton.onClick.AddListener(HideKeyMapMenu);
+    }
+
+    void OnGUI() {
+        if(!isMapping) return;
+        Event e = Event.current;
+        if(e.isKey && e.keyCode != KeyCode.None) {
+            int keyCodeIndex = Array.IndexOf(keyCodeValues, e.keyCode);
+            if(keyCodeIndex <= 0) return;
+            keyMappingDropdown.value = keyCodeIndex;
+            keyMapping[selectedChannel] = e.keyCode;
+            currentMapping[selectedChannel].OnKeyEdited(selectedChannel, e.keyCode);
+        }
     }
 
     public void Load(byte[] source) {
