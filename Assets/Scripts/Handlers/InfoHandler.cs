@@ -72,6 +72,8 @@ public class InfoHandler : MonoBehaviour {
             infoDisplay.text = string.Format(LanguageLoader.GetText(17), bmsManager.Title, bmsManager.Artist, bmsManager.PlayLevel);
             infoDisplay2.text = string.Format(LanguageLoader.GetText(18), bmsManager.SubArtist, bmsManager.Comments);
             if(startOnLoad) {
+                if(!bmsManager.BGAEnabled)
+                    bmsManager.placeHolderTexture = Texture2D.whiteTexture;
                 bmsManager.IsStarted = true;
                 startOnLoad = false;
                 gameStarted = true;
@@ -123,7 +125,7 @@ public class InfoHandler : MonoBehaviour {
             gameStarted = false;
             panel.gameObject.SetActive(false);
             pausePanel.gameObject.SetActive(false);
-            dummyBGA.SetActive(true);
+            dummyBGA.SetActive(bmsManager.BGAEnabled);
             bgTexture.enabled = false;
         }
         if(pauseChanged) {

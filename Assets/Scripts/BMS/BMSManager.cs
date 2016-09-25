@@ -149,6 +149,9 @@ namespace BMS {
         Color rankColor;
         bool rankSynced;
 
+        bool bgaEnabled = true;
+        bool detuneEnabled = true;
+
         public int Combos { get { return combos; } }
         public int MaxCombos { get { return maxCombos; } }
         public int MaxScore { get { return maxScore; } }
@@ -168,6 +171,16 @@ namespace BMS {
                 SyncRank();
                 return rankString;
             }
+        }
+
+        public bool BGAEnabled {
+            get { return bgaEnabled; }
+            set { bgaEnabled = value; }
+        }
+
+        public bool DetuneEnabled {
+            get { return detuneEnabled; }
+            set { detuneEnabled = value; }
         }
 
         void SyncRank() {
@@ -404,7 +417,7 @@ namespace BMS {
         }
 
         void ChangeBGA(int channel, int eventId) {
-            if(OnChangeBackground != null) {
+            if(bgaEnabled && OnChangeBackground != null) {
                 Texture bmp;
                 var bga = GetBGA(eventId);
                 BGAObject? _bga = null;
@@ -503,7 +516,7 @@ namespace BMS {
             rankSynced = false;
 
             if(hasSound && IsValidFlag(resultFlag))
-                PlayWAV(eventId, resultFlag > 0 ? Mathf.Clamp(1 + accuracy / 500, 0.5F, 1.5F) : 1);
+                PlayWAV(eventId, detuneEnabled && resultFlag > 0 ? Mathf.Clamp(1 + accuracy / 500, 0.5F, 1.5F) : 1);
 
             if(OnNoteClicked != null)
                 OnNoteClicked.Invoke(expectedTimePosition, timePosition, channel, eventId, resultFlag);

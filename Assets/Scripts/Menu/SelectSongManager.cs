@@ -16,6 +16,8 @@ public class SelectSongManager: MonoBehaviour {
     public Dropdown gameMode;
     public Dropdown colorMode;
     public Toggle autoModeToggle;
+    public Toggle detuneToggle;
+    public Toggle bgaToggle;
     public Dropdown judgeModeDropDown;
     public Slider speedSlider;
     public Dropdown sortMode;
@@ -43,6 +45,10 @@ public class SelectSongManager: MonoBehaviour {
         colorMode.onValueChanged.AddListener(ColorModeChange);
         autoModeToggle.isOn = Loader.autoMode;
         autoModeToggle.onValueChanged.AddListener(ToggleAuto);
+        detuneToggle.isOn = Loader.enableDetune;
+        detuneToggle.onValueChanged.AddListener(ToggleDetune);
+        bgaToggle.isOn = Loader.enableBGA;
+        bgaToggle.onValueChanged.AddListener(ToggleBGA);
         judgeModeDropDown.value = Loader.judgeMode;
         judgeModeDropDown.onValueChanged.AddListener(JudgeModeChange);
         speedSlider.value = Loader.speed;
@@ -89,6 +95,14 @@ public class SelectSongManager: MonoBehaviour {
 
     public void ToggleAuto(bool state) {
         Loader.autoMode = autoModeToggle.isOn;
+    }
+
+    public void ToggleBGA(bool state) {
+        Loader.enableBGA = bgaToggle.isOn;
+    }
+
+    public void ToggleDetune(bool state) {
+        Loader.enableDetune = detuneToggle.isOn;
     }
 
     public void JudgeModeChange(int index) {

@@ -4,20 +4,24 @@ using System;
 using System.IO;
 using System.Collections;
 using JLChnToZ.Toolset.Singleton;
+using BMS;
+using BMS.Visualization;
 
 public class Loader : SingletonBehaviour<Loader> {
     public static string songPath;
     public static bool autoMode = false;
+    public static bool enableBGA = true;
+    public static bool enableDetune = true;
     public static int gameMode = 0;
-    public static BMS.Visualization.ColoringMode colorMode = BMS.Visualization.ColoringMode.Timing;
+    public static ColoringMode colorMode = ColoringMode.Timing;
     public static int judgeMode = 0;
     public static float speed = 1;
 
     public int sceneIndex;
 
-    public BMS.BMSManager bmsManager;
-    public BMS.NoteDetector noteDetector;
-    public BMS.Visualization.NoteSpawner[] noteSpaawners;
+    public BMSManager bmsManager;
+    public NoteDetector noteDetector;
+    public NoteSpawner[] noteSpaawners;
 
     public void LoadScene(string sceneName) {
         SceneManager.LoadScene(sceneName);
@@ -39,13 +43,15 @@ public class Loader : SingletonBehaviour<Loader> {
         using(var fs = fileInfo.OpenRead())
         using(var fsRead = new StreamReader(fs, SongInfoLoader.CurrentEncoding))
             bmsContent = fsRead.ReadToEnd();
+        bmsManager.DetuneEnabled = enableDetune;
+        bmsManager.BGAEnabled = enableBGA;
         bmsManager.PreEventOffset = TimeSpan.FromSeconds(2 - speed);
         bmsManager.LoadBMS(bmsContent, fileInfo.Directory.FullName);
         while(!bmsManager.BMSLoaded) yield return null;
 
-        bmsManager.ReloadBMS(BMS.BMSReloadOperation.Body | BMS.BMSReloadOperation.ResourceHeader);
+        bmsManager.ReloadBMS(BMSReloadOperation.Body | BMSReloadOperation.ResourceHeader);
         while(!bmsManager.BMSLoaded) yield return null;
-        bmsManager.ReloadBMS(BMS.BMSReloadOperation.Resources);
+        bmsManager.ReloadBMS(BMSReloadOperation.Resources);
         while(bmsManager.IsLoadingResources) yield return null;
         bmsManager.InitializeNoteScore();
 
@@ -53,6 +59,8 @@ public class Loader : SingletonBehaviour<Loader> {
         foreach(var spawner in noteSpaawners)
             spawner.coloringMode = colorMode;
         bmsManager.TightMode = judgeMode == 1;
+        if(!enableBGA)
+            bmsManager.placeHolderTexture = Texture2D.whiteTexture;
         bmsManager.IsStarted = true;
     }
 }

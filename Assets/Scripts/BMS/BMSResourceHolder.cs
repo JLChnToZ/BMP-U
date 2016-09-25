@@ -53,12 +53,14 @@ namespace BMS {
 
         IEnumerator ReloadResourcesCoroutine(string path) {
             var resLoader = new ResourceLoader(path);
-            totalResources = wavObjects.Count + bmpObjects.Count;
+            totalResources = wavObjects.Count;
+            if(bgaEnabled) totalResources += bmpObjects.Count;
             loadedResources = 0;
             foreach(var wav in wavObjects.Values)
                 yield return resLoader.LoadResource(wav, () => loadedResources++);
-            foreach(var bmp in bmpObjects.Values)
-                yield return resLoader.LoadResource(bmp, () => loadedResources++);
+            if(bgaEnabled)
+                foreach(var bmp in bmpObjects.Values)
+                    yield return resLoader.LoadResource(bmp, () => loadedResources++);
             reloadResourceCoroutine = null;
             yield break;
         }
