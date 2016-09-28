@@ -45,8 +45,8 @@ public class CurvedNoteHandler: NoteHandler {
         targetPointInd.enabled = true;
         startNoteHandler.transform.localScale = Vector3.one;
         endNoteHander.transform.localScale = Vector3.one;
-        timeBetween = (float)bmsManager.PreEventOffset.TotalSeconds;
-        endTimeBetween = (float)noteDetector.EndTimeOffset.TotalSeconds;
+        // timeBetween = (float)bmsManager.PreEventOffset.Ticks / TimeSpan.TicksPerSecond;
+        endTimeBetween = (float)noteDetector.EndTimeOffset.Ticks / TimeSpan.TicksPerSecond;
         baseColor = Color.white;
         endNoteHander.gameObject.SetActive(isLongNote);
         lineRenderer.enabled = isLongNote;
@@ -96,6 +96,7 @@ public class CurvedNoteHandler: NoteHandler {
             delta = timeDelta / endTimeBetween;
             if(!clicked && delta >= 2) cycleDone = true;
         } else {
+            timeBetween = (float)bmsManager.PreEventOffset.Ticks / TimeSpan.TicksPerSecond;
             delta = timeDelta / timeBetween;
         }
 
