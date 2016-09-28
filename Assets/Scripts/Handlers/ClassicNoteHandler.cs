@@ -44,7 +44,7 @@ public class ClassicNoteHandler: NoteHandler {
         targetPointInd.enabled = true;
         startNoteHandler.transform.localScale = Vector3.one;
         endNoteHander.transform.localScale = Vector3.one;
-        // timeBetween = (float)bmsManager.PreEventOffset.Ticks / TimeSpan.TicksPerSecond;
+        UpdateTimeBetween();
         endTimeBetween = (float)noteDetector.EndTimeOffset.Ticks / TimeSpan.TicksPerSecond;
         baseColor = Color.white;
         endNoteHander.gameObject.SetActive(isLongNote);
@@ -94,7 +94,7 @@ public class ClassicNoteHandler: NoteHandler {
             delta = timeDelta / endTimeBetween;
             if(!clicked && delta >= 2) cycleDone = true;
         } else {
-            timeBetween = (float)bmsManager.PreEventOffset.Ticks / TimeSpan.TicksPerSecond;
+            UpdateTimeBetween(Time.deltaTime * 10);
             delta = timeDelta / timeBetween;
         }
 
@@ -131,5 +131,9 @@ public class ClassicNoteHandler: NoteHandler {
         } else {
             handler.transform.localPosition = Vector3.up * offset + Vector3.forward * Mathf.Lerp(startDistance, targetDistance, 1 - delta);
         }
+    }
+
+    void UpdateTimeBetween(float lerp = 1) {
+        timeBetween = Mathf.Lerp(timeBetween,(float)bmsManager.PreEventOffset.Ticks / TimeSpan.TicksPerSecond, lerp);
     }
 }
