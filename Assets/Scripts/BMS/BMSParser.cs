@@ -16,7 +16,7 @@ namespace BMS {
         string resourcePath;
         string title, subTitle, artist, genre, subArtist, comments;
         int playerCount;
-        float bpm, currentBPM;
+        float bpm, currentBPM, minimumBPM;
         int playLevel, rank, lnType;
         float volume;
         bool stageFileLoaded;
@@ -125,7 +125,7 @@ namespace BMS {
                     artist = genre = "Unknown";
                     subTitle = subArtist = comments = string.Empty;
                     playerCount = 1;
-                    bpm = currentBPM = 130;
+                    minimumBPM = bpm = currentBPM = 130;
                     playLevel = rank = 0;
                     volume = 1;
                     lnType = 1;
@@ -135,9 +135,9 @@ namespace BMS {
                     startPos = TimeSpan.MaxValue;
                     timeLines.Clear();
                     bpms.Clear();
-                    preTimingHelper = new TimingHelper(preEventOffset);
+                    // preTimingHelper = new TimingHelper(preEventOffset);
                     mainTimingHelper = new TimingHelper();
-                    preTimingHelper.OnIndexChange += OnPreEvent;
+                    // preTimingHelper.OnIndexChange += OnPreEvent;
                     mainTimingHelper.OnIndexChange += OnEventUpdate;
                 }
                 timePosition = TimeSpan.Zero;
@@ -195,7 +195,7 @@ namespace BMS {
                             case "#subtitle": subTitle += (subTitle.Length > 0 ? "\n" : "") + param1; break;
                             case "#subartist": subArtist += (subArtist.Length > 0 ? "\n" : "") + param1; break;
                             case "#comment": comments += (comments.Length > 0 ? "\n" : "") + param1; break;
-                            case "#bpm": float.TryParse(param1, out bpm); continue;
+                            case "#bpm": if(float.TryParse(param1, out bpm)) minimumBPM = bpm; continue;
                             case "#genre": genre = param1; continue;
                             case "#player": int.TryParse(param1, out playerCount); continue;
                             case "#playlevel": int.TryParse(param1, out playLevel); continue;
@@ -255,8 +255,11 @@ namespace BMS {
                             case "wav": GetDataObject(ResourceType.wav, Base36.Decode(param2), param1); continue;
                             case "bmp": GetDataObject(ResourceType.bmp, Base36.Decode(param2), param1); continue;
                             case "bpm":
-                                if(cName.ToLower() == "bpm") float.TryParse(param1, out bpm);
-                                else bpmObjects[Base36.Decode(param2)] = float.Parse(param1);
+                                float tempBPM;
+                                float.TryParse(param1, out tempBPM);
+                                if(cName.ToLower() == "bpm") bpm = tempBPM;
+                                else bpmObjects[Base36.Decode(param2)] = tempBPM;
+                                minimumBPM = Math.Min(minimumBPM, tempBPM);
                                 continue;
                             case "bga":
                                 Vector2 pos1 = new Vector2(float.Parse(parameters[2]), float.Parse(parameters[3]));
@@ -299,9 +302,14 @@ namespace BMS {
                             if(!int.TryParse(Base36.Encode(bpmChange.Value), NumberStyles.HexNumber, null, out bpmValueInt))
                                 continue;
                             bpmValue = bpmValueInt;
+                            minimumBPM = Math.Min(bpmValueInt, minimumBPM);
                         }
                         bpmMapping[bpmChange.MeasureBeat] = bpmValue;
                     }
+
+                preTimingHelper = new TimingHelper(Scale(preEventOffset, Math.Max(1, 130 / minimumBPM)));
+                preTimingHelper.OnIndexChange += OnPreEvent;
+
                 foreach(var bpmChange in GetTimeLine(8).GetRawKeyframes())
                     if(bpmChange.Value > 0) {
                         if(!bpmObjects.TryGetValue(bpmChange.Value, out bpmValue))

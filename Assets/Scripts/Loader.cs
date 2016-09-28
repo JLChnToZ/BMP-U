@@ -12,6 +12,7 @@ public class Loader : SingletonBehaviour<Loader> {
     public static bool autoMode = false;
     public static bool enableBGA = true;
     public static bool enableDetune = true;
+    public static bool dynamicSpeed = true;
     public static int gameMode = 0;
     public static ColoringMode colorMode = ColoringMode.Timing;
     public static int judgeMode = 0;
@@ -45,6 +46,7 @@ public class Loader : SingletonBehaviour<Loader> {
             bmsContent = fsRead.ReadToEnd();
         bmsManager.DetuneEnabled = enableDetune;
         bmsManager.BGAEnabled = enableBGA;
+        bmsManager.DynamicPreEventOffset = dynamicSpeed;
         bmsManager.PreEventOffset = TimeSpan.FromSeconds(2 - speed);
         bmsManager.LoadBMS(bmsContent, fileInfo.Directory.FullName);
         while(!bmsManager.BMSLoaded) yield return null;

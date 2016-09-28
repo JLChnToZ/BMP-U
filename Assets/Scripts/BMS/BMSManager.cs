@@ -118,12 +118,13 @@ namespace BMS {
         TimingHelper preTimingHelper;
         DateTime startTime;
         TimeSpan timePosition;
-        TimeSpan preEventOffset;
+        TimeSpan preEventOffset, calculatedPreOffset;
         TimeSpan preOffset;
         TimeSpan bpmBasePoint;
         float bpmBasePointBeatFlow = 0;
         float currentTimeSignature = 4;
         float accuracy = 0;
+        bool dynamicPreEvents;
         bool isStarted, isPaused;
         bool tightMode;
 
@@ -200,11 +201,24 @@ namespace BMS {
             }
         }
 
+        public bool DynamicPreEventOffset {
+            get { return dynamicPreEvents; }
+            set {
+                dynamicPreEvents = value;
+                CalculatePreOffset();
+            }
+        }
+
         public TimeSpan PreEventOffset {
-            get { return preEventOffset; }
+            get {
+                if(dynamicPreEvents)
+                    return calculatedPreOffset;
+                return preEventOffset;
+            }
             set {
                 if(value >= TimeSpan.Zero)
                     preEventOffset = value;
+                CalculatePreOffset();
             }
         }
 
@@ -265,6 +279,7 @@ namespace BMS {
                     bpmBasePointBeatFlow = 0;
                     currentTimeSignature = 4;
                     bpmBasePoint = TimeSpan.Zero;
+                    CalculatePreOffset();
                     if(OnGameStarted != null)
                         OnGameStarted.Invoke();
                 } else {
@@ -382,6 +397,7 @@ namespace BMS {
             bpmBasePointBeatFlow += (float)(timePosition - bpmBasePoint).Ticks / TimeSpan.TicksPerMinute * currentBPM;
             bpmBasePoint = timePosition;
             currentBPM = newBpm;
+            CalculatePreOffset();
             if(OnChangeBPM != null)
                 OnChangeBPM.Invoke(newBpm);
         }
@@ -441,6 +457,18 @@ namespace BMS {
 
         public bool IsValidFlag(int flag) {
             return flag >= 0 && flag < scoreWeight.Length;
+        }
+
+        void CalculatePreOffset() {
+            if(!dynamicPreEvents) {
+                calculatedPreOffset = preEventOffset;
+                return;
+            }
+            calculatedPreOffset = Scale(preEventOffset, 130 / currentBPM);
+        }
+
+        static TimeSpan Scale(TimeSpan source, double ratio) {
+            return new TimeSpan((long)Math.Floor(source.Ticks * ratio));
         }
 
         void AddScore(int addScore) {
