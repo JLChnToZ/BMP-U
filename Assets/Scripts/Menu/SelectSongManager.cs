@@ -18,6 +18,7 @@ public class SelectSongManager: MonoBehaviour {
     public Toggle autoModeToggle;
     public Toggle detuneToggle;
     public Toggle bgaToggle;
+    public Toggle dynamicSpeedToggle;
     public Dropdown judgeModeDropDown;
     public Slider speedSlider;
     public Dropdown sortMode;
@@ -51,6 +52,8 @@ public class SelectSongManager: MonoBehaviour {
         detuneToggle.onValueChanged.AddListener(ToggleDetune);
         bgaToggle.isOn = Loader.enableBGA;
         bgaToggle.onValueChanged.AddListener(ToggleBGA);
+        dynamicSpeedToggle.isOn = Loader.dynamicSpeed;
+        dynamicSpeedToggle.onValueChanged.AddListener(ToggleDynamicSpeed);
         judgeModeDropDown.value = Loader.judgeMode;
         judgeModeDropDown.onValueChanged.AddListener(JudgeModeChange);
         speedSlider.value = Loader.speed;
@@ -114,6 +117,10 @@ public class SelectSongManager: MonoBehaviour {
 
     public void ToggleDetune(bool state) {
         Loader.enableDetune = detuneToggle.isOn;
+    }
+
+    public void ToggleDynamicSpeed(bool state) {
+        Loader.dynamicSpeed = dynamicSpeedToggle.isOn;
     }
 
     public void JudgeModeChange(int index) {

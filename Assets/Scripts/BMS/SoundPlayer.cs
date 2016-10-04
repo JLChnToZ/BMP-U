@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 using UnityEngine;
+using UnityEngine.Audio;
 
 namespace BMS {
     public class SoundPlayer: MonoBehaviour {
@@ -45,7 +46,8 @@ namespace BMS {
         [NonSerialized]
         HashSet<AudioSource> changingAudioSource = new HashSet<AudioSource>();
 
-        public UnityEngine.Audio.AudioMixerGroup mixerGroup;
+        public AudioMixerGroup mixerGroup;
+        public AudioMixerGroup playerMixerGroup;
 
         bool isPaused;
         float volume = 1;
@@ -91,7 +93,7 @@ namespace BMS {
             isPaused = false;
         }
 
-        public void PlaySound(AudioClip audio, int id, float pitch = 1, string debugName = "") {
+        public void PlaySound(AudioClip audio, int id, bool isPlayer = false, float pitch = 1, string debugName = "") {
             AudioSource audioSource = null;
             if(inUseAudioSources.ContainsKey(new InUseAudioSource(id))) {
                 audioSource = audioSourceIdMapping[id];
@@ -99,7 +101,7 @@ namespace BMS {
                 audioSource.Stop();
                 // audioSource.time = 0;
             } else {
-                audioSource = GetFreeAudioSource();
+                audioSource = GetFreeAudioSource(isPlayer);
                 changingAudioSource.Add(audioSource);
                 audioSource.clip = audio;
             }
@@ -143,11 +145,14 @@ namespace BMS {
             }
         }
 
-        AudioSource GetFreeAudioSource() {
+        AudioSource GetFreeAudioSource(bool isPlayer) {
             AudioSource result;
             while(freeAudioSources.Count > 0) {
                 result = freeAudioSources.Dequeue();
-                if(result != null) return result;
+                if(result != null) {
+                    SetMixerGroup(result, isPlayer);
+                    return result;
+                }
             }
             var go = new GameObject(string.Format("WAV Player"));
             go.transform.SetParent(transform, false);
@@ -158,9 +163,15 @@ namespace BMS {
             result.bypassReverbZones = true;
             result.ignoreListenerVolume = true;
             result.loop = false;
-            if(mixerGroup != null)
-                result.outputAudioMixerGroup = mixerGroup;
+            SetMixerGroup(result, isPlayer);
             return result;
+        }
+
+        void SetMixerGroup(AudioSource audioSource, bool isPlayer) {
+            if(!isPlayer && mixerGroup != null)
+                audioSource.outputAudioMixerGroup = mixerGroup;
+            else if(isPlayer && playerMixerGroup != null)
+                audioSource.outputAudioMixerGroup = playerMixerGroup;
         }
     }
 }

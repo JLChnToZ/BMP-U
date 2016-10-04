@@ -182,7 +182,7 @@ public static class SongInfoLoader {
         using(var fs = file.OpenRead())
         using(var fsRead = new StreamReader(fs, CurrentEncoding))
             bmsContent = fsRead.ReadToEnd();
-        bmsManager.LoadBMS(bmsContent, file.Directory.FullName, true);
+        bmsManager.LoadBMS(bmsContent, file.Directory.FullName, BMSFileType.Standard, true);
         return new SongInfo {
             index = GetNextIndex(),
             filePath = HelperFunctions.MakeRelative(dataPath, file.FullName),
@@ -233,24 +233,32 @@ public static class SongInfoLoader {
                     dirInfo = currentDirectory
                 });
             foreach(var dirInfo in currentDirectory.GetDirectories())
-                if(supportedFileTypes.Any(filter => dirInfo.GetFiles(filter).Any()) ||
-                    dirInfo.GetDirectories().Any())
-                    entries.Add(new Entry {
-                        isDirectory = true,
-                        dirInfo = dirInfo
-                    });
-            foreach(var fileInfo in supportedFileTypes.SelectMany(filter => currentDirectory.GetFiles(filter))) {
-                Entry current;
-                if(!cachedEntries.TryGetValue(fileInfo.FullName, out current)) {
-                    current = new Entry {
-                        isDirectory = false,
-                        songInfo = LoadBMS(fileInfo)
-                    };
-                    if(string.IsNullOrEmpty(current.songInfo.name))
-                        current.songInfo.name = fileInfo.Name;
-                    cachedEntries.Add(fileInfo.FullName, current);
+                try {
+                    if(supportedFileTypes.Any(filter => dirInfo.GetFiles(filter).Any()) ||
+                        dirInfo.GetDirectories().Any())
+                        entries.Add(new Entry {
+                            isDirectory = true,
+                            dirInfo = dirInfo
+                        });
+                } catch(Exception ex) {
+                    Debug.LogException(ex);
                 }
-                entries.Add(current);
+            foreach(var fileInfo in supportedFileTypes.SelectMany(filter => currentDirectory.GetFiles(filter))) {
+                try {
+                    Entry current;
+                    if(!cachedEntries.TryGetValue(fileInfo.FullName, out current)) {
+                        current = new Entry {
+                            isDirectory = false,
+                            songInfo = LoadBMS(fileInfo)
+                        };
+                        if(string.IsNullOrEmpty(current.songInfo.name))
+                            current.songInfo.name = fileInfo.Name;
+                        cachedEntries.Add(fileInfo.FullName, current);
+                    }
+                    entries.Add(current);
+                } catch(Exception ex) {
+                    Debug.LogException(ex);
+                }
             }
             SortInThread();
             ready = true;

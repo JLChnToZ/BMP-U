@@ -6,6 +6,8 @@ using System.Text.RegularExpressions;
 
 using UnityEngine;
 
+using LitJson;
+
 namespace BMS {
     internal class BMSHashGenerator {
         Encoding encoding;
@@ -25,6 +27,7 @@ namespace BMS {
     }
 
     public partial class BMSManager: MonoBehaviour {
+        JsonData bmsonContent;
         string[] bmsContent;
         bool bmsLoaded = false;
 
@@ -34,13 +37,26 @@ namespace BMS {
 
         public event Action OnBMSLoaded;
 
-        public void LoadBMS(string bmsContent, string resourcePath, bool direct = false) {
+        public void LoadBMS(string bmsContent, string resourcePath, BMSFileType bmsFileType, bool direct = false) {
             StopPreviousBMSLoadJob();
-            var bmsContentList = new List<string>();
-            foreach(var line in Regex.Split(bmsContent, "\r\n|\r|\n"))
-                if(!string.IsNullOrEmpty(line) && line[0] == '#')
-                    bmsContentList.Add(line);
-            this.bmsContent = bmsContentList.ToArray();
+            fileType = bmsFileType;
+            this.bmsContent = null;
+            this.bmsonContent = null;
+            switch(bmsFileType) {
+                case BMSFileType.Standard:
+                case BMSFileType.Extended:
+                case BMSFileType.Long:
+                case BMSFileType.Popn:
+                    var bmsContentList = new List<string>();
+                    foreach(var line in Regex.Split(bmsContent, "\r\n|\r|\n"))
+                        if(!string.IsNullOrEmpty(line) && line[0] == '#')
+                            bmsContentList.Add(line);
+                    this.bmsContent = bmsContentList.ToArray();
+                    break;
+                case BMSFileType.Bmson:
+                    this.bmsonContent = JsonMapper.ToObject(bmsContent);
+                    break;
+            }
             this.resourcePath = resourcePath;
             bmsLoaded = false;
             ClearDataObjects(true, direct);

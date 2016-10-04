@@ -2,26 +2,26 @@
 using System.Collections.Generic;
 
 namespace BMS {
-    public class KeyValuePairComparer<TKey, TValue>: IComparer<KeyValuePair<TKey, TValue>> {
-        static KeyValuePairComparer<TKey, TValue> defaultInstance;
-        public static KeyValuePairComparer<TKey, TValue> Default {
+    public class KeyComparer<TKey, TValue>: Comparer<KeyValuePair<TKey, TValue>> {
+        static KeyComparer<TKey, TValue> defaultInstance;
+        public static new KeyComparer<TKey, TValue> Default {
             get {
                 if(defaultInstance == null)
-                    defaultInstance = new KeyValuePairComparer<TKey, TValue>();
+                    defaultInstance = new KeyComparer<TKey, TValue>();
                 return defaultInstance;
             }
         }
 
         readonly IComparer<TKey> keyComparer;
 
-        private KeyValuePairComparer() : this(Comparer<TKey>.Default) {
+        private KeyComparer() : this(Comparer<TKey>.Default) {
         }
 
-        public KeyValuePairComparer(IComparer<TKey> keyComparer) {
+        public KeyComparer(IComparer<TKey> keyComparer) {
             this.keyComparer = keyComparer;
         }
 
-        public int Compare(KeyValuePair<TKey, TValue> x, KeyValuePair<TKey, TValue> y) {
+        public override int Compare(KeyValuePair<TKey, TValue> x, KeyValuePair<TKey, TValue> y) {
             return keyComparer.Compare(x.Key, y.Key);
         }
     }

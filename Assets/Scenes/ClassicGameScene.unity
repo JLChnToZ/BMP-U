@@ -3749,7 +3749,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 89d4da5dad8cce7439370335c54bfbae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mixerGroup: {fileID: 24300001, guid: 3d0d0a58ddccd3742b28f46317fef441, type: 2}
+  mixerGroup: {fileID: 243000012329263452, guid: 3d0d0a58ddccd3742b28f46317fef441,
+    type: 2}
+  playerMixerGroup: {fileID: 243000012054261394, guid: 3d0d0a58ddccd3742b28f46317fef441,
+    type: 2}
 --- !u!114 &1155440627
 MonoBehaviour:
   m_ObjectHideFlags: 0

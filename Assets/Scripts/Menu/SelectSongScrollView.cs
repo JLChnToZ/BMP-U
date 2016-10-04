@@ -15,6 +15,9 @@ public class SelectSongScrollView: MonoBehaviour {
     public GameObject prefab;
     public ScrollRect scroller;
     public Vector2 sizePerEntry;
+
+    public float slopeStart = 0;
+    public float slopeEnd = 0;
     
     IList<Entry> entries;
     readonly List<SelectSongEntry> entryDisplay = new List<SelectSongEntry>();
@@ -43,13 +46,20 @@ public class SelectSongScrollView: MonoBehaviour {
     void OnScroll(Vector2 position) {
         if(!SongInfoLoader.IsReady) return;
         Vector2 actualSize = scroller.content.rect.size;
-        int startIndex = Mathf.Max(0, Mathf.FloorToInt(scroller.content.anchoredPosition.y / sizePerEntry.y));
+        Vector2 contentPosition = scroller.content.anchoredPosition;
+        Vector2 viewportPosition = scroller.viewport.anchoredPosition;
+
+        int startIndex = Mathf.Max(0, Mathf.FloorToInt(contentPosition.y / sizePerEntry.y));
+        Rect viewportRect = scroller.viewport.rect;
+        Vector2 offsetMin = viewportRect.min - contentPosition;
+        Vector2 offsetMax = viewportRect.max - contentPosition;
         for(int i = 0, l = entryDisplay.Count, c = entries.Count; i < l; i++) {
             int actualIndex = startIndex + i;
             SelectSongEntry entryDisp = entryDisplay[i];
             if(actualIndex < c) {
                 Vector2 pos = entryDisp.transform.anchoredPosition;
                 pos.y = -actualIndex * sizePerEntry.y;
+                pos.x = Mathf.LerpUnclamped(slopeStart, slopeEnd, Mathf.InverseLerp(offsetMin.y, offsetMax.y, pos.y));
                 entryDisp.transform.anchoredPosition = pos;
 
                 Entry entry = entries[actualIndex];

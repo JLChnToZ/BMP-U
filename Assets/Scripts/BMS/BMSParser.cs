@@ -10,6 +10,14 @@ using Random = System.Random;
 using ThreadPriority = System.Threading.ThreadPriority;
 
 namespace BMS {
+    public enum BMSFileType {
+        Standard,
+        Extended,
+        Long,
+        Popn,
+        Bmson
+    }
+
     public partial class BMSManager: MonoBehaviour {
         static Dictionary<int, int> channelAdvancedMapping;
 
@@ -23,6 +31,7 @@ namespace BMS {
         bool bannerFileLoaded;
         string stageFilePath;
         string bannerFilePath;
+        BMSFileType fileType;
         Texture stageFile;
         Texture bannerFile;
         TimeSpan duration;
@@ -120,234 +129,17 @@ namespace BMS {
 
         void ReloadTimelineInThread() {
             try {
-                if(parseHeader) {
-                    title = string.Empty;
-                    artist = genre = "Unknown";
-                    subTitle = subArtist = comments = string.Empty;
-                    playerCount = 1;
-                    minimumBPM = bpm = currentBPM = 130;
-                    playLevel = rank = 0;
-                    volume = 1;
-                    lnType = 1;
+                switch(fileType) {
+                    case BMSFileType.Standard:
+                    case BMSFileType.Extended:
+                    case BMSFileType.Long:
+                    case BMSFileType.Popn:
+                        ParseBMS();
+                        break;
+                    case BMSFileType.Bmson:
+                        ParseBmson();
+                        break;
                 }
-                if(parseBody) {
-                    duration = TimeSpan.Zero;
-                    startPos = TimeSpan.MaxValue;
-                    timeLines.Clear();
-                    bpms.Clear();
-                    // preTimingHelper = new TimingHelper(preEventOffset);
-                    mainTimingHelper = new TimingHelper();
-                    // preTimingHelper.OnIndexChange += OnPreEvent;
-                    mainTimingHelper.OnIndexChange += OnEventUpdate;
-                }
-                timePosition = TimeSpan.Zero;
-                char splitter;
-                string[] parameters;
-                string cName, cName2, param1, param2;
-                bool hasIfBlockExecuted = false;
-                int randomParam = 0, ifBlockLevel = 0, skipIfBlockLevel = 0;
-                int verse, verseLength, i, channel, value;
-                var bpmObjects = new Dictionary<int, float>();
-                var bpmMapping = new Dictionary<MeasureBeat, float>();
-                var timeSigMapping = new Dictionary<int, float>();
-                var random = new Random();
-                int randomGroup = -1, randomIndex = -1;
-                TimeLine timeLine;
-                if(parseBody) hasRandom = false;
-                foreach(var line in bmsContent) {
-                    if(string.IsNullOrEmpty(line) || line[0] != '#') continue;
-                    splitter = line.IndexOf(':', 1) >= 0 ? ':' : ' ';
-                    parameters = line.Split(splitter);
-                    cName = parameters[0];
-                    param1 = parameters.Length > 1 ? line.Substring(line.IndexOf(splitter) + 1) : string.Empty;
-                    if(ifBlockLevel > 0 && skipIfBlockLevel > 0) {
-                        switch(cName.ToLower()) {
-                            case "#if":
-                                ifBlockLevel++;
-                                break;
-                            case "#elseif":
-                                if(ifBlockLevel == skipIfBlockLevel && !hasIfBlockExecuted && randomParam == (randomIndex = int.Parse(param1))) {
-                                    skipIfBlockLevel = 0;
-                                    hasIfBlockExecuted = true;
-                                }
-                                break;
-                            case "#else":
-                                randomIndex = -1;
-                                if(ifBlockLevel == skipIfBlockLevel && !hasIfBlockExecuted) {
-                                    skipIfBlockLevel = 0;
-                                    hasIfBlockExecuted = true;
-                                }
-                                break;
-                            case "#endif":
-                                if(ifBlockLevel == skipIfBlockLevel)
-                                    skipIfBlockLevel = 0;
-                                ifBlockLevel--;
-                                hasIfBlockExecuted = false;
-                                break;
-                        }
-                        if(!parseAll)
-                            continue;
-                    }
-                    if(parseHeader)
-                        switch(cName.ToLower()) {
-                            case "#title": title = param1; continue;
-                            case "#artist": artist = param1; continue;
-                            case "#subtitle": subTitle += (subTitle.Length > 0 ? "\n" : "") + param1; break;
-                            case "#subartist": subArtist += (subArtist.Length > 0 ? "\n" : "") + param1; break;
-                            case "#comment": comments += (comments.Length > 0 ? "\n" : "") + param1; break;
-                            case "#bpm": if(float.TryParse(param1, out bpm)) minimumBPM = bpm; continue;
-                            case "#genre": genre = param1; continue;
-                            case "#player": int.TryParse(param1, out playerCount); continue;
-                            case "#playlevel": int.TryParse(param1, out playLevel); continue;
-                            case "#rank": int.TryParse(param1, out rank); continue;
-                            case "#volwav": if(float.TryParse(param1, out volume)) volume /= 100F; continue;
-                            case "#stagefile": stageFileObject = new ResourceObject(-1, ResourceType.bmp, stageFilePath = param1); continue;
-                            case "#banner": bannerFileObject = new ResourceObject(-2, ResourceType.bmp, bannerFilePath = param1); continue;
-                            case "#lntype": int.TryParse(param1, out lnType); continue;
-                        }
-
-                    if(!parseBody) continue;
-
-                    switch(cName.ToLower()) {
-                        // If/random handling
-                        case "#random":
-                        case "#setrandom":
-                            if(int.TryParse(param1, out randomParam))
-                                randomParam = random.Next(randomParam) + 1;
-                            randomGroup++;
-                            hasRandom = true;
-                            continue;
-                        case "#if":
-                            ifBlockLevel++;
-                            hasIfBlockExecuted = randomParam == (randomIndex = int.Parse(param1));
-                            if(!hasIfBlockExecuted)
-                                skipIfBlockLevel = ifBlockLevel;
-                            continue;
-                        case "#elseif":
-                            if(hasIfBlockExecuted) {
-                                skipIfBlockLevel = ifBlockLevel;
-                            } else {
-                                hasIfBlockExecuted = randomParam == (randomIndex = int.Parse(param1));
-                                if(!hasIfBlockExecuted)
-                                    skipIfBlockLevel = ifBlockLevel;
-                            }
-                            continue;
-                        case "#else":
-                            randomIndex = -1;
-                            if(hasIfBlockExecuted)
-                                skipIfBlockLevel = ifBlockLevel;
-                            continue;
-                        case "#endif":
-                            ifBlockLevel--;
-                            skipIfBlockLevel = 0;
-                            hasIfBlockExecuted = false;
-                            continue;
-                    }
-                    if(cName.Length > 2) {
-                        cName2 = cName.Substring(1, 3);
-                        param2 = cName.Substring(4);
-                    } else {
-                        cName2 = cName;
-                        param2 = string.Empty;
-                    }
-                    if(parseResHeader)
-                        switch(cName2.ToLower()) {
-                            case "wav": GetDataObject(ResourceType.wav, Base36.Decode(param2), param1); continue;
-                            case "bmp": GetDataObject(ResourceType.bmp, Base36.Decode(param2), param1); continue;
-                            case "bpm":
-                                float tempBPM;
-                                float.TryParse(param1, out tempBPM);
-                                if(cName.ToLower() == "bpm") bpm = tempBPM;
-                                else bpmObjects[Base36.Decode(param2)] = tempBPM;
-                                minimumBPM = Math.Min(minimumBPM, tempBPM);
-                                continue;
-                            case "bga":
-                                Vector2 pos1 = new Vector2(float.Parse(parameters[2]), float.Parse(parameters[3]));
-                                Vector2 pos2 = new Vector2(float.Parse(parameters[4]), float.Parse(parameters[5]));
-                                var bga = new BGAObject {
-                                    index = Base36.Decode(parameters[1]),
-                                    clipArea = new Rect(pos1, pos2 - pos1),
-                                    offset = new Vector2(float.Parse(parameters[6]), float.Parse(parameters[7]))
-                                };
-                                bgaObjects.Add(Base36.Decode(param2), bga);
-                                continue;
-                        }
-                    if(!int.TryParse(cName2, out verse)) continue;
-                    if((channel = GetChannelNumberById(param2)) < 0) continue;
-                    param1 = Regex.Replace(param1, "\\s+", string.Empty);
-                    verseLength = param1.Length / 2;
-                    switch(channel) {
-                        case 2: // Time Signature
-                            timeSigMapping[verse] = float.Parse(param1);
-                            if(!timeSigMapping.ContainsKey(verse + 1))
-                                timeSigMapping[verse + 1] = 1; // Reset on next measure
-                            continue;
-                    }
-                    timeLine = GetTimeLine(channel);
-                    for(i = 0; i < verseLength; i++) {
-                        value = Base36.Decode(param1.Substring(i * 2, 2));
-                        if(value > 0) timeLine.AddRawKeyFrame(verse, (float)i / verseLength, value, ifBlockLevel > 0 ? randomGroup : -1, ifBlockLevel > 0 ? randomIndex : -1);
-                    }
-                }
-
-                if(!parseBody)
-                    return;
-
-                // Finalize data
-                float bpmValue;
-                int bpmValueInt;
-                foreach(var bpmChange in GetTimeLine(3).GetRawKeyframes())
-                    if(bpmChange.Value > 0) {
-                        if(!bpmObjects.TryGetValue(bpmChange.Value, out bpmValue)) {
-                            if(!int.TryParse(Base36.Encode(bpmChange.Value), NumberStyles.HexNumber, null, out bpmValueInt))
-                                continue;
-                            bpmValue = bpmValueInt;
-                            minimumBPM = Math.Min(bpmValueInt, minimumBPM);
-                        }
-                        bpmMapping[bpmChange.MeasureBeat] = bpmValue;
-                    }
-
-                preTimingHelper = new TimingHelper(Scale(preEventOffset, Math.Max(1, 130 / minimumBPM)));
-                preTimingHelper.OnIndexChange += OnPreEvent;
-
-                foreach(var bpmChange in GetTimeLine(8).GetRawKeyframes())
-                    if(bpmChange.Value > 0) {
-                        if(!bpmObjects.TryGetValue(bpmChange.Value, out bpmValue))
-                            continue;
-                        bpmMapping[bpmChange.MeasureBeat] = bpmValue;
-                    }
-                var measures = new HashSet<MeasureBeat>();
-                foreach(var tl in timeLines.Values)
-                    measures.UnionWith(tl.GetAllMeasureBeats());
-                measures.UnionWith(bpmMapping.Keys);
-                foreach(var ts in timeSigMapping.Keys)
-                    measures.Add(new MeasureBeat(ts, 0));
-                var results = ConvertToTimingPoints(timeSigMapping, bpmMapping, measures, 1, bpm);
-                foreach(var timeLineKV in timeLines) {
-                    timeLineKV.Value.Normalize(results);
-                    mainTimingHelper.AddTimelineHandle(timeLineKV.Value, timeLineKV.Key);
-                    preTimingHelper.AddTimelineHandle(timeLineKV.Value, timeLineKV.Key);
-                    if(timeLineKV.Key < 30 || (timeLineKV.Key > 50 && timeLineKV.Key < 70)) {
-                        var kfs = timeLineKV.Value.KeyFrames;
-                        if(kfs.Count > 0) {
-                            if(kfs[0].TimePosition < startPos)
-                                startPos = kfs[0].TimePosition;
-                            if(kfs[kfs.Count - 1].TimePosition > duration)
-                                duration = kfs[kfs.Count - 1].TimePosition;
-                        }
-                    }
-                }
-                bpms[TimeSpan.Zero] = bpm;
-                foreach(var bpmObj in bpmMapping)
-                    bpms[results[bpmObj.Key]] = bpmObj.Value;
-                bpmChangeHelper = new TimeSpanHandle<float>(bpms);
-                bpmChangeHelper.OnNotified += OnBpmChange;
-                var timeSigns = new Dictionary<TimeSpan, float>();
-                timeSigns[TimeSpan.Zero] = 4;
-                foreach(var tsObj in timeSigMapping)
-                    timeSigns[results[new MeasureBeat(tsObj.Key, 0, tsObj.Value)]] = tsObj.Value * 4;
-                beatResetHelper = new TimeSpanHandle<float>(timeSigns);
-                beatResetHelper.OnNotified += OnBeatReset;
             } catch(ThreadAbortException) {
                 Debug.LogWarning("BMS parsing aboarted.");
             } catch(Exception ex) {
@@ -357,6 +149,237 @@ namespace BMS {
                 if(OnBMSLoaded != null)
                     OnBMSLoaded.Invoke();
             }
+        }
+
+        void ParseBMS() {
+            if(parseHeader) {
+                title = string.Empty;
+                artist = genre = "Unknown";
+                subTitle = subArtist = comments = string.Empty;
+                playerCount = 1;
+                minimumBPM = bpm = currentBPM = 130;
+                playLevel = rank = 0;
+                volume = 1;
+                lnType = 1;
+            }
+            if(parseBody) {
+                duration = TimeSpan.Zero;
+                startPos = TimeSpan.MaxValue;
+                timeLines.Clear();
+                bpms.Clear();
+                // preTimingHelper = new TimingHelper(preEventOffset);
+                mainTimingHelper = new TimingHelper();
+                // preTimingHelper.OnIndexChange += OnPreEvent;
+                mainTimingHelper.OnIndexChange += OnEventUpdate;
+            }
+            timePosition = TimeSpan.Zero;
+            char splitter;
+            string[] parameters;
+            string cName, cName2, param1, param2;
+            bool hasIfBlockExecuted = false;
+            int randomParam = 0, ifBlockLevel = 0, skipIfBlockLevel = 0;
+            int verse, verseLength, i, channel, value;
+            var bpmObjects = new Dictionary<int, float>();
+            var bpmMapping = new Dictionary<MeasureBeat, float>();
+            var timeSigMapping = new Dictionary<int, float>();
+            var random = new Random();
+            int randomGroup = -1, randomIndex = -1;
+            TimeLine timeLine;
+            if(parseBody) hasRandom = false;
+            foreach(var line in bmsContent) {
+                if(string.IsNullOrEmpty(line) || line[0] != '#') continue;
+                splitter = line.IndexOf(':', 1) >= 0 ? ':' : ' ';
+                parameters = line.Split(splitter);
+                cName = parameters[0];
+                param1 = parameters.Length > 1 ? line.Substring(line.IndexOf(splitter) + 1) : string.Empty;
+                if(ifBlockLevel > 0 && skipIfBlockLevel > 0) {
+                    switch(cName.ToLower()) {
+                        case "#if":
+                            ifBlockLevel++;
+                            break;
+                        case "#elseif":
+                            if(ifBlockLevel == skipIfBlockLevel && !hasIfBlockExecuted && randomParam == (randomIndex = int.Parse(param1))) {
+                                skipIfBlockLevel = 0;
+                                hasIfBlockExecuted = true;
+                            }
+                            break;
+                        case "#else":
+                            randomIndex = -1;
+                            if(ifBlockLevel == skipIfBlockLevel && !hasIfBlockExecuted) {
+                                skipIfBlockLevel = 0;
+                                hasIfBlockExecuted = true;
+                            }
+                            break;
+                        case "#endif":
+                            if(ifBlockLevel == skipIfBlockLevel)
+                                skipIfBlockLevel = 0;
+                            ifBlockLevel--;
+                            hasIfBlockExecuted = false;
+                            break;
+                    }
+                    if(!parseAll)
+                        continue;
+                }
+                if(parseHeader)
+                    switch(cName.ToLower()) {
+                        case "#title": title = param1; continue;
+                        case "#artist": artist = param1; continue;
+                        case "#subtitle": subTitle += (subTitle.Length > 0 ? "\n" : "") + param1; break;
+                        case "#subartist": subArtist += (subArtist.Length > 0 ? "\n" : "") + param1; break;
+                        case "#comment": comments += (comments.Length > 0 ? "\n" : "") + param1; break;
+                        case "#bpm": if(float.TryParse(param1, out bpm)) minimumBPM = bpm; continue;
+                        case "#genre": genre = param1; continue;
+                        case "#player": int.TryParse(param1, out playerCount); continue;
+                        case "#playlevel": int.TryParse(param1, out playLevel); continue;
+                        case "#rank": int.TryParse(param1, out rank); continue;
+                        case "#volwav": if(float.TryParse(param1, out volume)) volume /= 100F; continue;
+                        case "#stagefile": stageFileObject = new ResourceObject(-1, ResourceType.bmp, stageFilePath = param1); continue;
+                        case "#banner": bannerFileObject = new ResourceObject(-2, ResourceType.bmp, bannerFilePath = param1); continue;
+                        case "#lntype": int.TryParse(param1, out lnType); continue;
+                    }
+
+                if(!parseBody) continue;
+
+                switch(cName.ToLower()) {
+                    // If/random handling
+                    case "#random":
+                    case "#setrandom":
+                        if(int.TryParse(param1, out randomParam))
+                            randomParam = random.Next(randomParam) + 1;
+                        randomGroup++;
+                        hasRandom = true;
+                        continue;
+                    case "#if":
+                        ifBlockLevel++;
+                        hasIfBlockExecuted = randomParam == (randomIndex = int.Parse(param1));
+                        if(!hasIfBlockExecuted)
+                            skipIfBlockLevel = ifBlockLevel;
+                        continue;
+                    case "#elseif":
+                        if(hasIfBlockExecuted) {
+                            skipIfBlockLevel = ifBlockLevel;
+                        } else {
+                            hasIfBlockExecuted = randomParam == (randomIndex = int.Parse(param1));
+                            if(!hasIfBlockExecuted)
+                                skipIfBlockLevel = ifBlockLevel;
+                        }
+                        continue;
+                    case "#else":
+                        randomIndex = -1;
+                        if(hasIfBlockExecuted)
+                            skipIfBlockLevel = ifBlockLevel;
+                        continue;
+                    case "#endif":
+                        ifBlockLevel--;
+                        skipIfBlockLevel = 0;
+                        hasIfBlockExecuted = false;
+                        continue;
+                }
+                if(cName.Length > 2) {
+                    cName2 = cName.Substring(1, 3);
+                    param2 = cName.Substring(4);
+                } else {
+                    cName2 = cName;
+                    param2 = string.Empty;
+                }
+                if(parseResHeader)
+                    switch(cName2.ToLower()) {
+                        case "wav": GetDataObject(ResourceType.wav, Base36.Decode(param2), param1); continue;
+                        case "bmp": GetDataObject(ResourceType.bmp, Base36.Decode(param2), param1); continue;
+                        case "bpm":
+                            float tempBPM;
+                            float.TryParse(param1, out tempBPM);
+                            if(cName.ToLower() == "bpm") bpm = tempBPM;
+                            else bpmObjects[Base36.Decode(param2)] = tempBPM;
+                            minimumBPM = Math.Min(minimumBPM, tempBPM);
+                            continue;
+                        case "bga":
+                            Vector2 pos1 = new Vector2(float.Parse(parameters[2]), float.Parse(parameters[3]));
+                            Vector2 pos2 = new Vector2(float.Parse(parameters[4]), float.Parse(parameters[5]));
+                            var bga = new BGAObject {
+                                index = Base36.Decode(parameters[1]),
+                                clipArea = new Rect(pos1, pos2 - pos1),
+                                offset = new Vector2(float.Parse(parameters[6]), float.Parse(parameters[7]))
+                            };
+                            bgaObjects.Add(Base36.Decode(param2), bga);
+                            continue;
+                    }
+                if(!int.TryParse(cName2, out verse)) continue;
+                if((channel = GetChannelNumberById(param2)) < 0) continue;
+                param1 = Regex.Replace(param1, "\\s+", string.Empty);
+                verseLength = param1.Length / 2;
+                switch(channel) {
+                    case 2: // Time Signature
+                        timeSigMapping[verse] = float.Parse(param1);
+                        if(!timeSigMapping.ContainsKey(verse + 1))
+                            timeSigMapping[verse + 1] = 1; // Reset on next measure
+                        continue;
+                }
+                timeLine = GetTimeLine(channel);
+                for(i = 0; i < verseLength; i++) {
+                    value = Base36.Decode(param1.Substring(i * 2, 2));
+                    if(value > 0) timeLine.AddRawKeyFrame(verse, (float)i / verseLength, value, ifBlockLevel > 0 ? randomGroup : -1, ifBlockLevel > 0 ? randomIndex : -1);
+                }
+            }
+
+            if(!parseBody)
+                return;
+
+            // Finalize data
+            float bpmValue;
+            int bpmValueInt;
+            foreach(var bpmChange in GetTimeLine(3).GetRawKeyframes())
+                if(bpmChange.Value > 0) {
+                    if(!bpmObjects.TryGetValue(bpmChange.Value, out bpmValue)) {
+                        if(!int.TryParse(Base36.Encode(bpmChange.Value), NumberStyles.HexNumber, null, out bpmValueInt))
+                            continue;
+                        bpmValue = bpmValueInt;
+                        minimumBPM = Math.Min(bpmValueInt, minimumBPM);
+                    }
+                    bpmMapping[bpmChange.MeasureBeat] = bpmValue;
+                }
+
+            preTimingHelper = new TimingHelper(Scale(preEventOffset, Math.Max(1, 130 / minimumBPM)));
+            preTimingHelper.OnIndexChange += OnPreEvent;
+
+            foreach(var bpmChange in GetTimeLine(8).GetRawKeyframes())
+                if(bpmChange.Value > 0) {
+                    if(!bpmObjects.TryGetValue(bpmChange.Value, out bpmValue))
+                        continue;
+                    bpmMapping[bpmChange.MeasureBeat] = bpmValue;
+                }
+            var measures = new HashSet<MeasureBeat>();
+            foreach(var tl in timeLines.Values)
+                measures.UnionWith(tl.GetAllMeasureBeats());
+            measures.UnionWith(bpmMapping.Keys);
+            foreach(var ts in timeSigMapping.Keys)
+                measures.Add(new MeasureBeat(ts, 0));
+            var results = ConvertToTimingPoints(timeSigMapping, bpmMapping, measures, 1, bpm);
+            foreach(var timeLineKV in timeLines) {
+                timeLineKV.Value.Normalize(results);
+                mainTimingHelper.AddTimelineHandle(timeLineKV.Value, timeLineKV.Key);
+                preTimingHelper.AddTimelineHandle(timeLineKV.Value, timeLineKV.Key);
+                if(timeLineKV.Key < 30 || (timeLineKV.Key > 50 && timeLineKV.Key < 70)) {
+                    var kfs = timeLineKV.Value.KeyFrames;
+                    if(kfs.Count > 0) {
+                        if(kfs[0].TimePosition < startPos)
+                            startPos = kfs[0].TimePosition;
+                        if(kfs[kfs.Count - 1].TimePosition > duration)
+                            duration = kfs[kfs.Count - 1].TimePosition;
+                    }
+                }
+            }
+            bpms[TimeSpan.Zero] = bpm;
+            foreach(var bpmObj in bpmMapping)
+                bpms[results[bpmObj.Key]] = bpmObj.Value;
+            bpmChangeHelper = new TimeSpanHandle<float>(bpms);
+            bpmChangeHelper.OnNotified += OnBpmChange;
+            var timeSigns = new Dictionary<TimeSpan, float>();
+            timeSigns[TimeSpan.Zero] = 4;
+            foreach(var tsObj in timeSigMapping)
+                timeSigns[results[new MeasureBeat(tsObj.Key, 0, tsObj.Value)]] = tsObj.Value * 4;
+            beatResetHelper = new TimeSpanHandle<float>(timeSigns);
+            beatResetHelper.OnNotified += OnBeatReset;
         }
 
         /*
@@ -401,8 +424,8 @@ namespace BMS {
 
             // Add the bpm change measure points to the mapping list.
             bool hasTimeSign = tsList.Count > 0;
-            tsList.Sort(KeyValuePairComparer<int, float>.Default);
-            bpmList.Sort(KeyValuePairComparer<MeasureBeat, float>.Default);
+            tsList.Sort(KeyComparer<int, float>.Default);
+            bpmList.Sort(KeyComparer<MeasureBeat, float>.Default);
 
             {
                 int index = 0;

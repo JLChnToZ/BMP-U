@@ -108,7 +108,7 @@ namespace BMS {
             List<KeyValuePair<TimeSpan, T>> keyFrameList = null;
             this.keyFrameList = keyFrameCollection as IList<KeyValuePair<TimeSpan, T>> ?? (keyFrameList = new List<KeyValuePair<TimeSpan, T>>(keyFrameCollection));
             if(keyFrameList != null)
-                keyFrameList.Sort(KeyValuePairComparer<TimeSpan, T>.Default);
+                keyFrameList.Sort(KeyComparer<TimeSpan, T>.Default);
             Reset();
         }
 

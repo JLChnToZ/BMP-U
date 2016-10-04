@@ -448,11 +448,11 @@ namespace BMS {
             }
         }
 
-        void PlayWAV(int eventId, float pitch = 1) {
+        void PlayWAV(int eventId, bool isPlayer = false, float pitch = 1) {
             if(eventId == 0) return;
             var wav = GetWAV(eventId);
             if(wav != null)
-                soundPlayer.PlaySound(wav, eventId, pitch, wavObjects[eventId].path);
+                soundPlayer.PlaySound(wav, eventId, isPlayer, pitch, wavObjects[eventId].path);
         }
 
         public bool IsValidFlag(int flag) {
@@ -544,7 +544,7 @@ namespace BMS {
             rankSynced = false;
 
             if(hasSound && IsValidFlag(resultFlag))
-                PlayWAV(eventId, detuneEnabled && resultFlag > 0 ? Mathf.Clamp(1 + accuracy / 500, 0.5F, 1.5F) : 1);
+                PlayWAV(eventId, true, detuneEnabled && resultFlag > 0 ? Mathf.Clamp(1 + accuracy / 500, 0.5F, 1.5F) : 1);
 
             if(OnNoteClicked != null)
                 OnNoteClicked.Invoke(expectedTimePosition, timePosition, channel, eventId, resultFlag);
