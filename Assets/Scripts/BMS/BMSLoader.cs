@@ -19,16 +19,17 @@ namespace BMS {
         }
 
         public string GetHash(string[] content) {
-            var groupedBMS = string.Join("\n", content);
-            var bytes = encoding.GetBytes(groupedBMS);
+            return GetHash(string.Join("\n", content));
+        }
+
+        public string GetHash(string content) {
+            var bytes = encoding.GetBytes(content);
             var hash = hashAlgorithm.ComputeHash(bytes);
             return Convert.ToBase64String(hash);
         }
     }
 
     public partial class BMSManager: MonoBehaviour {
-        JsonData bmsonContent;
-        string[] bmsContent;
         bool bmsLoaded = false;
 
         public bool BMSLoaded {
@@ -40,23 +41,25 @@ namespace BMS {
         public void LoadBMS(string bmsContent, string resourcePath, BMSFileType bmsFileType, bool direct = false) {
             StopPreviousBMSLoadJob();
             fileType = bmsFileType;
-            this.bmsContent = null;
-            this.bmsonContent = null;
             switch(bmsFileType) {
                 case BMSFileType.Standard:
                 case BMSFileType.Extended:
                 case BMSFileType.Long:
                 case BMSFileType.Popn:
-                    var bmsContentList = new List<string>();
-                    foreach(var line in Regex.Split(bmsContent, "\r\n|\r|\n"))
-                        if(!string.IsNullOrEmpty(line) && line[0] == '#')
-                            bmsContentList.Add(line);
-                    this.bmsContent = bmsContentList.ToArray();
+                    chart = new BMSChart(bmsContent);
                     break;
                 case BMSFileType.Bmson:
-                    this.bmsonContent = JsonMapper.ToObject(bmsContent);
+                    // chart = new BmsonChart(bmsContent);
                     break;
             }
+            if(preTimingHelper != null)
+                preTimingHelper.BMSEvent -= OnPreEvent;
+            if(mainTimingHelper != null)
+                mainTimingHelper.BMSEvent -= OnEventUpdate;
+            preTimingHelper = chart.GetEventDispatcher();
+            mainTimingHelper = chart.GetEventDispatcher();
+            preTimingHelper.BMSEvent += OnPreEvent;
+            mainTimingHelper.BMSEvent += OnEventUpdate;
             this.resourcePath = resourcePath;
             bmsLoaded = false;
             ClearDataObjects(true, direct);
@@ -79,7 +82,7 @@ namespace BMS {
         }
 
         public string GetHash(Encoding encoding, HashAlgorithm hashAlgorithm) {
-            return new BMSHashGenerator(encoding, hashAlgorithm).GetHash(bmsContent);
+            return new BMSHashGenerator(encoding, hashAlgorithm).GetHash(chart.RawContent);
         }
     }
 }

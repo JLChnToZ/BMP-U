@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using UnityEngine;
 
@@ -15,7 +16,7 @@ namespace BMS {
 
     public delegate void StateChangedEvent();
     public delegate void ChangeBPMEvent(float bpm);
-    public delegate void NoteEmitEvent(TimeSpan timePosition, int channel, int eventId);
+    public delegate void NoteEmitEvent(BMSEvent bmsEvent);
     public delegate void NoteClickEvent(TimeSpan expectedTimePosition, TimeSpan currentTimePosition, int channel, int eventId, int resultFlag);
     public delegate void ChangeBGAEvent(Texture texture, int channel, BGAObject? bga, int eventId);
     public delegate void BeatFlowEvent(float measureFlow, float beatFlow);
@@ -89,20 +90,17 @@ namespace BMS {
 
     public partial class BMSManager: MonoBehaviour {
         public Texture placeHolderTexture;
+        Chart chart;
 
         static BMSManager() {
-            InitChannelMap();
         }
 
-        internal TimeLine GetTimeLine(int id) {
-            TimeLine result;
-            if(!timeLines.TryGetValue(id, out result))
-                timeLines[id] = result = new TimeLine();
-            return result;
+        internal Chart.EventDispatcher EventDispatcher {
+            get { return mainTimingHelper; }
         }
 
         public ICollection<int> GetAllChannelIds() {
-            return timeLines.Keys;
+            return chart.AllChannels;
         }
 
         public ICollection<int> GetAllAdoptedChannels() {
@@ -114,8 +112,8 @@ namespace BMS {
         readonly HashSet<MovieTextureHolder> playingMovieTextureHolders = new HashSet<MovieTextureHolder>();
         readonly HashSet<int> handledChannels = new HashSet<int>();
         readonly Dictionary<int, int> autoPlayLNState = new Dictionary<int, int>();
-        TimingHelper mainTimingHelper;
-        TimingHelper preTimingHelper;
+        Chart.EventDispatcher mainTimingHelper;
+        Chart.EventDispatcher preTimingHelper;
         DateTime startTime;
         TimeSpan timePosition;
         TimeSpan preEventOffset, calculatedPreOffset;
@@ -159,6 +157,10 @@ namespace BMS {
         public int Score { get { return score; } }
         public float Accuracy { get { return accuracy; } }
         public float TimeSignature { get { return currentTimeSignature; } }
+
+        public Chart LoadedChart {
+            get { return chart; }
+        }
 
         public Color RankColor {
             get {
@@ -268,11 +270,9 @@ namespace BMS {
                     comboPools.Clear();
                     lnHolders.Clear();
                     soundPlayer.StopAll();
-                    soundPlayer.Volume = volume;
-                    mainTimingHelper.Reset();
-                    preTimingHelper.Reset();
-                    beatResetHelper.Reset();
-                    bpmChangeHelper.Reset();
+                    soundPlayer.Volume = chart.Volume;
+                    mainTimingHelper.Seek(TimeSpan.MinValue, false);
+                    preTimingHelper.Seek(TimeSpan.MinValue, false);
                     autoPlayLNState.Clear();
                     if(noteScoreCount != null && noteScoreCount.Length > 0)
                         Array.Clear(noteScoreCount, 0, noteScoreCount.Length);
@@ -340,9 +340,12 @@ namespace BMS {
             comboPools.Clear();
             score = maxCombos = combos = 0;
             int noteCount = 0;
-            foreach(var channel in timeLines)
-                if(handledChannels.Contains(channel.Key))
-                    noteCount += channel.Value.Count;
+            noteCount = chart.Events.Count(ev =>
+                (ev.type == BMSEventType.Note ||
+                ev.type == BMSEventType.LongNoteStart ||
+                ev.type == BMSEventType.LongNoteEnd) &&
+                handledChannels.Contains(ev.data1)
+            );
             if(noteCount < 1) return;
             int totalNormalScore = Mathf.FloorToInt(maxScore * (1 - comboBonusWeight));
             scorePerNote = totalNormalScore / noteCount;
@@ -368,17 +371,15 @@ namespace BMS {
             if(isStarted && !isPaused) {
                 var now = DateTime.Now;
                 timePosition = now - startTime + preOffset;
-                preTimingHelper.Update(timePosition);
-                mainTimingHelper.Update(timePosition);
-                beatResetHelper.Update(timePosition);
-                bpmChangeHelper.Update(timePosition);
+                mainTimingHelper.Seek(timePosition);
+                preTimingHelper.Seek(timePosition + preEventOffset);
                 foreach(var ln in lnHolders.Values)
                     ln.Update(timePosition);
                 if(OnBeatFlow != null) {
-                    float beatFlow = (float)(timePosition - bpmBasePoint).Ticks / TimeSpan.TicksPerMinute * currentBPM + bpmBasePointBeatFlow;
+                    float beatFlow = (float)(timePosition - bpmBasePoint).Ticks / TimeSpan.TicksPerMinute * bpm + bpmBasePointBeatFlow;
                     OnBeatFlow.Invoke(Mathf.Repeat(beatFlow, 1), Mathf.Repeat(beatFlow, currentTimeSignature));
                 }
-                if(mainTimingHelper.IsEnded && soundPlayer.Polyphony <= 0)
+                if(mainTimingHelper.IsEnd && soundPlayer.Polyphony <= 0)
                     IsStarted = false;
             }
         }
@@ -387,47 +388,43 @@ namespace BMS {
             ClearDataObjects(true, false);
         }
 
-        void OnBeatReset(TimeSpan timePosition, float newTimeSignature) {
-            bpmBasePointBeatFlow = 0;
-            bpmBasePoint = timePosition;
-            currentTimeSignature = newTimeSignature;
-        }
-
-        void OnBpmChange(TimeSpan timePosition, float newBpm) {
-            bpmBasePointBeatFlow += (float)(timePosition - bpmBasePoint).Ticks / TimeSpan.TicksPerMinute * currentBPM;
-            bpmBasePoint = timePosition;
-            currentBPM = newBpm;
-            CalculatePreOffset();
-            if(OnChangeBPM != null)
-                OnChangeBPM.Invoke(newBpm);
-        }
-
-        void OnPreEvent(TimeSpan timePosition, int channel, int eventId) {
+        void OnPreEvent(BMSEvent bmsEvent) {
             if(OnPreNoteEvent != null)
-                OnPreNoteEvent.Invoke(timePosition, channel, eventId);
+                OnPreNoteEvent.Invoke(bmsEvent);
         }
 
-        void OnEventUpdate(TimeSpan timePosition, int channel, int eventId) {
-            switch(channel) {
-                case 0: case 2: case 3: case 5: case 8: case 9: break;
-                case 1: PlayWAV(eventId); break;
-                case 4: ChangeBGA(0, eventId); break;
-                case 6: ChangeBGA(-1, eventId); break;
-                case 7: ChangeBGA(1, eventId); break;
+        void OnEventUpdate(BMSEvent bmsEvent) {
+            switch(bmsEvent.type) {
+                case BMSEventType.WAV: PlayWAV((int)bmsEvent.data2); break;
+                case BMSEventType.BMP: ChangeBGA(bmsEvent.data1, (int)bmsEvent.data2); break;
+                case BMSEventType.BeatReset:
+                    bpmBasePointBeatFlow = 0;
+                    bpmBasePoint = timePosition;
+                    currentTimeSignature = (float)BitConverter.Int64BitsToDouble(bmsEvent.data2);
+                    break;
+                case BMSEventType.BPM:
+                    float newBpm = (float)BitConverter.Int64BitsToDouble(bmsEvent.data2);
+                    bpmBasePointBeatFlow += (float)(timePosition - bpmBasePoint).Ticks / TimeSpan.TicksPerMinute * bpm;
+                    bpmBasePoint = timePosition;
+                    bpm = newBpm;
+                    CalculatePreOffset();
+                    if(OnChangeBPM != null)
+                        OnChangeBPM.Invoke(newBpm);
+                    break;
                 default:
-                    if(!handledChannels.Contains(channel)) {
+                    if(!handledChannels.Contains(bmsEvent.data1)) {
                         bool shouldPlayWav = true;
-                        if(lnType > 0 && channel >= 50 && channel < 70) {
+                        if(bmsEvent.type == BMSEventType.LongNoteEnd || bmsEvent.type == BMSEventType.LongNoteStart)  {
                             int lnState;
-                            if(!autoPlayLNState.TryGetValue(channel, out lnState))
+                            if(!autoPlayLNState.TryGetValue(bmsEvent.data1, out lnState))
                                 lnState = 0;
-                            shouldPlayWav = lnState != eventId;
-                            autoPlayLNState[channel] = lnState > 0 ? 0 : eventId;
+                            shouldPlayWav = lnState != bmsEvent.data2;
+                            autoPlayLNState[bmsEvent.data1] = lnState > 0 ? 0 : bmsEvent.data1;
                         }
-                        if(shouldPlayWav) PlayWAV(eventId);
+                        if(shouldPlayWav) PlayWAV((int)bmsEvent.data2);
                     }
                     if(OnNoteEvent != null)
-                        OnNoteEvent.Invoke(timePosition, channel, eventId);
+                        OnNoteEvent.Invoke(bmsEvent);
                     break;
             }
         }
@@ -442,8 +439,8 @@ namespace BMS {
                     eventId = bga.index;
                 }
                 bmp = GetBMP(eventId);
-                if(bmp == null && channel == 0 && (GetTimeLine(4).Count < 2 || bmpObjects.Count < 1))
-                    bmp = placeHolderTexture;
+                /*if(bmp == null && channel == 0 && (GetTimeLine(4).Count < 2 || bmpObjects.Count < 1))
+                    bmp = placeHolderTexture;*/
                 OnChangeBackground.Invoke(bmp, channel, _bga, eventId);
             }
         }
@@ -464,7 +461,7 @@ namespace BMS {
                 calculatedPreOffset = preEventOffset;
                 return;
             }
-            calculatedPreOffset = Scale(preEventOffset, 130 / currentBPM);
+            calculatedPreOffset = Scale(preEventOffset, 130 / bpm);
         }
 
         static TimeSpan Scale(TimeSpan source, double ratio) {

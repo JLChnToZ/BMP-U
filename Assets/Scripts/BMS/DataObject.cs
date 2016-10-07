@@ -4,7 +4,10 @@ namespace BMS {
     public enum ResourceType {
         Unknown,
         bmp,
-        wav
+        wav,
+        bpm,
+        stop,
+        bga,
     }
 
     public class ResourceObject {

@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace BMS {
     public class NoteDetector:MonoBehaviour {
@@ -39,8 +40,9 @@ namespace BMS {
         readonly Dictionary<int, QueuedLongNoteState> queuedLongNoteState = new Dictionary<int, QueuedLongNoteState>();
         readonly Dictionary<int, LongNoteState> longNoteStates = new Dictionary<int, LongNoteState>();
         readonly Dictionary<int, bool> longNoteAutoFlag = new Dictionary<int, bool>();
-        TimingHelper preQueueMapper, postQueueMapper;
-        TimeSpan endTimeOffset;
+        Chart.EventDispatcher preQueueMapper, postQueueMapper;
+        IList<BMSEvent> bmsEvents;
+        TimeSpan startTimeOffset, endTimeOffset;
 
         public TimeSpan EndTimeOffset {
             get { return endTimeOffset; }
@@ -51,11 +53,8 @@ namespace BMS {
         public bool autoMode;
 
         void Awake() {
+            startTimeOffset = TimeSpan.FromSeconds(startTimeOffsetSeconds);
             endTimeOffset = TimeSpan.FromSeconds(-endTimeOffsetSeconds);
-            preQueueMapper = new TimingHelper(TimeSpan.FromSeconds(startTimeOffsetSeconds));
-            postQueueMapper = new TimingHelper(endTimeOffset);
-            preQueueMapper.OnIndexChange += OnHasKeyFrame;
-            postQueueMapper.OnIndexChange += OnPostMap;
             bmsManager.OnBMSLoaded += OnBMSLoaded;
             bmsManager.OnGameEnded += OnEnded;
             bmsManager.OnNoteEvent += NoteEvent;
@@ -72,8 +71,9 @@ namespace BMS {
         void Update() {
             if(bmsManager.IsStarted && !bmsManager.IsPaused) {
                 TimeSpan timePosition = bmsManager.TimePosition;
-                preQueueMapper.Update(timePosition);
-                postQueueMapper.Update(timePosition);
+                preQueueMapper.Seek(timePosition + startTimeOffset);
+                postQueueMapper.Seek(timePosition + endTimeOffset);
+                preQueueMapper.debug = true;
             }
         }
 
@@ -88,15 +88,20 @@ namespace BMS {
         }
 
         void OnBMSLoaded() {
-            preQueueMapper.ClearHandles();
-            postQueueMapper.ClearHandles();
+            bmsEvents = bmsManager.LoadedChart.Events;
+            if(preQueueMapper != null)
+                preQueueMapper.BMSEvent -= OnHasKeyFrame;
+            preQueueMapper = bmsManager.LoadedChart.GetEventDispatcher();
+            preQueueMapper.BMSEvent += OnHasKeyFrame;
+            preQueueMapper.Seek(TimeSpan.MinValue, false);
+            if(postQueueMapper != null)
+                postQueueMapper.BMSEvent -= OnPostMap;
+            postQueueMapper = bmsManager.LoadedChart.GetEventDispatcher();
+            postQueueMapper.BMSEvent += OnPostMap;
+            postQueueMapper.Seek(TimeSpan.MinValue, false);
             foreach(var channel in bmsManager.GetAllChannelIds()) {
                 if(!bmsManager.GetAllAdoptedChannels().Contains(channel)) continue;
-                if(channel >= 50 && bmsManager.LongNoteType != 1) continue;
-                GetChannelQueue(channel >= 50 ? channel - 40 : channel).Clear();
-                var timeLine = bmsManager.GetTimeLine(channel);
-                preQueueMapper.AddTimelineHandle(timeLine, channel);
-                postQueueMapper.AddTimelineHandle(timeLine, channel);
+                GetChannelQueue(channel).Clear();
             }
         }
 
@@ -106,52 +111,48 @@ namespace BMS {
             longNoteStates.Clear();
             queuedLongNoteState.Clear();
             longNoteAutoFlag.Clear();
-            preQueueMapper.Reset();
-            postQueueMapper.Reset();
+            preQueueMapper.Seek(TimeSpan.MinValue, false);
+            postQueueMapper.Seek(TimeSpan.MinValue, false);
         }
 
-        void NoteEvent(TimeSpan timePosition, int channel, int dataId) {
+        void NoteEvent(BMSEvent bmsEvent) {
             if(autoMode) {
-                if(!bmsManager.GetAllAdoptedChannels().Contains(channel))
+                if(!bmsManager.GetAllAdoptedChannels().Contains(bmsEvent.data1))
                     return;
-                bool isUp = false;
-                if(channel >= 50) {
-                    longNoteAutoFlag.TryGetValue(channel, out isUp);
-                    longNoteAutoFlag[channel] = !isUp;
-                    channel -= 40;
-                }
-                HandleNoteEvent(channel, true, !isUp);
+                HandleNoteEvent(bmsEvent.data1, true, bmsEvent.type == BMSEventType.LongNoteStart || bmsEvent.type == BMSEventType.Note);
             }
         }
 
-        void OnHasKeyFrame(TimeSpan timePosition, int channel, int dataId) {
-            bool isLongNote = channel >= 50, lnDown = false;
+        void OnHasKeyFrame(BMSEvent bmsEvent) {
+            if(bmsEvent.type != BMSEventType.Note && bmsEvent.type != BMSEventType.LongNoteStart && bmsEvent.type != BMSEventType.LongNoteEnd)
+                return;
+            bool isLongNote = bmsEvent.type == BMSEventType.LongNoteEnd || bmsEvent.type == BMSEventType.LongNoteStart, lnDown = false;
             TimeSpan lnEndpos = TimeSpan.Zero;
             QueuedLongNoteState queuedLNState = new QueuedLongNoteState();
             if(isLongNote) {
-                channel -= 40;
-                queuedLongNoteState.TryGetValue(channel, out queuedLNState);
+                queuedLongNoteState.TryGetValue(bmsEvent.data1, out queuedLNState);
                 lnDown = queuedLNState.isNoteDown;
                 queuedLNState.isNoteDown = !lnDown;
                 if(!lnDown) {
                     queuedLNState.longNoteId++;
-                    lnEndpos = preQueueMapper.Peek(channel + 40, 2).TimePosition;
+                    lnEndpos = bmsEvent.time2;
                 }
-                queuedLongNoteState[channel] = queuedLNState;
+                queuedLongNoteState[bmsEvent.data1] = queuedLNState;
             }
-            GetChannelQueue(channel).Enqueue(new KeyFrame {
-                timePosition = timePosition,
-                channelId = channel,
-                dataId = dataId,
+            GetChannelQueue(bmsEvent.data1).Enqueue(new KeyFrame {
+                timePosition = bmsEvent.time,
+                channelId = bmsEvent.data1,
+                dataId = (int)bmsEvent.data2,
                 type = isLongNote ? (lnDown ? NoteType.LongEnd : NoteType.LongStart) : NoteType.Normal,
                 longNoteId = queuedLNState.longNoteId,
                 lnEndPosition = lnEndpos
             });
         }
 
-        void OnPostMap(TimeSpan timePosition, int channel, int dataId) {
-            if(channel >= 50) channel -= 40;
-            HandleNoteEvent(channel, false, false);
+        void OnPostMap(BMSEvent bmsEvent) {
+            if(bmsEvent.type != BMSEventType.Note && bmsEvent.type != BMSEventType.LongNoteStart && bmsEvent.type != BMSEventType.LongNoteEnd)
+                return;
+            HandleNoteEvent(bmsEvent.data1, false, false);
         }
 
         Queue<KeyFrame> GetChannelQueue(int channelId) {

@@ -45,10 +45,8 @@ namespace BMS.Visualization {
         protected virtual void Start() {
             hasColors = matchColors.Length > 0;
             _handledChannels.UnionWith(handledChannels);
-            foreach(var channel in _handledChannels) {
+            foreach(var channel in _handledChannels)
                 bmsManager.AdoptChannel(channel);
-                bmsManager.AdoptChannel(channel + 40);
-            }
             bmsManager.OnPreNoteEvent += PreNoteEvent;
             bmsManager.OnGameStarted += OnGameStarted;
             bmsManager.OnBMSLoaded += BMSLoaded;
@@ -77,17 +75,17 @@ namespace BMS.Visualization {
             matchingTimeNoteHandlers.Clear();
         }
 
-        protected virtual void PreNoteEvent(TimeSpan timePos, int channelId, int dataId) {
-            bool isLongNote = bmsManager.LongNoteType > 0 && _handledChannels.Contains(channelId - 40);
-            if(isLongNote) channelId -= 40;
-            if(!_handledChannels.Contains(channelId)) return;
-            int index = Array.IndexOf(channels, channelId);
+        protected virtual void PreNoteEvent(BMSEvent bmsEvent) {
+            bool isLongNote = bmsManager.LongNoteType > 0 && _handledChannels.Contains(bmsEvent.data1) && (bmsEvent.type == BMSEventType.LongNoteStart || 
+                bmsEvent.type == BMSEventType.LongNoteEnd);
+            if(!_handledChannels.Contains(bmsEvent.data1)) return;
+            int index = Array.IndexOf(channels, bmsEvent.data1);
             if(index < 0) return;
             float delta = (float)index / (channels.Length - 1);
             bool createNew = true;
             NoteHandler noteHandler = null;
             if(isLongNote) {
-                int idx = Array.IndexOf(channels, channelId);
+                int idx = Array.IndexOf(channels, bmsEvent.data1);
                 noteHandler = longNoteHandlers[idx];
                 createNew = noteHandler == null;
                 if(createNew)
@@ -98,18 +96,18 @@ namespace BMS.Visualization {
                 noteHandler = GetFreeNoteHandler();
 
             if(createNew)
-                noteHandler.Register(this, bmsManager, timePos, channelId, dataId, delta, isLongNote);
+                noteHandler.Register(this, bmsManager, bmsEvent.time, bmsEvent.data1, (int)bmsEvent.data2, delta, isLongNote);
             else
-                noteHandler.RegisterLongNoteEnd(timePos, dataId);
+                noteHandler.RegisterLongNoteEnd(bmsEvent.time, (int)bmsEvent.data2);
 
             if(isLongNote ? createNew : true) {
                 switch(coloringMode) {
                     case ColoringMode.Timing:
                         noteHandler.SetColor(defaultColor);
                         if(hasColors) {
-                            if(currentMatchingTime != timePos)
+                            if(currentMatchingTime != bmsEvent.time)
                                 matchingTimeNoteHandlers.Clear();
-                            currentMatchingTime = timePos;
+                            currentMatchingTime = bmsEvent.time;
                             matchingTimeNoteHandlers.Add(noteHandler);
                             if(matchingTimeNoteHandlers.Count > 1) {
                                 if(matchingTimeNoteHandlers.Count == 2) {
@@ -123,7 +121,7 @@ namespace BMS.Visualization {
                         break;
                     case ColoringMode.Channel:
                         if(hasColors) {
-                            int colorId = Array.IndexOf(handledChannels, channelId);
+                            int colorId = Array.IndexOf(handledChannels, bmsEvent.data1);
                             noteHandler.SetColor(matchColors[colorId > 0 ? colorId % matchColors.Length : 0]);
                         }
                         break;
@@ -133,7 +131,7 @@ namespace BMS.Visualization {
                 }
             }
 #if UNITY_EDITOR || DEBUG
-            noteHandler.gameObject.name = string.Format("NOTE #{0:0000}:{1:0000} @{2}", channelId, dataId, timePos);
+            noteHandler.gameObject.name = string.Format("NOTE #{0:0000}:{1:0000} @{2}", bmsEvent.data1, bmsEvent.data2, bmsEvent.time);
 #endif
         }
         

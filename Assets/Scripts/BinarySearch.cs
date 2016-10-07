@@ -72,16 +72,22 @@ public static class BinarySearch {
         return resultIdx < 0 || sortedList.Count < 1 ? default(T) : sortedList[resultIdx];
     }
 
-    public static void InsertInOrdered<T>(this IList<T> sortedList, T item, IComparer<T> comparer = null, int fromIndex = 0, int toIndex = -1) {
+    public static int InsertInOrdered<T>(this IList<T> sortedList, T item, IComparer<T> comparer = null, int fromIndex = 0, int toIndex = -1) {
         if(sortedList == null)
             throw new ArgumentNullException("sortedList");
         if(sortedList.IsReadOnly)
             throw new ArgumentException("Cannot alter a read-only collection.");
         int index = BinarySearchIndex(sortedList, item, BinarySearchMethod.CeilClosest | BinarySearchMethod.FirstExact, fromIndex, toIndex, comparer);
-        if(index >= sortedList.Count)
+        if(index >= sortedList.Count) {
+            index = sortedList.Count;
             sortedList.Add(item);
-        else
-            sortedList.Insert(index < 0 ? 0 : index, item);
+        } else if(index < 0) {
+            index = 0;
+            sortedList.Insert(0, item);
+        } else {
+            sortedList.Insert(index, item);
+        }
+        return index;
     }
     
     public static void InsertInOrdered<T>(this IList<T> sortedList, IEnumerable<T> items, IComparer<T> comparer = null, int fromIndex = 0, int toIndex = -1) {
