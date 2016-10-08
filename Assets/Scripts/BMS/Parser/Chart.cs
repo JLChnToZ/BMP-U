@@ -144,10 +144,11 @@ namespace BMS {
                 List<BMSEvent> bmsEvents = chart.bmsEvents;
                 if(newTime > currentTime) {
                     currentTime = newTime;
+                    if(currentIndex < 0) currentIndex = 0;
                     if(!dispatchEvents || BMSEvent == null)
                         // If it does not require to dispatch events, use a quicker way to seek to position.
                         currentIndex = bmsEvents.BinarySearchIndex(new BMSEvent { time = currentTime },
-                            BinarySearchMethod.LastExact | BinarySearchMethod.FloorClosest);
+                            BinarySearchMethod.LastExact | BinarySearchMethod.FloorClosest, currentIndex);
                     else
                         while(currentIndex < length && bmsEvents[currentIndex].time <= currentTime) {
                             BMSEvent.Invoke(bmsEvents[currentIndex]);
@@ -155,9 +156,10 @@ namespace BMS {
                         }
                 } else if(newTime < currentTime) {
                     currentTime = newTime;
+                    if(currentIndex >= length) currentIndex = length - 1;
                     if(!dispatchEvents || BMSEvent == null)
                         currentIndex = bmsEvents.BinarySearchIndex(new BMSEvent { time = currentTime },
-                            BinarySearchMethod.FirstExact | BinarySearchMethod.CeilClosest);
+                            BinarySearchMethod.FirstExact | BinarySearchMethod.CeilClosest, 0, currentIndex);
                     else
                         while(currentIndex >= 0 && bmsEvents[currentIndex].time >= currentTime) {
                             BMSEvent.Invoke(bmsEvents[currentIndex]);
