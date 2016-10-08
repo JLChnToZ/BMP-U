@@ -144,18 +144,25 @@ namespace BMS {
                 List<BMSEvent> bmsEvents = chart.bmsEvents;
                 if(newTime > currentTime) {
                     currentTime = newTime;
-                    while(currentIndex < length - 1 && bmsEvents[currentIndex + 1].time <= currentTime) {
-                        currentIndex++;
-                        if(dispatchEvents && BMSEvent != null)
+                    if(!dispatchEvents)
+                        // If it does not require to dispatch events, use a quicker way to seek to position.
+                        currentIndex = bmsEvents.BinarySearchIndex(new BMSEvent { time = currentTime },
+                            BinarySearchMethod.LastExact | BinarySearchMethod.FloorClosest);
+                    else if(BMSEvent != null)
+                        while(currentIndex < length && bmsEvents[currentIndex].time <= currentTime) {
                             BMSEvent.Invoke(bmsEvents[currentIndex]);
-                    }
+                            currentIndex++;
+                        }
                 } else if(newTime < currentTime) {
                     currentTime = newTime;
-                    while(currentIndex > 0 && bmsEvents[currentIndex - 1].time >= currentTime) {
-                        currentIndex--;
-                        if(dispatchEvents && BMSEvent != null)
+                    if(!dispatchEvents)
+                        currentIndex = bmsEvents.BinarySearchIndex(new BMSEvent { time = currentTime },
+                            BinarySearchMethod.FirstExact | BinarySearchMethod.CeilClosest);
+                    else if(BMSEvent != null)
+                        while(currentIndex >= 0 && bmsEvents[currentIndex].time >= currentTime) {
                             BMSEvent.Invoke(bmsEvents[currentIndex]);
-                    }
+                            currentIndex--;
+                        }
                 }
             }
 
@@ -163,7 +170,7 @@ namespace BMS {
                 length = chart.bmsEvents.Count;
                 if(length > 0)
                     endTime = length > 0 ? chart.bmsEvents[length - 1].time : TimeSpan.Zero;
-                currentTime = TimeSpan.Zero;
+                currentTime = TimeSpan.MinValue;
                 currentIndex = 0;
             }
         }
