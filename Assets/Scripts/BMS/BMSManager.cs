@@ -395,7 +395,7 @@ namespace BMS {
 
         void OnEventUpdate(BMSEvent bmsEvent) {
             switch(bmsEvent.type) {
-                case BMSEventType.WAV: PlayWAV((int)bmsEvent.data2); break;
+                case BMSEventType.WAV: PlayWAV((int)bmsEvent.data2, bmsEvent.sliceStart, bmsEvent.sliceEnd); break;
                 case BMSEventType.BMP: ChangeBGA(bmsEvent.data1, (int)bmsEvent.data2); break;
                 case BMSEventType.BeatReset:
                     bpmBasePointBeatFlow = 0;
@@ -421,7 +421,7 @@ namespace BMS {
                             shouldPlayWav = lnState != bmsEvent.data2;
                             autoPlayLNState[bmsEvent.data1] = lnState > 0 ? 0 : bmsEvent.data1;
                         }
-                        if(shouldPlayWav) PlayWAV((int)bmsEvent.data2);
+                        if(shouldPlayWav) PlayWAV((int)bmsEvent.data2, bmsEvent.sliceStart, bmsEvent.sliceEnd);
                     }
                     if(OnNoteEvent != null)
                         OnNoteEvent.Invoke(bmsEvent);
@@ -445,11 +445,11 @@ namespace BMS {
             }
         }
 
-        void PlayWAV(int eventId, bool isPlayer = false, float pitch = 1) {
+        void PlayWAV(int eventId, TimeSpan sliceStart, TimeSpan sliceEnd, bool isPlayer = false, float pitch = 1) {
             if(eventId == 0) return;
             var wav = GetWAV(eventId);
             if(wav != null)
-                soundPlayer.PlaySound(wav, eventId, isPlayer, pitch, wavObjects[eventId].path);
+                soundPlayer.PlaySound(wav, sliceStart, sliceEnd, eventId, isPlayer, pitch, wavObjects[eventId].path);
         }
 
         public bool IsValidFlag(int flag) {
@@ -493,7 +493,7 @@ namespace BMS {
                 lnHolder.AddRemainScore();
         }
 
-        public int NoteClicked(TimeSpan expectedTimePosition, int channel, int eventId, bool countAsMiss, bool hasSound = true, TimeSpan? endNotePos = null) {
+        public int NoteClicked(TimeSpan expectedTimePosition, int channel, int eventId, bool countAsMiss, TimeSpan sliceStart, TimeSpan sliceEnd, bool hasSound = true, TimeSpan? endNotePos = null) {
             if(!isStarted || isPaused) return -2;
             var timeDiff = timePosition - expectedTimePosition;
 
@@ -541,7 +541,7 @@ namespace BMS {
             rankSynced = false;
 
             if(hasSound && IsValidFlag(resultFlag))
-                PlayWAV(eventId, true, detuneEnabled && resultFlag > 0 ? Mathf.Clamp(1 + accuracy / 500, 0.5F, 1.5F) : 1);
+                PlayWAV(eventId, sliceStart, sliceEnd, true, detuneEnabled && resultFlag > 0 ? Mathf.Clamp(1 + accuracy / 500, 0.5F, 1.5F) : 1);
 
             if(OnNoteClicked != null)
                 OnNoteClicked.Invoke(expectedTimePosition, timePosition, channel, eventId, resultFlag);

@@ -289,6 +289,7 @@ namespace BMS {
                 BinarySearchMethod.FloorClosest | BinarySearchMethod.LastExact,
                 0, -1, TicksComparer.instance
             );
+
             BMSEvent lastReferencePoint;
             if(index >= 0) {
                 lastReferencePoint = referencePoints[index];
@@ -309,8 +310,8 @@ namespace BMS {
             } else {
                 lastReferencePoint = DefaultReferencePoint;
             }
-            return TicksToTime(lastReferencePoint, ticks);
 
+            return TicksToTime(lastReferencePoint, ticks);
         }
 
         private TimeSpan TicksToTime(BMSEvent referencePoint, int currentTicks) {

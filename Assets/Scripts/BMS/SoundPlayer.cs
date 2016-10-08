@@ -34,6 +34,17 @@ namespace BMS {
             }
         }
 
+        struct AudioSourceSliced {
+            public readonly AudioSource audioSource;
+            public readonly float sliceStart, sliceEnd;
+
+            public AudioSourceSliced(AudioSource audioSource, TimeSpan sliceStart, TimeSpan sliceEnd) {
+                this.audioSource = audioSource;
+                this.sliceStart = (float)sliceStart.Ticks / TimeSpan.TicksPerSecond;
+                this.sliceEnd = (float)sliceEnd.Ticks / TimeSpan.TicksPerSecond;
+            }
+        }
+
         [NonSerialized]
         Queue<AudioSource> freeAudioSources = new Queue<AudioSource>();
 
@@ -41,7 +52,7 @@ namespace BMS {
         Dictionary<InUseAudioSource, float> inUseAudioSources = new Dictionary<InUseAudioSource, float>();
 
         [NonSerialized]
-        Dictionary<int, AudioSource> audioSourceIdMapping = new Dictionary<int, AudioSource>();
+        Dictionary<int, AudioSourceSliced> audioSourceIdMapping = new Dictionary<int, AudioSourceSliced>();
 
         [NonSerialized]
         HashSet<AudioSource> changingAudioSource = new HashSet<AudioSource>();
@@ -93,32 +104,38 @@ namespace BMS {
             isPaused = false;
         }
 
-        public void PlaySound(AudioClip audio, int id, bool isPlayer = false, float pitch = 1, string debugName = "") {
-            AudioSource audioSource = null;
+        public void PlaySound(AudioClip audio, TimeSpan sliceStart, TimeSpan sliceEnd, int id, bool isPlayer, float pitch, string debugName) {
+            AudioSourceSliced audioSource = default(AudioSourceSliced);
             if(inUseAudioSources.ContainsKey(new InUseAudioSource(id))) {
                 audioSource = audioSourceIdMapping[id];
-                changingAudioSource.Add(audioSource);
-                audioSource.Stop();
+                changingAudioSource.Add(audioSource.audioSource);
+                audioSource.audioSource.Stop();
                 // audioSource.time = 0;
             } else {
-                audioSource = GetFreeAudioSource(isPlayer);
-                changingAudioSource.Add(audioSource);
-                audioSource.clip = audio;
+                audioSource = new AudioSourceSliced(GetFreeAudioSource(isPlayer), sliceStart, sliceEnd);
+                changingAudioSource.Add(audioSource.audioSource);
+                audioSource.audioSource.clip = audio;
             }
-            audioSource.volume = volume;
-            inUseAudioSources[new InUseAudioSource(audioSource, id)] = 0;
+            audioSource.audioSource.volume = volume;
+            inUseAudioSources[new InUseAudioSource(audioSource.audioSource, id)] = 0;
             audioSourceIdMapping[id] = audioSource;
-            audioSource.pitch = pitch;
-            if(!isPaused && !audioSource.isPlaying)
-                audioSource.Play();
+            audioSource.audioSource.pitch = pitch;
+            if(!isPaused) {
+                if(!audioSource.audioSource.isPlaying)
+                    audioSource.audioSource.Play();
+                audioSource.audioSource.time = (float)sliceStart.Ticks / TimeSpan.TicksPerSecond;
+            }
             #if UNITY_EDITOR
-            audioSource.gameObject.name = string.Format("WAV{0:000} {1}", id, debugName);
+            audioSource.audioSource.gameObject.name = string.Format("WAV{0:000} {1}", id, debugName);
             #endif
-            changingAudioSource.Remove(audioSource);
+            changingAudioSource.Remove(audioSource.audioSource);
         }
 
         void RecycleInUseAudioSources() {
             var unusedAudioSources = new HashSet<InUseAudioSource>();
+            foreach(var kv in audioSourceIdMapping)
+                if(kv.Value.audioSource.time >= kv.Value.sliceEnd)
+                    kv.Value.audioSource.Stop();
             foreach(var audioSource in inUseAudioSources.Keys)
                 if(!audioSource.audioSource.isPlaying && !changingAudioSource.Contains(audioSource.audioSource))
                     unusedAudioSources.Add(audioSource);
@@ -131,17 +148,10 @@ namespace BMS {
 #endif
             }
         }
-
-        void Start() {
-            StartCoroutine(AutoGCAudioObjects());
-        }
-
-        IEnumerator AutoGCAudioObjects() {
-            while(true) {
-                if(!isPaused) {
-                    RecycleInUseAudioSources();
-                }
-                yield return new WaitForSeconds(0.2F);
+        
+        void Update() {
+            if(!isPaused) {
+                RecycleInUseAudioSources();
             }
         }
 

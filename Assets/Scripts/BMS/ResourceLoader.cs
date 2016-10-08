@@ -22,6 +22,7 @@ namespace BMS {
     internal class ResourceLoader {
         static readonly string[] imageTypes = new[] { ".bmp", ".emf", ".gif", ".ico", ".jpg", ".jpe", ".jpeg", ".png", ".tif", ".tiff", ".wmf" };
         static readonly Dictionary<string, Texture2D> textureCache = new Dictionary<string, Texture2D>();
+        readonly Dictionary<string, object> objectCache = new Dictionary<string, object>();
 
         readonly string basePath;
 
@@ -57,7 +58,10 @@ namespace BMS {
             var finfo = FindRes(resource, ".wav");
             if(finfo != null && finfo.Exists) {
                 try {
-                    resource.value = ReadAudioClipExtended(finfo);
+                    if(!objectCache.TryGetValue(finfo.FullName, out resource.value)) {
+                        resource.value = ReadAudioClipExtended(finfo);
+                        objectCache.Add(finfo.FullName, resource.value);
+                    }
                 } catch(Exception ex) {
                     Debug.LogWarningFormat("Exception thrown while loading \"{0}\": {1}\n{2}", finfo.Name, ex.Source, ex.StackTrace);
                 }
@@ -70,7 +74,7 @@ namespace BMS {
 
         IEnumerator LoadBmpRes(ResourceObject resource, Action callback) {
             var finfo = FindRes(resource, ".bmp");
-            if(finfo != null) {
+            if(finfo != null && !objectCache.TryGetValue(finfo.FullName, out resource.value)) {
                 bool isImage = false;
                 var ext = finfo.Extension.ToLower();
                 foreach(var imageType in imageTypes)
@@ -82,6 +86,8 @@ namespace BMS {
                     resource.value = ReadTextureFromFile(finfo);
                 else
                     resource.value = ReadMovieTextureFromFile(finfo);
+
+                objectCache.Add(finfo.FullName, resource.value);
             }
             if(callback != null) callback.Invoke();
             yield break;
