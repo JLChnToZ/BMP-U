@@ -76,6 +76,9 @@ namespace BMS {
             }
             ParseBGAEvents(parseType, bmev, referencePoints);
 
+            if((parseType & ParseType.Content) == ParseType.Content)
+                bmsEvents.AddRange(bmev);
+
             base.Parse(parseType);
         }
 
@@ -97,7 +100,7 @@ namespace BMS {
             genre = info.GetChild("genre").AsString();
             modeHint = info.GetChild("mode_hint").AsString("beat-7k");
             chartName = info.GetChild("chart_name").AsString();
-
+            playLevel = info.GetChild("level").AsInt32();
             initialBPM = info.GetChild("init_bpm").AsSingle();
 
             string bannerImage = info.GetChild("banner_image").AsString();
@@ -245,6 +248,9 @@ namespace BMS {
                         sliceEnd = TimeSpan.MaxValue
                     });
                 }
+
+                if(channelId != 0)
+                    allChannels.Add(channelId);
             }
         }
 
@@ -317,7 +323,7 @@ namespace BMS {
         private TimeSpan TicksToTime(BMSEvent referencePoint, int currentTicks) {
             return referencePoint.time + new TimeSpan(
                 (long)Math.Round(
-                    (currentTicks - referencePoint.ticks) / tickResoultion *
+                    (double)(currentTicks - referencePoint.ticks) / tickResoultion /
                     GetDoubleValue(referencePoint) *
                     TimeSpan.TicksPerMinute
                 )
