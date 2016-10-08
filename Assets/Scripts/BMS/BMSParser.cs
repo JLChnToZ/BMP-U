@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using UnityEngine;
 
@@ -22,6 +23,7 @@ namespace BMS {
 
         bool stageFileLoaded;
         bool bannerFileLoaded;
+        bool hasBGA;
         BMSFileType fileType;
         Texture stageFile;
         Texture bannerFile;
@@ -41,7 +43,7 @@ namespace BMS {
         public Texture StageFile { get { return stageFile; } }
         public Texture BannerFile { get { return bannerFile; } }
         public int LongNoteType { get { return 1; } }
-        public TimeSpan Duration { get { return TimeSpan.Zero; } }
+        public TimeSpan Duration { get { return duration; } }
         public TimeSpan StartPosition { get { return startPos; } }
         public string StageFilePath {
             get {
@@ -130,6 +132,7 @@ namespace BMS {
                 if(parseBody) parseType |= ParseType.Content;
                 chart.Parse(parseType);
                 duration = mainTimingHelper.EndTime;
+                hasBGA = chart.Events.Any(ev => ev.type == BMSEventType.BMP);
                 if(parseResHeader)
                     foreach(BMSResourceData resData in chart.IterateResourceData()) {
                         switch(resData.type) {

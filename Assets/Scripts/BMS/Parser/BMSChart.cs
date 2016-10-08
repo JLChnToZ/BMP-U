@@ -8,6 +8,7 @@ using System.Globalization;
 namespace BMS {
     public class BMSChart: Chart {
         static readonly Regex spaceMatcher = new Regex("\\s+", RegexOptions.Compiled);
+        static readonly Regex lineMatcher = new Regex("\\r\\n|\\r|\\n", RegexOptions.Compiled);
         string rawBmsContent;
         readonly List<string> bmsContent = new List<string>();
         int lnType;
@@ -20,7 +21,7 @@ namespace BMS {
             get {
                 if(!string.IsNullOrEmpty(rawBmsContent))
                     return rawBmsContent;
-                return string.Concat("\n", bmsContent);
+                return string.Join("\n", bmsContent.ToArray());
             }
         }
 
@@ -105,12 +106,9 @@ namespace BMS {
         }
 
         private void InitSources() {
-            if(bmsContent.Count > 0)
+            if(bmsContent.Count > 0 || string.IsNullOrEmpty(rawBmsContent))
                 return;
-            bmsContent.Clear();
-            if(string.IsNullOrEmpty(rawBmsContent))
-                return;
-            foreach(string line in Regex.Split(rawBmsContent, "\r\n|\r|\n")) {
+            foreach(string line in lineMatcher.Split(rawBmsContent)) {
                 string trimmed = line.Trim();
                 if(!string.IsNullOrEmpty(trimmed) && trimmed[0] == '#')
                     bmsContent.Add(trimmed);
@@ -375,8 +373,7 @@ namespace BMS {
             TimeSpan referenceTimePoint = TimeSpan.Zero;
 
             TimeSpan stopTimePoint = TimeSpan.Zero;
-            int stopMeasure = int.MinValue;
-            float stopBeat = 0;
+            float stopMeasBeat = float.MinValue;
             
             result.Add(new BMSEvent {
                 measure = 0,
@@ -389,7 +386,7 @@ namespace BMS {
                 BMSEvent converted = new BMSEvent();
                 converted.measure = ev.measure;
                 converted.beat = (float)(ev.beat * beatPerMeas);
-                if(ev.measure == stopMeasure && ev.beat == stopBeat)
+                if(ev.measure + ev.beat == stopMeasBeat)
                     converted.time = stopTimePoint;
                 else
                     converted.time = referenceTimePoint + MeasureBeatToTimeSpan(ev.measure + ev.beat - beatOffset, beatPerMeas, bpm);
@@ -424,11 +421,13 @@ namespace BMS {
                         referenceTimePoint = converted.time;
                         break;
                     case BMSEventType.STOP:
+                        BMSResourceData stopData;
+                        if(!resourceDatas.TryGetValue(new ResourceId(ResourceType.stop, ev.data2), out stopData))
+                            continue;
                         converted.type = BMSEventType.STOP;
                         stopTimePoint = converted.time;
-                        stopMeasure = ev.measure;
-                        stopBeat = ev.beat;
-                        double stopBeats = Convert.ToDouble(resourceDatas[new ResourceId(ResourceType.stop, ev.data2)].additionalData);
+                        stopMeasBeat = ev.measure + ev.beat;
+                        double stopBeats = Convert.ToDouble(stopData.additionalData);
                         converted.data2 = BitConverter.DoubleToInt64Bits(stopBeats);
                         referenceTimePoint += MeasureBeatToTimeSpan(stopBeats, beatPerMeas, bpm);
                         break;
@@ -438,6 +437,7 @@ namespace BMS {
                             case 4: converted.data1 = 0; break;
                             case 6: converted.data1 = -1; break;
                             case 7: converted.data1 = 1; break;
+                            default: continue;
                         }
                         converted.data2 = ev.data2;
                         break;

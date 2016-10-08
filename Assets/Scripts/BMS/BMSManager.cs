@@ -439,8 +439,8 @@ namespace BMS {
                     eventId = bga.index;
                 }
                 bmp = GetBMP(eventId);
-                /*if(bmp == null && channel == 0 && (GetTimeLine(4).Count < 2 || bmpObjects.Count < 1))
-                    bmp = placeHolderTexture;*/
+                if(bmp == null && channel == 0 && !hasBGA)
+                    bmp = placeHolderTexture;
                 OnChangeBackground.Invoke(bmp, channel, _bga, eventId);
             }
         }
