@@ -38,6 +38,19 @@ namespace BMS {
 
         public event Action OnBMSLoaded;
 
+        public void LoadBMS(string bmsContent, string resourcePath, string extension, bool direct = false) {
+            BMSFileType bmsFileType;
+            switch(extension.ToLower()) {
+                case ".bms": bmsFileType = BMSFileType.Standard; break;
+                case ".bme": bmsFileType = BMSFileType.Extended; break;
+                case ".bml": bmsFileType = BMSFileType.Long; break;
+                case ".pms": bmsFileType = BMSFileType.Popn; break;
+                case ".bmson": bmsFileType = BMSFileType.Bmson; break;
+                default: bmsFileType = BMSFileType.Unknown; break;
+            }
+            LoadBMS(bmsContent, resourcePath, bmsFileType, direct);
+        }
+
         public void LoadBMS(string bmsContent, string resourcePath, BMSFileType bmsFileType, bool direct = false) {
             StopPreviousBMSLoadJob();
             fileType = bmsFileType;

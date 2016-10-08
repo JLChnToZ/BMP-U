@@ -35,7 +35,7 @@ public class TestLoader: MonoBehaviour {
             string bmsContent;
             using(var fsRead = file.OpenText())
                 bmsContent = fsRead.ReadToEnd();
-            bmsManager.LoadBMS(bmsContent, file.Directory.FullName, BMS.BMSFileType.Standard);
+            bmsManager.LoadBMS(bmsContent, file.Directory.FullName, file.Extension);
             while(!bmsManager.BMSLoaded) yield return null;
 
             bmsManager.ReloadBMS(BMS.BMSReloadOperation.Body | BMS.BMSReloadOperation.ResourceHeader);

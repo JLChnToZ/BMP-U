@@ -9,6 +9,7 @@ using ThreadPriority = System.Threading.ThreadPriority;
 
 namespace BMS {
     public enum BMSFileType {
+        Unknown,
         Standard,
         Extended,
         Long,

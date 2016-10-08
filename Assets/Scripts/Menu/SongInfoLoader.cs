@@ -53,7 +53,7 @@ public struct SongInfo:IEquatable<SongInfo>, IComparable<SongInfo> {
 }
 
 public static class SongInfoLoader {
-    static string[] supportedFileTypes = new[] { "*.bms", "*.bme", "*.bml", "*.pms" };
+    static string[] supportedFileTypes = new[] { "*.bms", "*.bme", "*.bml", "*.pms", "*.bmson" };
     public static ICollection<string> SupportedFileTypes {
         get {
             return new ReadOnlyCollection<string>(supportedFileTypes);
@@ -182,7 +182,7 @@ public static class SongInfoLoader {
         using(var fs = file.OpenRead())
         using(var fsRead = new StreamReader(fs, CurrentEncoding))
             bmsContent = fsRead.ReadToEnd();
-        bmsManager.LoadBMS(bmsContent, file.Directory.FullName, BMSFileType.Standard, true);
+        bmsManager.LoadBMS(bmsContent, file.Directory.FullName, file.Extension, true);
         return new SongInfo {
             index = GetNextIndex(),
             filePath = HelperFunctions.MakeRelative(dataPath, file.FullName),
