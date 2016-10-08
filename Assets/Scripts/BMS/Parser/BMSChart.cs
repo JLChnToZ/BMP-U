@@ -444,6 +444,8 @@ namespace BMS {
                     case BMSEventType.LongNoteStart:
                         converted.data1 = ev.data1 - 40;
                         converted.data2 = ev.data2;
+                        converted.sliceStart = TimeSpan.Zero;
+                        converted.sliceEnd = TimeSpan.MaxValue;
                         BMSEvent lnStart;
                         if(lnMarker.TryGetValue(ev.data1, out lnStart)) {
                             converted.type = BMSEventType.LongNoteEnd;
@@ -456,8 +458,6 @@ namespace BMS {
                         } else {
                             converted.type = BMSEventType.LongNoteStart;
                             lnMarker[ev.data1] = converted;
-                            converted.sliceStart = TimeSpan.Zero;
-                            converted.sliceEnd = TimeSpan.MaxValue;
                         }
                         maxCombos++;
                         break;

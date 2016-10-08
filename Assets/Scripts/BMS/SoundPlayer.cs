@@ -34,12 +34,17 @@ namespace BMS {
             }
         }
 
-        struct AudioSourceSliced {
+        struct SlicedAudioPlayer {
             public readonly AudioSource audioSource;
-            public readonly float sliceStart, sliceEnd;
+            public float sliceStart, sliceEnd;
 
-            public AudioSourceSliced(AudioSource audioSource, TimeSpan sliceStart, TimeSpan sliceEnd) {
+            public SlicedAudioPlayer(AudioSource audioSource, TimeSpan sliceStart, TimeSpan sliceEnd) {
                 this.audioSource = audioSource;
+                this.sliceStart = (float)sliceStart.Ticks / TimeSpan.TicksPerSecond;
+                this.sliceEnd = (float)sliceEnd.Ticks / TimeSpan.TicksPerSecond;
+            }
+
+            public void UpdateSliceTime(TimeSpan sliceStart, TimeSpan sliceEnd) {
                 this.sliceStart = (float)sliceStart.Ticks / TimeSpan.TicksPerSecond;
                 this.sliceEnd = (float)sliceEnd.Ticks / TimeSpan.TicksPerSecond;
             }
@@ -52,7 +57,7 @@ namespace BMS {
         Dictionary<InUseAudioSource, float> inUseAudioSources = new Dictionary<InUseAudioSource, float>();
 
         [NonSerialized]
-        Dictionary<int, AudioSourceSliced> audioSourceIdMapping = new Dictionary<int, AudioSourceSliced>();
+        Dictionary<int, SlicedAudioPlayer> audioSourceIdMapping = new Dictionary<int, SlicedAudioPlayer>();
 
         [NonSerialized]
         HashSet<AudioSource> changingAudioSource = new HashSet<AudioSource>();
@@ -105,30 +110,32 @@ namespace BMS {
         }
 
         public void PlaySound(AudioClip audio, TimeSpan sliceStart, TimeSpan sliceEnd, int id, bool isPlayer, float pitch, string debugName) {
-            AudioSourceSliced audioSource = default(AudioSourceSliced);
+            SlicedAudioPlayer audioPlayer;
             if(inUseAudioSources.ContainsKey(new InUseAudioSource(id))) {
-                audioSource = audioSourceIdMapping[id];
-                changingAudioSource.Add(audioSource.audioSource);
-                audioSource.audioSource.Stop();
-                // audioSource.time = 0;
+                audioPlayer = audioSourceIdMapping[id];
+                changingAudioSource.Add(audioPlayer.audioSource);
+                audioPlayer.audioSource.Stop();
+                audioPlayer.UpdateSliceTime(sliceStart, sliceEnd);
             } else {
-                audioSource = new AudioSourceSliced(GetFreeAudioSource(isPlayer), sliceStart, sliceEnd);
-                changingAudioSource.Add(audioSource.audioSource);
-                audioSource.audioSource.clip = audio;
+                audioPlayer = new SlicedAudioPlayer(GetFreeAudioSource(isPlayer), sliceStart, sliceEnd);
+                changingAudioSource.Add(audioPlayer.audioSource);
+                audioPlayer.audioSource.clip = audio;
             }
-            audioSource.audioSource.volume = volume;
-            inUseAudioSources[new InUseAudioSource(audioSource.audioSource, id)] = 0;
-            audioSourceIdMapping[id] = audioSource;
-            audioSource.audioSource.pitch = pitch;
+
+            audioPlayer.audioSource.volume = volume;
+            audioPlayer.audioSource.pitch = pitch;
+
             if(!isPaused) {
-                if(!audioSource.audioSource.isPlaying)
-                    audioSource.audioSource.Play();
-                audioSource.audioSource.time = (float)sliceStart.Ticks / TimeSpan.TicksPerSecond;
+                if(!audioPlayer.audioSource.isPlaying)
+                    audioPlayer.audioSource.Play();
+                audioPlayer.audioSource.time = (float)sliceStart.Ticks / TimeSpan.TicksPerSecond;
             }
-            #if UNITY_EDITOR
-            audioSource.audioSource.gameObject.name = string.Format("WAV{0:000} {1}", id, debugName);
-            #endif
-            changingAudioSource.Remove(audioSource.audioSource);
+#if UNITY_EDITOR
+            audioPlayer.audioSource.gameObject.name = string.Format("WAV{0:000} {1}", id, debugName);
+#endif
+            inUseAudioSources[new InUseAudioSource(audioPlayer.audioSource, id)] = 0;
+            audioSourceIdMapping[id] = audioPlayer;
+            changingAudioSource.Remove(audioPlayer.audioSource);
         }
 
         void RecycleInUseAudioSources() {
