@@ -49,7 +49,7 @@ namespace BMS {
                     chart = new BMSChart(bmsContent);
                     break;
                 case BMSFileType.Bmson:
-                    // chart = new BmsonChart(bmsContent);
+                    chart = new BmsonChart(bmsContent);
                     break;
             }
             if(preTimingHelper != null)

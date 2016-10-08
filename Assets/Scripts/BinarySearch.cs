@@ -61,7 +61,8 @@ public static class BinarySearch {
         bool findLarger,
         int lowerBoundIndex = 0,
         int upperBoundIndex = -1,
-        IComparer<T> comparer = null) {
+        IComparer<T> comparer = null,
+        T defaultValue = default(T)) {
         int resultIdx = BinarySearchIndex(
             sortedList, key,
             findLarger ? BinarySearchMethod.CeilClosest : BinarySearchMethod.FloorClosest,
@@ -69,7 +70,7 @@ public static class BinarySearch {
             upperBoundIndex,
             comparer
         );
-        return resultIdx < 0 || sortedList.Count < 1 ? default(T) : sortedList[resultIdx];
+        return resultIdx < 0 || sortedList.Count < 1 ? defaultValue : sortedList[resultIdx];
     }
 
     public static int InsertInOrdered<T>(this IList<T> sortedList, T item, IComparer<T> comparer = null, int fromIndex = 0, int toIndex = -1) {

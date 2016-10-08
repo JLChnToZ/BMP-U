@@ -27,19 +27,19 @@ namespace BMS {
         
         private Action onBmsRefresh;
 
-        public string Title { get { return title; } }
-        public string SubTitle { get { return subTitle; } }
-        public string Artist { get { return artist; } }
-        public string SubArtist { get { return subArtist; } }
-        public string Comments { get { return comments; } }
-        public string Genre { get { return genre; } }
-        public int PlayerCount { get { return playerCount; } }
-        public float BPM { get { return initialBPM; } }
-        public float MinBPM { get { return minBpm; } }
-        public float PlayLevel { get { return playLevel; } }
-        public int Rank { get { return rank; } }
-        public float Volume { get { return volume; } }
-        public int MaxCombos { get { return maxCombos; } }
+        public virtual string Title { get { return title; } }
+        public virtual string SubTitle { get { return subTitle; } }
+        public virtual string Artist { get { return artist; } }
+        public virtual string SubArtist { get { return subArtist; } }
+        public virtual string Comments { get { return comments; } }
+        public virtual string Genre { get { return genre; } }
+        public virtual int PlayerCount { get { return playerCount; } }
+        public virtual float BPM { get { return initialBPM; } }
+        public virtual float MinBPM { get { return minBpm; } }
+        public virtual float PlayLevel { get { return playLevel; } }
+        public virtual int Rank { get { return rank; } }
+        public virtual float Volume { get { return volume; } }
+        public virtual int MaxCombos { get { return maxCombos; } }
         public virtual string RawContent { get { return string.Empty; } }
 
         public IList<BMSEvent> Events {
@@ -206,6 +206,7 @@ namespace BMS {
         public TimeSpan time, time2;
         public int data1;
         public long data2;
+        public TimeSpan sliceStart, sliceEnd;
 
         public int CompareTo(BMSEvent other) {
             int comparison;
