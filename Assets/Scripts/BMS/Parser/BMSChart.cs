@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 
 using System.Text.RegularExpressions;
+using System.Globalization;
 
 namespace BMS {
     public class BMSChart: Chart {
@@ -138,8 +139,10 @@ namespace BMS {
                     AppendString(ref comments, strParam);
                     break;
                 case "#bpm":
-                    if(float.TryParse(strParam, out floatParam))
+                    if(float.TryParse(strParam, out floatParam)) {
                         initialBPM = floatParam;
+                        minBpm = Math.Min(minBpm, initialBPM);
+                    }
                     break;
                 case "#genre":
                     genre = strParam;
@@ -369,7 +372,6 @@ namespace BMS {
             List<BMSEvent> result = bmsEvents;
             Dictionary<int, BMSEvent> lnMarker = new Dictionary<int, BMSEvent>();
             double bpm = initialBPM, beatOffset = 0, beatPerMeas = 1;
-            int measOffset = 0;
             TimeSpan referenceTimePoint = TimeSpan.Zero;
 
             TimeSpan stopTimePoint = TimeSpan.Zero;
@@ -390,37 +392,43 @@ namespace BMS {
                 if(ev.measure == stopMeasure && ev.beat == stopBeat)
                     converted.time = stopTimePoint;
                 else
-                    converted.time = referenceTimePoint + MeasureBeatToTimeSpan(ev.measure + ev.beat - beatOffset - measOffset, beatPerMeas, bpm);
+                    converted.time = referenceTimePoint + MeasureBeatToTimeSpan(ev.measure + ev.beat - beatOffset, beatPerMeas, bpm);
                 switch(ev.type) {
                     case BMSEventType.BPM:
-                        converted.type = BMSEventType.BPM;
                         BMSResourceData bpmData;
+                        int bpmInt;
                         double newBpm;
                         if(ev.data1 == 8 && resourceDatas.TryGetValue(new ResourceId(ResourceType.bpm, ev.data2), out bpmData)) // Extended BPM
-                            newBpm = (double)bpmData.additionalData;
-                        else if(ev.data1 == 3) // BPM
-                            newBpm = ev.data2;
+                            newBpm = Convert.ToDouble(bpmData.additionalData);
+                        else if(ev.data1 == 3 && int.TryParse(Base36.Encode((int)ev.data2), NumberStyles.HexNumber, null, out bpmInt)) // BPM
+                            newBpm = bpmInt;
                         else
-                            newBpm = bpm;
+                            continue;
+                        if(newBpm == bpm)
+                            continue;
+                        converted.type = BMSEventType.BPM;
                         converted.data2 = BitConverter.DoubleToInt64Bits(newBpm);
                         referenceTimePoint = converted.time;
-                        beatOffset = (beatOffset + ev.beat) % 1;
-                        measOffset = ev.measure;
+                        beatOffset = ev.measure + ev.beat;
+                        bpm = newBpm;
+                        minBpm = Math.Min(minBpm, (float)newBpm);
                         break;
                     case BMSEventType.BeatReset:
+                        double newBeatPerMeas = BitConverter.Int64BitsToDouble(ev.data2);
+                        if(newBeatPerMeas == beatPerMeas)
+                            continue;
                         converted.type = BMSEventType.BeatReset;
                         converted.data2 = ev.data2;
-                        beatOffset = 0;
-                        beatPerMeas = BitConverter.Int64BitsToDouble(ev.data2);
+                        beatOffset = ev.measure;
+                        beatPerMeas = newBeatPerMeas;
                         referenceTimePoint = converted.time;
-                        measOffset = ev.measure;
                         break;
                     case BMSEventType.STOP:
                         converted.type = BMSEventType.STOP;
                         stopTimePoint = converted.time;
                         stopMeasure = ev.measure;
                         stopBeat = ev.beat;
-                        double stopBeats = (double)resourceDatas[new ResourceId(ResourceType.stop, ev.data2)].additionalData;
+                        double stopBeats = Convert.ToDouble(resourceDatas[new ResourceId(ResourceType.stop, ev.data2)].additionalData);
                         converted.data2 = BitConverter.DoubleToInt64Bits(stopBeats);
                         referenceTimePoint += MeasureBeatToTimeSpan(stopBeats, beatPerMeas, bpm);
                         break;

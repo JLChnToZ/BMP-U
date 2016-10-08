@@ -372,7 +372,7 @@ namespace BMS {
                 var now = DateTime.Now;
                 timePosition = now - startTime + preOffset;
                 mainTimingHelper.Seek(timePosition);
-                preTimingHelper.Seek(timePosition + preEventOffset);
+                preTimingHelper.Seek(timePosition + Scale(preEventOffset, Math.Max(1, 130 / chart.MinBPM)));
                 foreach(var ln in lnHolders.Values)
                     ln.Update(timePosition);
                 if(OnBeatFlow != null) {

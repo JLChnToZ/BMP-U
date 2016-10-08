@@ -16,6 +16,7 @@ namespace BMS {
         protected string genre;
         protected int playerCount;
         protected float initialBPM;
+        protected float minBpm;
         protected int playLevel;
         protected int rank;
         protected float volume;
@@ -34,6 +35,7 @@ namespace BMS {
         public string Genre { get { return genre; } }
         public int PlayerCount { get { return playerCount; } }
         public float BPM { get { return initialBPM; } }
+        public float MinBPM { get { return minBpm; } }
         public float PlayLevel { get { return playLevel; } }
         public int Rank { get { return rank; } }
         public float Volume { get { return volume; } }
@@ -67,6 +69,7 @@ namespace BMS {
                 genre = "";
                 playerCount = 1;
                 initialBPM = 130;
+                minBpm = float.PositiveInfinity;
                 playLevel = 0;
                 rank = 0;
                 volume = 1;
