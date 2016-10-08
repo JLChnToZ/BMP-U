@@ -102,6 +102,7 @@ namespace BMS {
             chartName = info.GetChild("chart_name").AsString();
             playLevel = info.GetChild("level").AsInt32();
             initialBPM = info.GetChild("init_bpm").AsSingle();
+            minBpm = initialBPM;
 
             string bannerImage = info.GetChild("banner_image").AsString();
             if(!string.IsNullOrEmpty(bannerImage))
@@ -147,12 +148,15 @@ namespace BMS {
         }
 
         private void ParseBpmEvents(List<BMSEvent> bmev) {
-            foreach(IJsonWrapper bpmEvent in bmsonData.GetChild("bpm_events").GetChilds())
+            foreach(IJsonWrapper bpmEvent in bmsonData.GetChild("bpm_events").GetChilds()) {
+                double bpm = bpmEvent.GetChild("bpm").AsDouble();
                 bmev.InsertInOrdered(new BMSEvent {
                     type = BMSEventType.BPM,
                     ticks = bpmEvent.GetChild("y").AsInt32(),
-                    data2 = BitConverter.DoubleToInt64Bits(bpmEvent.GetChild("bpm").AsDouble())
+                    data2 = BitConverter.DoubleToInt64Bits(bpm)
                 });
+                minBpm = Math.Min((float)bpm, minBpm);
+            }
         }
 
         private void ParseStopEvents(List<BMSEvent> bmev) {
