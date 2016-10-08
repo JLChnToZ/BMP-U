@@ -17,6 +17,7 @@ Currently this project is still in alpha stage, therefore the features are still
 - WAV / OGG Sound Effect / BGM
 - Static frame BGAs
 - Video file BGAs (Via VideoStreamer / FFMPEG)
+- [Bmson format](https://bmson.nekokan.dyndns.info/)
 
 ## Pending features
 
@@ -63,3 +64,4 @@ Except the components mentioned above, the whole application (or game) in open-s
 ## References
 
 - **[BMS command memo](http://hitkey.nekokan.dyndns.info/cmds.htm)**: Even this is a draft memo, it is deep enough to study the whole BMS format.
+- **[Bmson Format Specification](https://bmson-spec.readthedocs.io/en/master/doc/)**
