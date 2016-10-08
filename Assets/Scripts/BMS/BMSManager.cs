@@ -267,6 +267,7 @@ namespace BMS {
                     combos = maxCombos = 0;
                     score = 0;
                     accuracy = 0;
+                    bpm = chart.BPM;
                     comboPools.Clear();
                     lnHolders.Clear();
                     soundPlayer.StopAll();

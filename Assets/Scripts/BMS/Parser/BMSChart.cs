@@ -449,7 +449,7 @@ namespace BMS {
                             converted.type = BMSEventType.LongNoteEnd;
                             int firstIndex = result.BinarySearchIndex(lnStart, BinarySearchMethod.FirstExact);
                             int lastIndex = result.BinarySearchIndex(lnStart, BinarySearchMethod.LastExact, firstIndex);
-                            int index = result.IndexOf(lnStart, firstIndex, lastIndex - firstIndex + 1);
+                            int index = firstIndex == lastIndex ? firstIndex : result.IndexOf(lnStart, firstIndex, lastIndex - firstIndex + 1);
                             lnStart.time2 = converted.time;
                             result[index] = lnStart; 
                             lnMarker.Remove(ev.data1);
