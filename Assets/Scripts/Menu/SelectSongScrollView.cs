@@ -37,10 +37,15 @@ public class SelectSongScrollView: MonoBehaviour {
             t.SetParent(scroller.content, false);
             entryDisplay.Add(go.GetComponent<SelectSongEntry>());
         }
+        OnScroll();
     }
 
     void OnDestroy() {
         SongInfoLoader.OnListUpdated -= UpdateList;
+    }
+
+    void OnScroll() {
+        OnScroll(scroller.normalizedPosition);
     }
 
     void OnScroll(Vector2 position) {
@@ -77,7 +82,7 @@ public class SelectSongScrollView: MonoBehaviour {
     void UpdateList() {
         RectTransform content = scroller.content;
         content.sizeDelta = new Vector2(content.sizeDelta.x, sizePerEntry.y * entries.Count);
-        OnScroll(scroller.normalizedPosition);
+        OnScroll();
     }
 
     public void RefreshDisplay() {
