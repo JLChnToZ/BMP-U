@@ -409,6 +409,9 @@ namespace BMS {
                     if(OnChangeBPM != null)
                         OnChangeBPM.Invoke(newBpm);
                     break;
+                case BMSEventType.STOP:
+                    bpmBasePoint -= new TimeSpan(bmsEvent.data2);
+                    break;
                 default:
                     if(!handledChannels.Contains(bmsEvent.data1)) {
                         bool shouldPlayWav = true;

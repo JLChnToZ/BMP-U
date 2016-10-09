@@ -166,7 +166,8 @@ namespace BMS {
                             referencePoint = ev;
                         break;
                     case BMSEventType.STOP:
-                        referencePoint.time = TicksToTime(referencePoint, (int)ev.data2);
+                        referencePoint.time = TicksToTime(referencePoint, ev.ticks + (int)ev.data2);
+                        ev.data2 = (referencePoint.time - ev.time).Ticks;
                         break;
                 }
                 bmev[i] = ev;
@@ -283,27 +284,24 @@ namespace BMS {
                 0, -1, TicksComparer.instance
             );
 
-            BMSEvent lastReferencePoint;
-            if(index >= 0) {
+            BMSEvent lastReferencePoint = DefaultReferencePoint;
+            TimeSpan stopOffset = TimeSpan.Zero;
+            while(index >= 0) {
                 lastReferencePoint = bmev[index];
-                if(lastReferencePoint.type == BMSEventType.STOP) {
-                    if(ticks == lastReferencePoint.ticks)
-                        return lastReferencePoint.time;
-                    bool foundBpmPoint = false;
-                    for(int i = index; i >= 0; i--) {
-                        if(bmev[i].type == BMSEventType.BPM) {
-                            lastReferencePoint.data2 = bmev[i].data2;
-                            foundBpmPoint = true;
-                            break;
-                        }
-                    }
-                    if(!foundBpmPoint)
-                        lastReferencePoint.data2 = BitConverter.DoubleToInt64Bits(initialBPM);
+                bool found = false;
+                switch(lastReferencePoint.type) {
+                    case BMSEventType.BPM:
+                        lastReferencePoint.time += stopOffset;
+                        found = true;
+                        break;
+                    case BMSEventType.STOP:
+                        stopOffset += new TimeSpan(lastReferencePoint.data2);
+                        break;
                 }
-            } else {
-                lastReferencePoint = DefaultReferencePoint;
+                if(found)
+                    break;
+                index--;
             }
-
             return TicksToTime(lastReferencePoint, ticks);
         }
 

@@ -383,12 +383,15 @@ namespace BMS {
                         BMSResourceData stopData;
                         if(!TryGetResourceData(ResourceType.stop, ev.data2, out stopData))
                             continue;
+                        double stopSeconds = Convert.ToDouble(stopData.additionalData) / bpm * 1.25;
+                        if(stopSeconds <= 0)
+                            continue;
                         converted.type = BMSEventType.STOP;
                         stopTimePoint = converted.time;
                         stopMeasBeat = ev.measure + ev.beat;
-                        double stopBeats = Convert.ToDouble(stopData.additionalData);
-                        converted.data2 = BitConverter.DoubleToInt64Bits(stopBeats);
-                        referenceTimePoint += MeasureBeatToTimeSpan(stopBeats, beatPerMeas, bpm);
+                        TimeSpan stopTime = new TimeSpan((long)Math.Round(stopSeconds * TimeSpan.TicksPerSecond));
+                        converted.data2 = stopTime.Ticks;
+                        referenceTimePoint += stopTime;
                         break;
                     case BMSEventType.BMP:
                         converted.type = BMSEventType.BMP;
