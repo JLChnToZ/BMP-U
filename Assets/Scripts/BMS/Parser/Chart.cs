@@ -21,10 +21,11 @@ namespace BMS {
         protected int rank;
         protected float volume;
         protected int maxCombos;
-        protected readonly List<BMSEvent> bmsEvents = new List<BMSEvent>();
-        protected readonly Dictionary<ResourceId, BMSResourceData> resourceDatas = new Dictionary<ResourceId, BMSResourceData>();
-        protected readonly HashSet<int> allChannels = new HashSet<int>();
-        
+        private readonly List<BMSEvent> bmsEvents = new List<BMSEvent>();
+        private readonly Dictionary<ResourceId, BMSResourceData> resourceDatas = new Dictionary<ResourceId, BMSResourceData>();
+        private readonly Dictionary<ResourceId, BMSResourceData> metaResourceDatas = new Dictionary<ResourceId, BMSResourceData>();
+        private readonly HashSet<int> allChannels = new HashSet<int>();
+
         private Action onBmsRefresh;
 
         public virtual string Title { get { return title; } }
@@ -73,9 +74,12 @@ namespace BMS {
                 playLevel = 0;
                 rank = 0;
                 volume = 1;
+                metaResourceDatas.Clear();
             }
             if((parseType & ParseType.Resources) == ParseType.Resources) {
                 resourceDatas.Clear();
+                foreach(var kv in metaResourceDatas)
+                    resourceDatas[kv.Key] = kv.Value;
             }
             if((parseType & ParseType.Content) == ParseType.Content) {
                 maxCombos = 0;
@@ -83,6 +87,51 @@ namespace BMS {
                 allChannels.Clear();
                 OnDataRefresh();
             }
+        }
+
+        protected void AddResource(ResourceType type, long id, string dataPath, object additionalData = null) {
+            ResourceId resId = new ResourceId(type, id);
+            BMSResourceData resData = new BMSResourceData {
+                type = type,
+                resourceId = id,
+                dataPath = dataPath,
+                additionalData = additionalData
+            };
+            resourceDatas[resId] = resData;
+            if(id < 0) metaResourceDatas[resId] = resData;
+        }
+
+        protected int AddEvent(BMSEvent ev) {
+            if(ev.IsNote) {
+                allChannels.Add(ev.data1);
+                maxCombos++;
+            }
+            return bmsEvents.InsertInOrdered(ev);
+        }
+
+        protected void AddEvents(IEnumerable<BMSEvent> events) {
+            bmsEvents.InsertInOrdered(events);
+            allChannels.UnionWith(
+                events.Where(ev => ev.IsNote)
+                .Select(ev => ev.data1)
+            );
+        }
+
+        protected int FindEventIndex(BMSEvent ev) {
+            int firstIndex = bmsEvents.BinarySearchIndex(ev, BinarySearchMethod.FirstExact);
+            int lastIndex = bmsEvents.BinarySearchIndex(ev, BinarySearchMethod.LastExact, firstIndex);
+            return firstIndex == lastIndex ? firstIndex :
+                bmsEvents.IndexOf(ev, firstIndex, lastIndex - firstIndex + 1);
+        }
+
+        protected void ReplaceEvent(int index, BMSEvent newEv) {
+            BMSEvent original = bmsEvents[index];
+            if(original.CompareTo(newEv) == 0) {
+                bmsEvents[index] = newEv;
+                return;
+            }
+            bmsEvents.RemoveAt(index);
+            bmsEvents.InsertInOrdered(newEv);
         }
 
         public EventDispatcher GetEventDispatcher() {
@@ -101,12 +150,15 @@ namespace BMS {
             return result;
         }
 
+        public bool TryGetResourceData(ResourceType type, long id, out BMSResourceData result) {
+            return resourceDatas.TryGetValue(new ResourceId(type, id), out result);
+        }
+
         public class EventDispatcher {
             readonly Chart chart;
             TimeSpan currentTime, endTime;
             int currentIndex;
             int length;
-            public bool debug;
 
             public event OnBMSEvent BMSEvent;
 
@@ -198,7 +250,7 @@ namespace BMS {
         BeatReset
     }
 
-    public struct BMSEvent : IComparable<BMSEvent>, IEquatable<BMSEvent> {
+    public struct BMSEvent: IComparable<BMSEvent>, IEquatable<BMSEvent> {
         public BMSEventType type;
         public int ticks;
         public int measure;
@@ -207,6 +259,14 @@ namespace BMS {
         public int data1;
         public long data2;
         public TimeSpan sliceStart, sliceEnd;
+
+        public bool IsNote {
+            get {
+                return type == BMSEventType.Note ||
+                    type == BMSEventType.LongNoteStart ||
+                    type == BMSEventType.LongNoteEnd;
+            }
+        }
 
         public int CompareTo(BMSEvent other) {
             int comparison;

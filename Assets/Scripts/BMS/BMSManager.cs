@@ -341,10 +341,7 @@ namespace BMS {
             comboPools.Clear();
             score = maxCombos = combos = 0;
             int noteCount = 0;
-            noteCount = chart.Events.Count(ev =>
-                (ev.type == BMSEventType.Note ||
-                ev.type == BMSEventType.LongNoteStart ||
-                ev.type == BMSEventType.LongNoteEnd) &&
+            noteCount = chart.Events.Count(ev => ev.IsNote &&
                 handledChannels.Contains(ev.data1)
             );
             if(noteCount < 1) return;
@@ -386,7 +383,7 @@ namespace BMS {
         }
 
         void OnDestroy() {
-            ClearDataObjects(true, false);
+            ClearDataObjects(true, false, true);
         }
 
         void OnPreEvent(BMSEvent bmsEvent) {
@@ -494,7 +491,11 @@ namespace BMS {
                 lnHolder.AddRemainScore();
         }
 
-        public int NoteClicked(TimeSpan expectedTimePosition, int channel, int eventId, bool countAsMiss, TimeSpan sliceStart, TimeSpan sliceEnd, bool hasSound = true, TimeSpan? endNotePos = null) {
+        public int NoteClicked(
+            TimeSpan expectedTimePosition,
+            int channel, int eventId, bool countAsMiss,
+            TimeSpan sliceStart, TimeSpan sliceEnd,
+            bool hasSound = true, TimeSpan? endNotePos = null) {
             if(!isStarted || isPaused) return -2;
             var timeDiff = timePosition - expectedTimePosition;
 

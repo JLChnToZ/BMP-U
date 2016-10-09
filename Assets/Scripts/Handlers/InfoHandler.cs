@@ -12,10 +12,9 @@ public class InfoHandler : MonoBehaviour {
 
     public Text infoDisplay;
     public Text infoDisplay2;
-    public RawImage bgTexture;
+    public RawImageFitter bgTexture;
     public Text scoreDisplay;
     public Text comboDisplay;
-    [UnityEngine.Serialization.FormerlySerializedAs("polyphonyDisplay")]
     public Text debugInfoDisplay;
     public RawImage graphDisplay;
 
@@ -81,8 +80,8 @@ public class InfoHandler : MonoBehaviour {
         }
         if(stageFileLoaded) {
             stageFileLoaded = false;
-            bgTexture.texture = bmsManager.StageFile;
-            bgTexture.enabled = bmsManager.StageFile != null && !bmsManager.IsStarted;
+            bgTexture.SetTexture(bmsManager.StageFile);
+            bgTexture.rawImage.enabled = bmsManager.StageFile != null && !bmsManager.IsStarted;
         }
         if(gameEnded) {
             gameEnded = false;
@@ -101,7 +100,7 @@ public class InfoHandler : MonoBehaviour {
                         bmsManager.RankString
                     )
                 );
-            bgTexture.enabled = bgTexture.texture != null;
+            bgTexture.enabled = bgTexture.rawImage.texture != null;
             if(graphDisplay) {
                 if(graphHandler)
                     graphDisplay.texture = graphHandler.Texture;

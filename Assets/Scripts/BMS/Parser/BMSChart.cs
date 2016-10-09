@@ -162,18 +162,10 @@ namespace BMS {
                         volume = floatParam / 100F;
                     break;
                 case "#stagefile":
-                    resourceDatas[new ResourceId(ResourceType.bmp, -1)] = new BMSResourceData {
-                        dataPath = strParam,
-                        resourceId = -1,
-                        type = ResourceType.bmp
-                    };
+                    AddResource(ResourceType.bmp, -1, strParam);
                     break;
                 case "#banner":
-                    resourceDatas[new ResourceId(ResourceType.bmp, -2)] = new BMSResourceData {
-                        dataPath = strParam,
-                        resourceId = -2,
-                        type = ResourceType.bmp
-                    };
+                    AddResource(ResourceType.bmp, -2, strParam);
                     break;
                 case "#lntype":
                     if(int.TryParse(strParam, out intParam))
@@ -185,56 +177,30 @@ namespace BMS {
         }
 
         private bool ParseResourecLine(string command2, string strParam1, string strParam2) {
-            int resId;
             switch(command2) {
                 case "wav":
-                    resId = Base36.Decode(strParam2);
-                    resourceDatas[new ResourceId(ResourceType.wav, resId)] = new BMSResourceData {
-                        type = ResourceType.wav,
-                        resourceId = Base36.Decode(strParam2),
-                        dataPath = strParam1
-                    };
+                    AddResource(ResourceType.wav, Base36.Decode(strParam2), strParam1);
                     break;
                 case "bmp":
-                    resId = Base36.Decode(strParam2);
-                    resourceDatas[new ResourceId(ResourceType.bmp, resId)] = new BMSResourceData {
-                        type = ResourceType.bmp,
-                        resourceId = Base36.Decode(strParam2),
-                        dataPath = strParam1
-                    };
-                    break;
-                case "bpm":
-                    resId = Base36.Decode(strParam2);
-                    resourceDatas[new ResourceId(ResourceType.bpm, resId)] = new BMSResourceData {
-                        type = ResourceType.bpm,
-                        resourceId = Base36.Decode(strParam2),
-                        additionalData = float.Parse(strParam1)
-                    };
+                    AddResource(ResourceType.bmp, Base36.Decode(strParam2), strParam1);
                     break;
                 case "bga":
-                    resId = Base36.Decode(strParam2);
                     string[] strParams = strParam1.Split(' ');
-                    resourceDatas[new ResourceId(ResourceType.bga, resId)] = new BMSResourceData {
-                        type = ResourceType.bga,
-                        resourceId = Base36.Decode(strParam2),
-                        additionalData = new object[] {
-                            Base36.Decode(strParams[0]), // index
-                            float.Parse(strParams[1]), // x1
-                            float.Parse(strParams[2]), // x2
-                            float.Parse(strParams[3]), // y1
-                            float.Parse(strParams[4]), // y2
-                            float.Parse(strParams[5]), // dx
-                            float.Parse(strParams[6])  // dy
-                        }
-                    };
+                    AddResource(ResourceType.bga, Base36.Decode(strParam2), string.Empty, new object[] {
+                        Base36.Decode(strParams[0]), // index
+                        float.Parse(strParams[1]), // x1
+                        float.Parse(strParams[2]), // x2
+                        float.Parse(strParams[3]), // y1
+                        float.Parse(strParams[4]), // y2
+                        float.Parse(strParams[5]), // dx
+                        float.Parse(strParams[6])  // dy
+                    });
+                    break;
+                case "bpm":
+                    AddResource(ResourceType.bpm, Base36.Decode(strParam2), string.Empty, float.Parse(strParam1));
                     break;
                 case "stop":
-                    resId = Base36.Decode(strParam2);
-                    resourceDatas[new ResourceId(ResourceType.stop, resId)] = new BMSResourceData {
-                        type = ResourceType.stop,
-                        resourceId = Base36.Decode(strParam2),
-                        additionalData = float.Parse(strParam1)
-                    };
+                    AddResource(ResourceType.stop, Base36.Decode(strParam2), string.Empty, float.Parse(strParam1));
                     break;
                 default: return false;
             }
@@ -252,7 +218,7 @@ namespace BMS {
             switch(channel) {
                 case 1: evType = BMSEventType.WAV; break;
                 case 2:
-                    bmev.InsertInOrdered(new BMSEvent {
+                    AddEvent(new BMSEvent {
                         measure = verse,
                         beat = 0,
                         data2 = BitConverter.DoubleToInt64Bits(double.Parse(strParam1)),
@@ -277,7 +243,7 @@ namespace BMS {
             for(int i = 0; i < length; i++) {
                 int value = Base36.Decode(strParam1.Substring(i * 2, 2));
                 if(value > 0) {
-                    bmev.InsertInOrdered(new BMSEvent {
+                    AddEvent(new BMSEvent {
                         measure = verse,
                         beat = (float)i / length,
                         type = evType,
@@ -359,23 +325,22 @@ namespace BMS {
                 int meas = currentEv.measure;
                 if(i == l - 1 || (beatResetEvents[i + 1].measure - meas > 1 &&
                     BitConverter.Int64BitsToDouble(currentEv.data2) != 1))
-                    bmev.InsertInOrdered(new BMSEvent {
+                    AddEvent(new BMSEvent {
                         measure = meas + 1,
                         beat = 0,
                         data2 = BitConverter.DoubleToInt64Bits(1),
                         type = BMSEventType.BeatReset
                     });
             }
-
-            List<BMSEvent> result = bmsEvents;
+            
             Dictionary<int, BMSEvent> lnMarker = new Dictionary<int, BMSEvent>();
             double bpm = initialBPM, beatOffset = 0, beatPerMeas = 1;
             TimeSpan referenceTimePoint = TimeSpan.Zero;
 
             TimeSpan stopTimePoint = TimeSpan.Zero;
             float stopMeasBeat = float.MinValue;
-            
-            result.Add(new BMSEvent {
+
+            AddEvent(new BMSEvent {
                 measure = 0,
                 beat = 0,
                 type = BMSEventType.BPM,
@@ -395,7 +360,7 @@ namespace BMS {
                         BMSResourceData bpmData;
                         int bpmInt;
                         double newBpm;
-                        if(ev.data1 == 8 && resourceDatas.TryGetValue(new ResourceId(ResourceType.bpm, ev.data2), out bpmData)) // Extended BPM
+                        if(ev.data1 == 8 && TryGetResourceData(ResourceType.bpm, ev.data2, out bpmData)) // Extended BPM
                             newBpm = Convert.ToDouble(bpmData.additionalData);
                         else if(ev.data1 == 3 && int.TryParse(Base36.Encode((int)ev.data2), NumberStyles.HexNumber, null, out bpmInt)) // BPM
                             newBpm = bpmInt;
@@ -422,7 +387,7 @@ namespace BMS {
                         break;
                     case BMSEventType.STOP:
                         BMSResourceData stopData;
-                        if(!resourceDatas.TryGetValue(new ResourceId(ResourceType.stop, ev.data2), out stopData))
+                        if(!TryGetResourceData(ResourceType.stop, ev.data2, out stopData))
                             continue;
                         converted.type = BMSEventType.STOP;
                         stopTimePoint = converted.time;
@@ -449,34 +414,28 @@ namespace BMS {
                         BMSEvent lnStart;
                         if(lnMarker.TryGetValue(ev.data1, out lnStart)) {
                             converted.type = BMSEventType.LongNoteEnd;
-                            int firstIndex = result.BinarySearchIndex(lnStart, BinarySearchMethod.FirstExact);
-                            int lastIndex = result.BinarySearchIndex(lnStart, BinarySearchMethod.LastExact, firstIndex);
-                            int index = firstIndex == lastIndex ? firstIndex : result.IndexOf(lnStart, firstIndex, lastIndex - firstIndex + 1);
+                            int index = FindEventIndex(lnStart);
                             lnStart.time2 = converted.time;
-                            result[index] = lnStart; 
+                            ReplaceEvent(index, lnStart);
                             lnMarker.Remove(ev.data1);
                         } else {
                             converted.type = BMSEventType.LongNoteStart;
                             lnMarker[ev.data1] = converted;
                         }
-                        maxCombos++;
                         break;
                     case BMSEventType.Unknown:
                         continue;
                     default:
                         if((ev.data1 >= 30 && ev.data1 <= 50) || ev.data1 >= 70)
                             continue;
-                        allChannels.Add(ev.data1);
                         converted.type = ev.type;
                         converted.data1 = ev.data1;
                         converted.data2 = ev.data2;
                         converted.sliceStart = TimeSpan.Zero;
                         converted.sliceEnd = TimeSpan.MaxValue;
-                        if(ev.type == BMSEventType.Note)
-                            maxCombos++;
                         break;
                 }
-                result.InsertInOrdered(converted);
+                AddEvent(converted);
             }
         }
 

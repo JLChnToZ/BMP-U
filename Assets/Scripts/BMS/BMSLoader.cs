@@ -75,7 +75,7 @@ namespace BMS {
             mainTimingHelper.BMSEvent += OnEventUpdate;
             this.resourcePath = resourcePath;
             bmsLoaded = false;
-            ClearDataObjects(true, direct);
+            ClearDataObjects(true, direct, true);
             ReloadBMS(BMSReloadOperation.Header, direct);
         }
 
@@ -86,10 +86,10 @@ namespace BMS {
             bool resHeader = (reloadType & BMSReloadOperation.ResourceHeader) == BMSReloadOperation.ResourceHeader;
             if(header || body) {
                 if(res && !resHeader)
-                    ClearDataObjects(true, direct);
+                    ClearDataObjects(true, direct, header);
                 ReloadTimeline(header, body, resHeader, direct);
             } else if(res)
-                ClearDataObjects(false, direct);
+                ClearDataObjects(false, direct, header);
             if(res)
                 ReloadResources();
         }

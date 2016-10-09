@@ -10,22 +10,22 @@ namespace BMS {
         readonly Dictionary<int, BGAObject> bgaObjects = new Dictionary<int, BGAObject>();
         readonly Dictionary<int, ResourceObject> wavObjects = new Dictionary<int, ResourceObject>();
 
-        void ClearDataObjects(bool clear, bool direct) {
+        void ClearDataObjects(bool clear, bool direct, bool clearMetaObjects) {
             if(!direct && reloadResourceCoroutine != null)
                 StopCoroutine(reloadResourceCoroutine);
             UnityObject obj;
-            foreach(var bmp in bmpObjects.Values) {
-                obj = bmp.value as UnityObject;
-                if(obj != null) {
+            foreach(var kv in bmpObjects) {
+                obj = kv.Value.value as UnityObject;
+                if(obj != null && (clearMetaObjects ? true : kv.Key > 0)) {
                     Destroy(obj);
-                    if(!clear) bmp.value = null;
+                    if(!clear) kv.Value.value = null;
                 }
             }
-            foreach(var wav in wavObjects.Values) {
-                obj = wav.value as UnityObject;
-                if(obj != null) {
+            foreach(var kv in wavObjects) {
+                obj = kv.Value.value as UnityObject;
+                if(obj != null && (clearMetaObjects ? true : kv.Key > 0)) {
                     Destroy(obj);
-                    if(!clear) wav.value = null;
+                    if(!clear) kv.Value.value = null;
                 }
             }
             if(clear) {

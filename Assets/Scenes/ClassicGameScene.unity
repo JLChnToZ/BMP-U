@@ -273,7 +273,7 @@ MonoBehaviour:
   graphHandler: {fileID: 92738951}
   infoDisplay: {fileID: 1553278553}
   infoDisplay2: {fileID: 607304953}
-  bgTexture: {fileID: 379686880}
+  bgTexture: {fileID: 379686883}
   scoreDisplay: {fileID: 156314639}
   comboDisplay: {fileID: 184944854}
   debugInfoDisplay: {fileID: 0}
@@ -1170,6 +1170,7 @@ GameObject:
   - 222: {fileID: 379686881}
   - 114: {fileID: 379686880}
   - 114: {fileID: 379686882}
+  - 114: {fileID: 379686883}
   m_Layer: 5
   m_Name: Loading BG
   m_TagString: Untagged
@@ -1240,6 +1241,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_AspectMode: 1
   m_AspectRatio: 1.3333334
+--- !u!114 &379686883
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 379686878}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2bffae5bce90ce341b69a5e15ff4637e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &418468273
 GameObject:
   m_ObjectHideFlags: 0

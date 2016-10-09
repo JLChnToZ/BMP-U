@@ -107,7 +107,7 @@ namespace BMS {
         }
 
         #region Platform specific implementations of reading bitmap
-#if UNITY_STANDALONE_WIN
+#if UNITY_STANDALONE
         static Texture2D ReadTextureFromFile(FileInfo finfo) {
             FileStream fs = null;
             Image img = null;

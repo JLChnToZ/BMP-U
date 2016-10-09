@@ -61,23 +61,21 @@ namespace BMS {
             if((parseType & ParseType.Header) == ParseType.Header)
                 ParseHeader();
 
-            List<BMSEvent> bmev, referencePoints;
+            List<BMSEvent> referencePoints;
             if((parseType & ParseType.Content) == ParseType.Content) {
-                bmev = new List<BMSEvent>();
+                List<BMSEvent> bmev = new List<BMSEvent>();
                 referencePoints = new List<BMSEvent>();
                 ParseBpmEvents(bmev);
                 ParseStopEvents(bmev);
-                CalculateTimingPoints(bmev, referencePoints);
                 ParseLineEvents(bmev);
-                ParseSoundChannels(bmev, referencePoints);
+                CalculateTimingPoints(bmev, referencePoints);
+                AddEvents(bmev);
+
+                ParseSoundChannels(referencePoints);
             } else {
-                bmev = null;
                 referencePoints = null;
             }
-            ParseBGAEvents(parseType, bmev, referencePoints);
-
-            if((parseType & ParseType.Content) == ParseType.Content)
-                bmsEvents.AddRange(bmev);
+            ParseBGAEvents(parseType, referencePoints);
 
             base.Parse(parseType);
         }
@@ -104,31 +102,17 @@ namespace BMS {
             initialBPM = info.GetChild("init_bpm").AsSingle();
             minBpm = Math.Min(minBpm, initialBPM);
 
-            string bannerImage = info.GetChild("banner_image").AsString();
-            if(!string.IsNullOrEmpty(bannerImage))
-                resourceDatas[new ResourceId(ResourceType.bmp, -2)] = new BMSResourceData {
-                    type = ResourceType.bmp,
-                    resourceId = -2,
-                    dataPath = bannerImage
-                };
-
-            string eyeCatchImage = info.GetChild("eyecatch_image").AsString();
-            if(!string.IsNullOrEmpty(eyeCatchImage))
-                resourceDatas[new ResourceId(ResourceType.bmp, -1)] = new BMSResourceData {
-                    type = ResourceType.bmp,
-                    resourceId = -1,
-                    dataPath = eyeCatchImage
-                };
-
-            string backImage = info.GetChild("back_image").AsString();
-            if(!string.IsNullOrEmpty(backImage))
-                resourceDatas[new ResourceId(ResourceType.bmp, -3)] = new BMSResourceData {
-                    type = ResourceType.bmp,
-                    resourceId = -3,
-                    dataPath = backImage
-                };
+            AddMetaImageResource(-2, info.GetChild("banner_image"));
+            AddMetaImageResource(-1, info.GetChild("eyecatch_image"));
+            AddMetaImageResource(-3, info.GetChild("back_image"));
 
             tickResoultion = info.GetChild("resolution").AsInt32(240);
+        }
+
+        private void AddMetaImageResource(long id, IJsonWrapper rawData) {
+            string path = rawData.AsString();
+            if(!string.IsNullOrEmpty(path))
+                AddResource(ResourceType.bmp, id, path);
         }
 
         private void ParseLineEvents(List<BMSEvent> bmev) {
@@ -148,7 +132,7 @@ namespace BMS {
         }
 
         private void ParseBpmEvents(List<BMSEvent> bmev) {
-            bmev.InsertInOrdered(DefaultReferencePoint);
+            AddEvent(DefaultReferencePoint);
             foreach(IJsonWrapper bpmEvent in bmsonData.GetChild("bpm_events").GetChilds()) {
                 double bpm = bpmEvent.GetChild("bpm").AsDouble();
                 bmev.InsertInOrdered(new BMSEvent {
@@ -188,44 +172,44 @@ namespace BMS {
             }
         }
 
-        private void ParseSoundChannels(List<BMSEvent> bmev, List<BMSEvent> referencePoints) {
+        private void ParseSoundChannels(List<BMSEvent> referencePoints) {
             IList soundChannels = bmsonData.GetChild("sound_channels");
             if(soundChannels == null) return;
             for(int i = 0, l = soundChannels.Count; i < l; i++)
-                ParseSoundChannel(bmev, referencePoints, soundChannels[i] as IJsonWrapper, i + 1);
+                ParseSoundChannel(referencePoints, soundChannels[i] as IJsonWrapper, i + 1);
         }
 
-        private void ParseSoundChannel(List<BMSEvent> bmev, List<BMSEvent> referencePoints, IJsonWrapper rawData, int index) {
+        private void ParseSoundChannel(List<BMSEvent> referencePoints, IJsonWrapper rawData, int index) {
             string name = rawData.GetChild("name").AsString();
             if(string.IsNullOrEmpty(name)) return;
-            resourceDatas[new ResourceId(ResourceType.wav, index)] = new BMSResourceData {
-                type = ResourceType.wav,
-                resourceId = index,
-                dataPath = name
-            };
-
-            int lastIndex = -1;
+            AddResource(ResourceType.wav, index, name);
+            
+            BMSEvent? lastEvent = null;
             TimeSpan slicedPosition = TimeSpan.Zero;
+            IList<BMSEvent> events = Events;
 
             foreach(IJsonWrapper note in rawData.GetChild("notes").GetChilds()) {
+                BMSEvent currentEvent;
                 int ticks = note.GetChild("y").AsInt32();
                 int channelId = GetChannelMap(note.GetChild("x").AsInt32());
                 int length = note.GetChild("l").AsInt32();
                 TimeSpan currentTime = CalculateTime(referencePoints, ticks);
 
-                if(lastIndex >= 0) {
-                    BMSEvent lastEvent = bmev[lastIndex];
+                if(lastEvent.HasValue) {
+                    currentEvent = lastEvent.Value;
+                    int lastIndex = FindEventIndex(currentEvent);
                     if(note.GetChild("c").AsBoolean()) {
-                        lastEvent.sliceEnd = slicedPosition = currentTime - lastEvent.time + lastEvent.sliceStart;
+                        currentEvent.sliceEnd = slicedPosition = currentTime - currentEvent.time + currentEvent.sliceStart;
                     } else {
-                        lastEvent.sliceEnd = TimeSpan.MaxValue;
+                        currentEvent.sliceEnd = TimeSpan.MaxValue;
                         slicedPosition = TimeSpan.Zero;
                     }
+                    ReplaceEvent(lastIndex, currentEvent);
                 }
 
                 if(length > 0) {
                     TimeSpan endTime = CalculateTime(referencePoints, ticks + length);
-                    lastIndex = bmev.InsertInOrdered(new BMSEvent {
+                    lastEvent = currentEvent = new BMSEvent {
                         type = BMSEventType.LongNoteStart,
                         ticks = ticks,
                         time = currentTime,
@@ -234,8 +218,9 @@ namespace BMS {
                         time2 = endTime - currentTime,
                         sliceStart = slicedPosition,
                         sliceEnd = TimeSpan.MaxValue
-                    });
-                    bmev.InsertInOrdered(new BMSEvent {
+                    };
+                    AddEvent(currentEvent);
+                    AddEvent(new BMSEvent {
                         type = BMSEventType.LongNoteEnd,
                         ticks = ticks + length,
                         time = endTime,
@@ -243,7 +228,7 @@ namespace BMS {
                         data2 = index
                     });
                 } else {
-                    lastIndex = bmev.InsertInOrdered(new BMSEvent {
+                    lastEvent = currentEvent = new BMSEvent {
                         type = channelId == 0 ? BMSEventType.WAV : BMSEventType.Note,
                         ticks = ticks,
                         time = currentTime,
@@ -251,39 +236,35 @@ namespace BMS {
                         data2 = index,
                         sliceStart = slicedPosition,
                         sliceEnd = TimeSpan.MaxValue
-                    });
+                    };
+                    AddEvent(currentEvent);
                 }
-
-                if(channelId != 0)
-                    allChannels.Add(channelId);
             }
         }
 
-        private void ParseBGAEvents(ParseType parseType, List<BMSEvent> bmev, List<BMSEvent> referencePoints) {
+        private void ParseBGAEvents(ParseType parseType, List<BMSEvent> referencePoints) {
             IJsonWrapper bga = bmsonData.GetChild("bga");
 
             if((parseType & ParseType.Resources) == ParseType.Resources)
-                foreach(IJsonWrapper entry in bga.GetChild("bga_header").GetChilds()) {
-                    int id = entry.GetChild("id").AsInt32();
-                    resourceDatas[new ResourceId(ResourceType.bmp, id)] = new BMSResourceData {
-                        type = ResourceType.bmp,
-                        resourceId = id,
-                        dataPath = entry.GetChild("name").AsString()
-                    };
-                }
+                foreach(IJsonWrapper entry in bga.GetChild("bga_header").GetChilds())
+                    AddResource(
+                        ResourceType.bmp,
+                        entry.GetChild("id").AsInt32(),
+                        entry.GetChild("name").AsString()
+                    );
 
             if((parseType & ParseType.Content) == ParseType.Content) {
-                ParseBGALayer(bga.GetChild("bga_events"), 0, bmev, referencePoints);
-                ParseBGALayer(bga.GetChild("layer_events"), 1, bmev, referencePoints);
-                ParseBGALayer(bga.GetChild("poor_events"), -1, bmev, referencePoints);
+                ParseBGALayer(bga.GetChild("bga_events"), 0, referencePoints);
+                ParseBGALayer(bga.GetChild("layer_events"), 1, referencePoints);
+                ParseBGALayer(bga.GetChild("poor_events"), -1, referencePoints);
             }
         }
 
-        private void ParseBGALayer(IJsonWrapper rawData, int layerId, List<BMSEvent> bmev, List<BMSEvent> referencePoints) {
+        private void ParseBGALayer(IJsonWrapper rawData, int layerId, List<BMSEvent> referencePoints) {
             foreach(IJsonWrapper entry in rawData.GetChilds()) {
                 int ticks = entry.GetChild("y").AsInt32();
 
-                bmev.InsertInOrdered(new BMSEvent {
+                AddEvent(new BMSEvent {
                     type = BMSEventType.BMP,
                     ticks = ticks,
                     time = CalculateTime(referencePoints, ticks),

@@ -75,7 +75,6 @@ namespace BMS {
                 TimeSpan timePosition = bmsManager.TimePosition;
                 preQueueMapper.Seek(timePosition + startTimeOffset);
                 postQueueMapper.Seek(timePosition + endTimeOffset);
-                preQueueMapper.debug = true;
             }
         }
 
@@ -126,7 +125,7 @@ namespace BMS {
         }
 
         void OnHasKeyFrame(BMSEvent bmsEvent) {
-            if(bmsEvent.type != BMSEventType.Note && bmsEvent.type != BMSEventType.LongNoteStart && bmsEvent.type != BMSEventType.LongNoteEnd)
+            if(!bmsEvent.IsNote)
                 return;
             bool isLongNote = bmsEvent.type == BMSEventType.LongNoteEnd || bmsEvent.type == BMSEventType.LongNoteStart, lnDown = false;
             TimeSpan lnEndpos = TimeSpan.Zero;

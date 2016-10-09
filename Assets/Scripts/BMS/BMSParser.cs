@@ -101,6 +101,7 @@ namespace BMS {
         IEnumerator ReloadTimelineHelperCoroutine(bool header, bool body) {
             if(header) {
                 stageFileObject = null;
+                bannerFileObject = null;
                 while(stageFileObject == null && !bmsLoaded) yield return null;
                 if(stageFileObject != null) {
                     yield return StartCoroutine(new ResourceLoader(resourcePath).LoadResource(stageFileObject));
@@ -111,7 +112,6 @@ namespace BMS {
                 } else
                     stageFileLoaded = true;
 
-                bannerFileObject = null;
                 while(bannerFileObject == null && !bmsLoaded) yield return null;
                 if(bannerFileObject != null) {
                     yield return StartCoroutine(new ResourceLoader(resourcePath).LoadResource(bannerFileObject));
@@ -134,18 +134,22 @@ namespace BMS {
                 chart.Parse(parseType);
                 duration = mainTimingHelper.EndTime;
                 hasBGA = chart.Events.Any(ev => ev.type == BMSEventType.BMP);
+                if(parseHeader) {
+                    ConvertToResourceObject(ref stageFileObject, -1);
+                    ConvertToResourceObject(ref bannerFileObject, -2);
+                }
                 if(parseResHeader)
                     foreach(BMSResourceData resData in chart.IterateResourceData()) {
                         switch(resData.type) {
                             case ResourceType.wav:
-                                wavObjects.Add((int)resData.resourceId,
-                                    new ResourceObject((int)resData.resourceId, ResourceType.wav, resData.dataPath)
-                                );
+                                if(!wavObjects.ContainsKey((int)resData.resourceId))
+                                    wavObjects[(int)resData.resourceId] = new ResourceObject(
+                                        (int)resData.resourceId, ResourceType.wav, resData.dataPath);
                                 break;
                             case ResourceType.bmp:
-                                bmpObjects.Add((int)resData.resourceId,
-                                    new ResourceObject((int)resData.resourceId, ResourceType.bmp, resData.dataPath)
-                                );
+                                if(!bmpObjects.ContainsKey((int)resData.resourceId))
+                                    bmpObjects[(int)resData.resourceId] = new ResourceObject(
+                                        (int)resData.resourceId, ResourceType.bmp, resData.dataPath);
                                 break;
                             case ResourceType.bga:
                                 object[] data = resData.additionalData as object[];
@@ -168,6 +172,18 @@ namespace BMS {
                 if(OnBMSLoaded != null)
                     OnBMSLoaded.Invoke();
             }
+        }
+
+        void ConvertToResourceObject(ref ResourceObject resObj, int index) {
+            if(bmpObjects.TryGetValue(index, out resObj))
+                return;
+            BMSResourceData resData;
+            if(chart.TryGetResourceData(ResourceType.bmp, index, out resData)) {
+                resObj = new ResourceObject(index, ResourceType.bmp, resData.dataPath);
+                bmpObjects[index] = resObj;
+                return;
+            }
+            resObj = null;
         }
     }
 }
