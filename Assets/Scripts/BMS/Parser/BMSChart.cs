@@ -12,6 +12,7 @@ namespace BMS {
         string rawBmsContent;
         readonly List<string> bmsContent = new List<string>();
         int lnType;
+        bool randomized;
 
         public BMSChart(string bmsContent) {
             rawBmsContent = bmsContent;
@@ -29,6 +30,10 @@ namespace BMS {
             get { return lnType; }
         }
 
+        public override bool Randomized {
+            get { return randomized; }
+        }
+
         public override void Parse(ParseType parseType) {
             ResetAllData(parseType);
             if((parseType & ParseType.Header) == ParseType.Header) {
@@ -44,6 +49,7 @@ namespace BMS {
                 ifStack.Push(new IfBlock { parsing = true });
                 random = new Random();
                 bmev = new List<BMSEvent>();
+                randomized = false;
             } else {
                 ifStack = null;
                 random = null;
@@ -99,8 +105,10 @@ namespace BMS {
                 }
             }
 
-            if((parseType & ParseType.Content) == ParseType.Content)
+            if((parseType & ParseType.Content) == ParseType.Content) {
+                BeatResetFix(bmev);
                 PostProcessContent(bmev);
+            }
 
             base.Parse(parseType);
         }
@@ -207,7 +215,7 @@ namespace BMS {
             return true;
         }
 
-        private bool ParseContentLine(string command2, string strParam1, string strParam2, List<BMSEvent> bmev) {
+        private static bool ParseContentLine(string command2, string strParam1, string strParam2, List<BMSEvent> bmev) {
             int verse;
             if(!int.TryParse(command2, out verse)) return false;
             int channel = GetChannelNumberById(strParam2);
@@ -218,7 +226,7 @@ namespace BMS {
             switch(channel) {
                 case 1: evType = BMSEventType.WAV; break;
                 case 2:
-                    AddEvent(new BMSEvent {
+                    bmev.InsertInOrdered(new BMSEvent {
                         measure = verse,
                         beat = 0,
                         data2 = BitConverter.DoubleToInt64Bits(double.Parse(strParam1)),
@@ -243,7 +251,7 @@ namespace BMS {
             for(int i = 0; i < length; i++) {
                 int value = Base36.Decode(strParam1.Substring(i * 2, 2));
                 if(value > 0) {
-                    AddEvent(new BMSEvent {
+                    bmev.InsertInOrdered(new BMSEvent {
                         measure = verse,
                         beat = (float)i / length,
                         type = evType,
@@ -310,6 +318,7 @@ namespace BMS {
                     if(current.parsing && int.TryParse(strParam, out intParam))
                         current.rand = random.Next(intParam) + 1;
                     stack.Push(current);
+                    randomized = true;
                     break;
                 default:
                     return !stack.Peek().parsing;
@@ -318,27 +327,12 @@ namespace BMS {
         }
 
         private void PostProcessContent(List<BMSEvent> bmev) {
-            // Insert beat reset after 1 measure of time signature change event according to BMS specifications.
-            BMSEvent[] beatResetEvents = bmev.Where(ev => ev.type == BMSEventType.BeatReset).ToArray();
-            for(int i = 0, l = beatResetEvents.Length; i < l; i++) {
-                BMSEvent currentEv = beatResetEvents[i];
-                int meas = currentEv.measure;
-                if(i == l - 1 || (beatResetEvents[i + 1].measure - meas > 1 &&
-                    BitConverter.Int64BitsToDouble(currentEv.data2) != 1))
-                    AddEvent(new BMSEvent {
-                        measure = meas + 1,
-                        beat = 0,
-                        data2 = BitConverter.DoubleToInt64Bits(1),
-                        type = BMSEventType.BeatReset
-                    });
-            }
-            
             Dictionary<int, BMSEvent> lnMarker = new Dictionary<int, BMSEvent>();
             double bpm = initialBPM, beatOffset = 0, beatPerMeas = 1;
             TimeSpan referenceTimePoint = TimeSpan.Zero;
 
             TimeSpan stopTimePoint = TimeSpan.Zero;
-            float stopMeasBeat = float.MinValue;
+            float stopMeasBeat = 0;
 
             AddEvent(new BMSEvent {
                 measure = 0,
@@ -438,6 +432,22 @@ namespace BMS {
                 AddEvent(converted);
             }
         }
+
+        // Insert beat reset after 1 measure of time signature change event according to BMS specifications.
+        private static void BeatResetFix(List<BMSEvent> bmev) { 
+            BMSEvent[] beatResetEvents = bmev.Where(ev => ev.type == BMSEventType.BeatReset).ToArray();
+            for(int i = 0, l = beatResetEvents.Length; i < l; i++) {
+                BMSEvent currentEv = beatResetEvents[i];
+                int meas = currentEv.measure;
+                if(i == l - 1 || (beatResetEvents[i + 1].measure - meas > 1 &&
+                    BitConverter.Int64BitsToDouble(currentEv.data2) != 1))
+                    bmev.InsertInOrdered(new BMSEvent {
+                        measure = meas + 1,
+                        beat = 0,
+                        data2 = BitConverter.DoubleToInt64Bits(1),
+                        type = BMSEventType.BeatReset
+                    });
+            }}
 
         private static void AppendString(ref string original, string append) {
             if(string.IsNullOrEmpty(original)) {

@@ -42,6 +42,7 @@ namespace BMS {
         public virtual float Volume { get { return volume; } }
         public virtual int MaxCombos { get { return maxCombos; } }
         public virtual string RawContent { get { return string.Empty; } }
+        public virtual bool Randomized { get { return false; } }
 
         public IList<BMSEvent> Events {
             get { return new ReadOnlyCollection<BMSEvent>(bmsEvents); }

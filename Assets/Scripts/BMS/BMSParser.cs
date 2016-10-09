@@ -59,7 +59,7 @@ namespace BMS {
         public bool BannerFileLoaded { get { return bannerFileLoaded; } }
         public bool StageFileLoaded { get { return stageFileLoaded; } }
         
-        bool parseHeader, parseBody, parseResHeader, parseAll, hasRandom;
+        bool parseHeader, parseBody, parseResHeader, parseAll;
         ResourceObject stageFileObject, bannerFileObject;
         Thread loadBMSThread;
 
@@ -67,7 +67,7 @@ namespace BMS {
         public event Action OnBannerFileLoaded;
 
         public bool HasRandom {
-            get { return hasRandom; }
+            get { return chart.Randomized; }
         }
 
         void StopPreviousBMSLoadJob() {
