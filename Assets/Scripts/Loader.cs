@@ -47,7 +47,7 @@ public class Loader : SingletonBehaviour<Loader> {
         bmsManager.DetuneEnabled = enableDetune;
         bmsManager.BGAEnabled = enableBGA;
         bmsManager.DynamicPreEventOffset = dynamicSpeed;
-        bmsManager.PreEventOffset = TimeSpan.FromSeconds(2 - speed);
+        bmsManager.PreEventOffset = TimeSpan.FromSeconds((2 - speed) * 2);
         bmsManager.LoadBMS(bmsContent, fileInfo.Directory.FullName, fileInfo.Extension);
         while(!bmsManager.BMSLoaded) yield return null;
 

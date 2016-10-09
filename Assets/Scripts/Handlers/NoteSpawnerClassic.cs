@@ -10,6 +10,7 @@ public class NoteSpawnerClassic: NoteSpawner {
     
     public float clampRangeStart = -1, clampRangeEnd = 1;
     public float startDistance = 0F, targetDistance = 1F, offset;
+    public float startOffset;
     public float maxNoteDistance = 360F;
     public Vector3 centroid;
     public ScoreDisplayPack scoreDisplayPack;
@@ -36,6 +37,7 @@ public class NoteSpawnerClassic: NoteSpawner {
         noteHandler.clampRangeEnd = clampRangeEnd;
         noteHandler.startDistance = startDistance;
         noteHandler.targetDistance = targetDistance;
+        noteHandler.startOffset = startOffset;
         noteHandler.offset = offset;
         noteHandler.scoreDisplayPack = scoreDisplayPack;
         return noteHandler;

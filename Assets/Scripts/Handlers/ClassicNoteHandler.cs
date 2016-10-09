@@ -15,6 +15,8 @@ public class ClassicNoteHandler: NoteHandler {
     public float clampRangeStart, clampRangeEnd;
     [NonSerialized]
     public float startDistance, targetDistance, offset;
+    [NonSerialized]
+    public float startOffset;
 
     float delta1 = 0, delta2 = 0;
 
@@ -129,7 +131,7 @@ public class ClassicNoteHandler: NoteHandler {
         } else if(overTime) {
             handler.transform.localPosition = Vector3.up * offset + Vector3.back * (targetDistance + Mathf.Abs(targetDistance - startDistance) * Mathf.Pow(delta, 0.5F) / 16);
         } else {
-            handler.transform.localPosition = Vector3.up * offset + Vector3.forward * Mathf.Lerp(startDistance, targetDistance, 1 - delta);
+            handler.transform.localPosition = Vector3.up * Mathf.Lerp(startOffset, offset, 1 - delta) + Vector3.forward * Mathf.Lerp(startDistance, targetDistance, 1 - delta);
         }
     }
 
