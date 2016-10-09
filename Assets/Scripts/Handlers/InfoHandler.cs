@@ -100,7 +100,7 @@ public class InfoHandler : MonoBehaviour {
                         bmsManager.RankString
                     )
                 );
-            bgTexture.enabled = bgTexture.rawImage.texture != null;
+            bgTexture.rawImage.enabled = bgTexture.rawImage.texture != null;
             if(graphDisplay) {
                 if(graphHandler)
                     graphDisplay.texture = graphHandler.Texture;
@@ -125,7 +125,7 @@ public class InfoHandler : MonoBehaviour {
             panel.gameObject.SetActive(false);
             pausePanel.gameObject.SetActive(false);
             dummyBGA.SetActive(bmsManager.BGAEnabled);
-            bgTexture.enabled = false;
+            bgTexture.rawImage.enabled = false;
         }
         if(pauseChanged) {
             pauseChanged = false;
