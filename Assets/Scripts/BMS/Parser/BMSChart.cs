@@ -374,7 +374,7 @@ namespace BMS {
                         if(newBeatPerMeas == beatPerMeas)
                             continue;
                         converted.type = BMSEventType.BeatReset;
-                        converted.data2 = ev.data2;
+                        converted.data2 = BitConverter.DoubleToInt64Bits(BitConverter.Int64BitsToDouble(ev.data2) * 4);
                         beatOffset = ev.measure;
                         beatPerMeas = newBeatPerMeas;
                         referenceTimePoint = converted.time;

@@ -7,6 +7,9 @@ using LitJson;
 
 namespace BMS {
     // Reference: https://bmson-spec.readthedocs.io/en/master/doc/
+    // Notes to modefiers / users: We are using a forked and patched version of the
+    // LitJson library which provides several extensions:
+    // https://github.com/JLChnToZ/LitJson
     public class BmsonChart: Chart {
         string rawBmsonContent;
         string modeHint;
