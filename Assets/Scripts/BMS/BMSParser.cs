@@ -132,8 +132,6 @@ namespace BMS {
                 if(parseResHeader) parseType |= ParseType.Resources;
                 if(parseBody) parseType |= ParseType.Content;
                 chart.Parse(parseType);
-                duration = mainTimingHelper.EndTime;
-                hasBGA = chart.Events.Any(ev => ev.type == BMSEventType.BMP);
                 if(parseHeader) {
                     ConvertToResourceObject(ref stageFileObject, -1);
                     ConvertToResourceObject(ref bannerFileObject, -2);
@@ -163,6 +161,11 @@ namespace BMS {
                                 break;
                         }
                     }
+                if(parseBody) {
+                    hasBGA = chart.Events.Any(ev => ev.type == BMSEventType.BMP);
+                    startPos = chart.Events.FirstOrDefault(ev => ev.IsNote).time;
+                    duration = mainTimingHelper.EndTime;
+                }
             } catch(ThreadAbortException) {
                 Debug.LogWarning("BMS parsing aboarted.");
             } catch(Exception ex) {
