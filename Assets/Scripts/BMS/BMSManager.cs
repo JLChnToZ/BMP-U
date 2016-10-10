@@ -377,7 +377,7 @@ namespace BMS {
                     float beatFlow = (float)(timePosition - bpmBasePoint).Ticks / TimeSpan.TicksPerMinute * bpm + bpmBasePointBeatFlow;
                     OnBeatFlow.Invoke(Mathf.Repeat(beatFlow, 1), Mathf.Repeat(beatFlow, currentTimeSignature));
                 }
-                if(mainTimingHelper.IsEnd && soundPlayer.Polyphony <= 0)
+                if(timePosition > duration && soundPlayer.Polyphony <= 0)
                     IsStarted = false;
             }
         }

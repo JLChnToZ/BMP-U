@@ -29,6 +29,7 @@ namespace BMS {
         Texture stageFile;
         Texture bannerFile;
         TimeSpan duration;
+        TimeSpan endTimeTheshold;
         TimeSpan startPos;
 
         public string Title { get { return chart.Title; } }
@@ -165,6 +166,7 @@ namespace BMS {
                     hasBGA = chart.Events.Any(ev => ev.type == BMSEventType.BMP);
                     startPos = chart.Events.FirstOrDefault(ev => ev.IsNote).time;
                     duration = mainTimingHelper.EndTime;
+                    endTimeTheshold = duration + TimeSpan.FromSeconds(noteOffsetThesholds.Last());
                 }
             } catch(ThreadAbortException) {
                 Debug.LogWarning("BMS parsing aboarted.");
