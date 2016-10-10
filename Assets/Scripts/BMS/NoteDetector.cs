@@ -125,7 +125,7 @@ namespace BMS {
         }
 
         void OnHasKeyFrame(BMSEvent bmsEvent) {
-            if(!bmsEvent.IsNote)
+            if(!bmsEvent.IsNote || !bmsManager.GetAllAdoptedChannels().Contains(bmsEvent.data1))
                 return;
             bool isLongNote = bmsEvent.type == BMSEventType.LongNoteEnd || bmsEvent.type == BMSEventType.LongNoteStart, lnDown = false;
             TimeSpan lnEndpos = TimeSpan.Zero;
@@ -153,7 +153,7 @@ namespace BMS {
         }
 
         void OnPostMap(BMSEvent bmsEvent) {
-            if(bmsEvent.type != BMSEventType.Note && bmsEvent.type != BMSEventType.LongNoteStart && bmsEvent.type != BMSEventType.LongNoteEnd)
+            if(!bmsEvent.IsNote || !bmsManager.GetAllAdoptedChannels().Contains(bmsEvent.data1))
                 return;
             HandleNoteEvent(bmsEvent.data1, false, false);
         }
