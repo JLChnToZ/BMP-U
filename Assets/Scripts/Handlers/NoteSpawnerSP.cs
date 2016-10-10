@@ -66,10 +66,10 @@ public class NoteSpawnerSP: NoteSpawner {
 
     void UpdateIndicators() {
         if(!showTrackIndicators) return;
-        int channelCount = channels == null ? 0 : channels.Length;
+        int channelCount = channels == null ? 0 : (channels.Length + 1);
         for(int i = 0, l = Math.Max(channelCount, spawnedIndicators.Count); i < l; i++) {
             TrackIndicator trackInd;
-            if(i >= channelCount) {
+            if(i >= channelCount || channelCount < 2) {
                 if(i < spawnedIndicators.Count) {
                     spawnedIndicators[i].gameObject.SetActive(false);
                     continue;
@@ -91,7 +91,7 @@ public class NoteSpawnerSP: NoteSpawner {
             trackInd.targetDistance = targetDistance;
             trackInd.startOffset = offset;
             trackInd.offset = offset;
-            trackInd.delta = (float)i / (channelCount - 1);
+            trackInd.delta = channelCount <= 2 ? i : (i - 0.5F) / (channelCount - 2);
             trackInd.Init();
         }
     }

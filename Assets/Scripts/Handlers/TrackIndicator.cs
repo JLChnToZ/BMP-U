@@ -17,7 +17,7 @@ public class TrackIndicator: MonoBehaviour {
     
     public void Init() {
         delta = float.IsNaN(delta) ? 0.5F : delta;
-        float clamp = Mathf.Lerp(clampRangeStart, clampRangeEnd, delta);
+        float clamp = Mathf.LerpUnclamped(clampRangeStart, clampRangeEnd, delta);
         switch(mode) {
             case 0:
                 transform.position = centroid;
@@ -33,7 +33,7 @@ public class TrackIndicator: MonoBehaviour {
         lineRenderer.useWorldSpace = false;
         lineRenderer.SetVertexCount(2);
         lineRenderer.SetPosition(0, new Vector3(0, startOffset, startDistance));
-        lineRenderer.SetPosition(1, new Vector3(0, offset, targetDistance));
+        lineRenderer.SetPosition(1, new Vector3(0, offset, targetDistance - 10F));
         gameObject.SetActive(true);
     }
 }
