@@ -1528,6 +1528,9 @@ MonoBehaviour:
   maxNoteDistance: 360
   centroid: {x: 0, y: -1, z: 0}
   scoreDisplayPack: {fileID: 11400000, guid: 3f88466b5221e754baf9e743bf54c732, type: 2}
+  showTrackIndicators: 1
+  trackIndicatorTemplate: {fileID: 1000010625128104, guid: 410b097483ad1cd4caf4a929175d6b09,
+    type: 2}
 --- !u!4 &496827476
 Transform:
   m_ObjectHideFlags: 0
@@ -3082,6 +3085,9 @@ MonoBehaviour:
   maxNoteDistance: 15
   centroid: {x: 0, y: 1, z: 0}
   scoreDisplayPack: {fileID: 11400000, guid: 3f88466b5221e754baf9e743bf54c732, type: 2}
+  showTrackIndicators: 1
+  trackIndicatorTemplate: {fileID: 1000010625128104, guid: 410b097483ad1cd4caf4a929175d6b09,
+    type: 2}
 --- !u!4 &1050942001
 Transform:
   m_ObjectHideFlags: 0

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using BMS.Visualization;
 using UnityEngine;
@@ -14,6 +15,10 @@ public class NoteSpawnerSP: NoteSpawner {
     public float maxNoteDistance = 360F;
     public Vector3 centroid;
     public ScoreDisplayPack scoreDisplayPack;
+    public bool showTrackIndicators;
+    public GameObject trackIndicatorTemplate;
+    
+    private readonly List<TrackIndicator> spawnedIndicators = new List<TrackIndicator>();
 
     void Awake() {
         NoteLayoutOptionsHandler.Reset(false);
@@ -55,6 +60,39 @@ public class NoteSpawnerSP: NoteSpawner {
             float middle = Mathf.Repeat((clampRangeStart + clampRangeEnd) / 2, 360F);
             clampRangeStart = middle - maxNoteDistance * count / 2;
             clampRangeEnd = middle + maxNoteDistance * count / 2;
+        }
+        UpdateIndicators();
+    }
+
+    void UpdateIndicators() {
+        if(!showTrackIndicators) return;
+        int channelCount = channels == null ? 0 : channels.Length;
+        for(int i = 0, l = Math.Max(channelCount, spawnedIndicators.Count); i < l; i++) {
+            TrackIndicator trackInd;
+            if(i >= channelCount) {
+                if(i < spawnedIndicators.Count) {
+                    spawnedIndicators[i].gameObject.SetActive(false);
+                    continue;
+                } else {
+                    break;
+                }
+            } else if(i < channelCount && i >= spawnedIndicators.Count) {
+                GameObject go = Instantiate(trackIndicatorTemplate);
+                go.transform.SetParent(transform, false);
+                spawnedIndicators.Add(trackInd = go.GetComponent<TrackIndicator>());
+            } else {
+                trackInd = spawnedIndicators[i];
+            }
+            trackInd.mode = 0;
+            trackInd.centroid = centroid;
+            trackInd.clampRangeStart = clampRangeStart;
+            trackInd.clampRangeEnd = clampRangeEnd;
+            trackInd.startDistance = startDistance;
+            trackInd.targetDistance = targetDistance;
+            trackInd.startOffset = offset;
+            trackInd.offset = offset;
+            trackInd.delta = (float)i / (channelCount - 1);
+            trackInd.Init();
         }
     }
 
