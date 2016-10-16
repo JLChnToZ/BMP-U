@@ -57,8 +57,8 @@ namespace JLChnToZ.Toolset.Editor {
 
         [MenuItem("Assets/Create/Scriptable Object Instance", validate = true)]
         static bool CreateAssetMenuItemEnabled() {
-            foreach(var type in InternalGetSelectedSOTypes()) return true;
-            return false;
+            using(IEnumerator<Type> types = InternalGetSelectedSOTypes().GetEnumerator())
+                return types.MoveNext();
         }
 
         static ScriptableObject InternalCreateAsset(Type type, string name, bool allowUserRename) {
