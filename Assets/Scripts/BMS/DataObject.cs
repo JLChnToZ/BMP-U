@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using UnityObject = UnityEngine.Object;
 
+using ManagedBass;
+
 namespace BMS {
     public enum ResourceType {
         Unknown,
@@ -50,9 +52,12 @@ namespace BMS {
                     UnityObject.Destroy(value as UnityObject);
                 else
                     UnityObject.DestroyImmediate(value as UnityObject);
+                return;
             }
             if(value is int) {
-                ManagedBass.Bass.StreamFree((int)value);
+                if(!Bass.StreamFree((int)value))
+                    Debug.LogErrorFormat("Failed to free stream {0} from BASS lib: {1}", value, Bass.LastError);
+                return;
             }
         }
     }

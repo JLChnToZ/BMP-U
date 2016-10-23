@@ -13,22 +13,20 @@ namespace BMS {
         void ClearDataObjects(bool clear, bool direct, bool clearMetaObjects) {
             if(!direct && reloadResourceCoroutine != null)
                 StopCoroutine(reloadResourceCoroutine);
-            UnityObject obj;
             foreach(var kv in bmpObjects) {
-                obj = kv.Value.value as UnityObject;
-                if(obj != null && (clearMetaObjects ? true : kv.Key > 0)) {
+                if(clearMetaObjects || kv.Key > 0) {
                     kv.Value.Dispose();
                     if(!clear) kv.Value.value = null;
                 }
             }
             foreach(var kv in wavObjects) {
-                obj = kv.Value.value as UnityObject;
-                if(obj != null && (clearMetaObjects ? true : kv.Key > 0)) {
+                if(clearMetaObjects || kv.Key > 0) {
                     kv.Value.Dispose();
                     if(!clear) kv.Value.value = null;
                 }
             }
             if(clear) {
+                Debug.LogFormat("Cleared {0} objects.", bmpObjects.Count + wavObjects.Count);
                 bmpObjects.Clear();
                 wavObjects.Clear();
                 bgaObjects.Clear();
