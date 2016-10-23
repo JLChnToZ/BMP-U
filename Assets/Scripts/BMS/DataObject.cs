@@ -43,7 +43,7 @@ namespace BMS {
         }
 
         public int soundEffect {
-            get { return (int)value; }
+            get { return (value is int) ? (int)value : 0; }
         }
 
         public void Dispose() {
