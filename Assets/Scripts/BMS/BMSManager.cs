@@ -321,7 +321,6 @@ namespace BMS {
                         else temp2.Add(movTexture);
                     playingMovieTextureHolders.ExceptWith(temp2);
                 } else {
-                    timePosition = TimeSpan.Zero;
                     startTime = DateTime.Now;
                     foreach(var movTexture in playingMovieTextures)
                         movTexture.Play();
