@@ -46,12 +46,12 @@ This application uses following products:
 - **[5 Identification Mono Font](http://www.dafont.com/5identification-mono.font)** by [Winter Design Studio](http://www.dafont.com/winty5.d4560)
 - **[VideoStreamer & VideoStreamer.NET](http://fr.sfml-dev.org/forums/index.php?topic=12305.0)** by Brown Star - [LICENSE](https://bitbucket.org/zsbzsb/videostreamer/src/df763ea34e6e8be6576dea3fb7843a7e1c193dda/license.txt)
 - **[Unity UI Extensions](https://bitbucket.org/ddreaper/unity-ui-extensions)** - [LICENSE](https://bitbucket.org/ddreaper/unity-ui-extensions/src/13e291bef4ff636f49f34b4a949cc0fc7d8edd9d/LICENSE)
-- **[NAudio](https://naudio.codeplex.com/)** - [LICENSE](https://naudio.codeplex.com/license) *
-- **[NVorbis](https://github.com/ioctlLR/NVorbis) & [NAudio.Vorbis](https://github.com/naudio/Vorbis)** - [LICENSE](https://github.com/ioctlLR/NVorbis/blob/master/LICENSE) *
+- **[Un4seen BASS](http://www.un4seen.com/bass.html)** - [LICENSE](http://www.un4seen.com/bass.html#license) *
+- **[ManagedBass.PInvoke](https://github.com/ManagedBass/ManagedBass.PInvoke)**
 
 Except the components mentioned above, the whole application (or game) in open-sourced under [Artistic License 2.0](LICENSE).
 
-* NAudio, NVorbis and NAudio.Vorbis are packed into a single library file in this project.
+* Commercial license of BASS is **NOT** included or covered in any official binaries or sources of BananaBeats (Indeed, BananaBeats is not a commercial project), for any commercial usage of BananaBeats with BASS (For example, selling it) have to purchase the license individually.
 
 ## Snapshots
 
