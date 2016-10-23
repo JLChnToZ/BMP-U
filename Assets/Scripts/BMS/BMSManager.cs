@@ -449,8 +449,8 @@ namespace BMS {
         void PlayWAV(int eventId, TimeSpan sliceStart, TimeSpan sliceEnd, bool isPlayer = false, float pitch = 1) {
             if(eventId == 0) return;
             var wav = GetWAV(eventId);
-            if(wav != null)
-                soundPlayer.PlaySound(wav, sliceStart, sliceEnd, eventId, isPlayer, pitch, wavObjects[eventId].path);
+            if(wav != 0)
+                soundPlayer.PlaySound(wav, sliceStart, sliceEnd, eventId, isPlayer, pitch, "");
         }
 
         public bool IsValidFlag(int flag) {

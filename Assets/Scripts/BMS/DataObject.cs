@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityObject = UnityEngine.Object;
 
 namespace BMS {
     public enum ResourceType {
@@ -27,7 +28,7 @@ namespace BMS {
             this.value = value;
             if(value is MovieTextureHolder) type = ResourceType.bmp;
             else if(value is Texture) type = ResourceType.bmp;
-            else if(value is AudioClip) type = ResourceType.wav;
+            else if(value is int) type = ResourceType.wav;
             else type = ResourceType.Unknown;
         }
 
@@ -39,8 +40,20 @@ namespace BMS {
             get { return value != null ? ((value as Texture) ?? (value as MovieTextureHolder).Output) : null; }
         }
 
-        public AudioClip soundEffect {
-            get { return value as AudioClip; }
+        public int soundEffect {
+            get { return (int)value; }
+        }
+
+        public void Dispose() {
+            if(value is UnityObject) {
+                if(Application.isPlaying)
+                    UnityObject.Destroy(value as UnityObject);
+                else
+                    UnityObject.DestroyImmediate(value as UnityObject);
+            }
+            if(value is int) {
+                ManagedBass.Bass.StreamFree((int)value);
+            }
         }
     }
 

@@ -5,190 +5,120 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 
+using ManagedBass;
+using ManagedBass.Fx;
+
 namespace BMS {
     public class SoundPlayer: MonoBehaviour {
-        struct InUseAudioSource: IEquatable<InUseAudioSource> {
-            public readonly AudioSource audioSource;
-            public readonly int id;
-
-            public InUseAudioSource(AudioSource audioSource, int id) {
-                this.id = id;
-                this.audioSource = audioSource;
-            }
-
-            public InUseAudioSource(int id) {
-                this.audioSource = null;
-                this.id = id;
-            }
-
-            public bool Equals(InUseAudioSource other) {
-                return id == other.id;
-            }
-
-            public override bool Equals(object obj) {
-                return (obj is InUseAudioSource) && Equals((InUseAudioSource)obj);
-            }
-
-            public override int GetHashCode() {
-                return id.GetHashCode();
-            }
-        }
+        static PitchShiftParameters fxParams = new PitchShiftParameters();
+        bool isAdding;
 
         struct SlicedAudioPlayer {
-            public readonly AudioSource audioSource;
-            public float sliceStart, sliceEnd;
+            public readonly int handle;
+            public long sliceStart, sliceEnd;
 
-            public SlicedAudioPlayer(AudioSource audioSource, TimeSpan sliceStart, TimeSpan sliceEnd) {
-                this.audioSource = audioSource;
-                this.sliceStart = (float)sliceStart.Ticks / TimeSpan.TicksPerSecond;
-                this.sliceEnd = (float)sliceEnd.Ticks / TimeSpan.TicksPerSecond;
-            }
-
-            public void UpdateSliceTime(TimeSpan sliceStart, TimeSpan sliceEnd) {
-                this.sliceStart = (float)sliceStart.Ticks / TimeSpan.TicksPerSecond;
-                this.sliceEnd = (float)sliceEnd.Ticks / TimeSpan.TicksPerSecond;
+            public SlicedAudioPlayer(int handle, TimeSpan sliceStart, TimeSpan sliceEnd) {
+                this.handle = handle;
+                this.sliceStart = Bass.ChannelSeconds2Bytes(handle, (double)sliceStart.Ticks / TimeSpan.TicksPerSecond);
+                this.sliceEnd = sliceEnd >= TimeSpan.MaxValue ? long.MaxValue :
+                    Bass.ChannelSeconds2Bytes(handle, (double)sliceEnd.Ticks / TimeSpan.TicksPerSecond);
             }
         }
-
-        [NonSerialized]
-        Queue<AudioSource> freeAudioSources = new Queue<AudioSource>();
-
-        [NonSerialized]
-        Dictionary<InUseAudioSource, float> inUseAudioSources = new Dictionary<InUseAudioSource, float>();
 
         [NonSerialized]
         Dictionary<int, SlicedAudioPlayer> audioSourceIdMapping = new Dictionary<int, SlicedAudioPlayer>();
-
         [NonSerialized]
-        HashSet<AudioSource> changingAudioSource = new HashSet<AudioSource>();
+        HashSet<int> unusedAudioSources = new HashSet<int>();
 
+        [Obsolete("Unused")]
         public AudioMixerGroup mixerGroup;
+        [Obsolete("Unused")]
         public AudioMixerGroup playerMixerGroup;
 
         bool isPaused;
         float volume = 1;
 
         public int Polyphony {
-            get { return inUseAudioSources.Count; }
+            get { return audioSourceIdMapping.Count; }
         }
 
         public float Volume {
             get { return volume; }
             set {
                 volume = value;
-                foreach(var audioSouce in inUseAudioSources.Keys)
-                    audioSouce.audioSource.volume = volume;
+                Bass.Volume = value;
             }
         }
-        
+
+        static SoundPlayer() {
+            if(!Bass.Init(-1, 44100, DeviceInitFlags.Default, IntPtr.Zero, IntPtr.Zero))
+                Debug.LogErrorFormat("Failed to initialize BASS : {0}", Bass.LastError);
+        }
+
         public void PauseChanged(bool isPaused) {
             if(this.isPaused == isPaused) return;
             if(isPaused) {
                 RecycleInUseAudioSources();
-                var temp = new HashSet<InUseAudioSource>(inUseAudioSources.Keys);
-                foreach(var audioSource in temp) {
-                    inUseAudioSources[audioSource] = audioSource.audioSource.time;
-                    audioSource.audioSource.Stop();
-                }
+                foreach(var audioSource in audioSourceIdMapping.Values)
+                    Bass.ChannelPause(audioSource.handle);
             } else {
-                foreach(var audioSource in inUseAudioSources) {
-                    audioSource.Key.audioSource.Play();
-                    audioSource.Key.audioSource.time = audioSource.Value;
-                }
+                foreach(var audioSource in audioSourceIdMapping.Values)
+                    Bass.ChannelPlay(audioSource.handle);
             }
             this.isPaused = isPaused;
         }
 
         public void StopAll() {
-            foreach(var audioSource in inUseAudioSources.Keys) {
-                audioSource.audioSource.Stop();
-                freeAudioSources.Enqueue(audioSource.audioSource);
-            }
-            inUseAudioSources.Clear();
+            foreach(var audioSource in audioSourceIdMapping.Values)
+                Bass.ChannelStop(audioSource.handle);
             audioSourceIdMapping.Clear();
             isPaused = false;
         }
 
-        public void PlaySound(AudioClip audio, TimeSpan sliceStart, TimeSpan sliceEnd, int id, bool isPlayer, float pitch, string debugName) {
-            SlicedAudioPlayer audioPlayer;
-            if(inUseAudioSources.ContainsKey(new InUseAudioSource(id))) {
-                audioPlayer = audioSourceIdMapping[id];
-                changingAudioSource.Add(audioPlayer.audioSource);
-                audioPlayer.audioSource.Stop();
-                audioPlayer.UpdateSliceTime(sliceStart, sliceEnd);
-            } else {
-                audioPlayer = new SlicedAudioPlayer(GetFreeAudioSource(isPlayer), sliceStart, sliceEnd);
-                changingAudioSource.Add(audioPlayer.audioSource);
-                audioPlayer.audioSource.clip = audio;
-            }
+        void OnApplicationQuit() {
+            Bass.Stop();
+            Bass.Free();
+        }
 
-            audioPlayer.audioSource.volume = volume;
-            audioPlayer.audioSource.pitch = pitch;
-
+        public void PlaySound(int handle, TimeSpan sliceStart, TimeSpan sliceEnd, int id, bool isPlayer, float pitch, string debugName) {
             if(!isPaused) {
-                if(!audioPlayer.audioSource.isPlaying)
-                    audioPlayer.audioSource.Play();
-                audioPlayer.audioSource.time = (float)sliceStart.Ticks / TimeSpan.TicksPerSecond;
+                isAdding = true;
+                audioSourceIdMapping[id] = new SlicedAudioPlayer(handle, sliceStart, sliceEnd);
+                long bytePos = Bass.ChannelSeconds2Bytes(handle, (double)sliceStart.Ticks / TimeSpan.TicksPerSecond);
+                if(bytePos > 0) {
+                    Bass.ChannelSetPosition(handle, bytePos);
+                    Bass.ChannelPlay(handle, false);
+                } else {
+                    Bass.ChannelPlay(handle, true);
+                }
+                Bass.FXGetParameters(handle, fxParams);
+                fxParams.fPitchShift = pitch;
+                Bass.FXSetParameters(handle, fxParams);
+                isAdding = false;
             }
-#if UNITY_EDITOR
-            audioPlayer.audioSource.gameObject.name = string.Format("WAV{0:000} {1}", id, debugName);
-#endif
-            inUseAudioSources[new InUseAudioSource(audioPlayer.audioSource, id)] = 0;
-            audioSourceIdMapping[id] = audioPlayer;
-            changingAudioSource.Remove(audioPlayer.audioSource);
         }
 
         void RecycleInUseAudioSources() {
-            var unusedAudioSources = new HashSet<InUseAudioSource>();
-            foreach(var kv in audioSourceIdMapping)
-                if(kv.Value.audioSource.time >= kv.Value.sliceEnd)
-                    kv.Value.audioSource.Stop();
-            foreach(var audioSource in inUseAudioSources.Keys)
-                if(!audioSource.audioSource.isPlaying && !changingAudioSource.Contains(audioSource.audioSource))
-                    unusedAudioSources.Add(audioSource);
-            foreach(var audioSource in unusedAudioSources) {
-                inUseAudioSources.Remove(audioSource);
-                audioSourceIdMapping.Remove(audioSource.id);
-                freeAudioSources.Enqueue(audioSource.audioSource);
-#if UNITY_EDITOR
-                audioSource.audioSource.gameObject.name = "-";
-#endif
+            unusedAudioSources.Clear();
+            foreach(var kv in audioSourceIdMapping) {
+                if(isAdding) return;
+                if(Bass.ChannelIsActive(kv.Value.handle) != PlaybackState.Playing) {
+                    unusedAudioSources.Add(kv.Key);
+                } else if(Bass.ChannelGetPosition(kv.Value.handle) >= kv.Value.sliceEnd) {
+                    Bass.ChannelStop(kv.Value.handle);
+                    unusedAudioSources.Add(kv.Key);
+                }
+            }
+            foreach(int unusedChannel in unusedAudioSources) {
+                if(isAdding) return;
+                audioSourceIdMapping.Remove(unusedChannel);
             }
         }
         
         void Update() {
-            if(!isPaused) {
+            if(!isPaused && !isAdding) {
                 RecycleInUseAudioSources();
             }
-        }
-
-        AudioSource GetFreeAudioSource(bool isPlayer) {
-            AudioSource result;
-            while(freeAudioSources.Count > 0) {
-                result = freeAudioSources.Dequeue();
-                if(result != null) {
-                    SetMixerGroup(result, isPlayer);
-                    return result;
-                }
-            }
-            var go = new GameObject(string.Format("WAV Player"));
-            go.transform.SetParent(transform, false);
-            result = go.AddComponent<AudioSource>();
-            result.dopplerLevel = 0;
-            result.bypassEffects = true;
-            result.bypassListenerEffects = true;
-            result.bypassReverbZones = true;
-            result.ignoreListenerVolume = true;
-            result.loop = false;
-            SetMixerGroup(result, isPlayer);
-            return result;
-        }
-
-        void SetMixerGroup(AudioSource audioSource, bool isPlayer) {
-            if(!isPlayer && mixerGroup != null)
-                audioSource.outputAudioMixerGroup = mixerGroup;
-            else if(isPlayer && playerMixerGroup != null)
-                audioSource.outputAudioMixerGroup = playerMixerGroup;
         }
     }
 }

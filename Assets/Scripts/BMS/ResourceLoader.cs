@@ -3,8 +3,7 @@ using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 
-using NAudio;
-using NAudio.Wave;
+using ManagedBass;
 
 #if UNITY_STANDALONE_WIN
 using System.Drawing;
@@ -93,17 +92,11 @@ namespace BMS {
             yield break;
         }
 
-        static AudioClip ReadAudioClipExtended(FileInfo finfo) {
-            using(var fReader = new AudioFileReader(finfo.FullName)) {
-                int length = (int)(fReader.Length / sizeof(float));
-                WaveFormat waveFormat = fReader.WaveFormat;
-                int channels = waveFormat.Channels;
-                AudioClip clip = AudioClip.Create(finfo.Name, length / channels, channels, waveFormat.SampleRate, false);
-                float[] data = new float[length];
-                fReader.Read(data, 0, length);
-                clip.SetData(data, 0);
-                return clip;
-            }
+        static int ReadAudioClipExtended(FileInfo finfo) {
+            int handle = Bass.CreateStream(finfo.FullName, 0, 0, BassFlags.Prescan);
+            if(handle == 0)
+                Debug.LogErrorFormat("Failed to load {0}: {1}", finfo.Name, Bass.LastError);
+            return handle;
         }
 
         #region Platform specific implementations of reading bitmap

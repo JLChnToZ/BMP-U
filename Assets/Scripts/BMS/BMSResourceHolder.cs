@@ -17,14 +17,14 @@ namespace BMS {
             foreach(var kv in bmpObjects) {
                 obj = kv.Value.value as UnityObject;
                 if(obj != null && (clearMetaObjects ? true : kv.Key > 0)) {
-                    Destroy(obj);
+                    kv.Value.Dispose();
                     if(!clear) kv.Value.value = null;
                 }
             }
             foreach(var kv in wavObjects) {
                 obj = kv.Value.value as UnityObject;
                 if(obj != null && (clearMetaObjects ? true : kv.Key > 0)) {
-                    Destroy(obj);
+                    kv.Value.Dispose();
                     if(!clear) kv.Value.value = null;
                 }
             }
@@ -107,10 +107,10 @@ namespace BMS {
             return bmpObjects.TryGetValue(id, out res) && res != null && (res.value is MovieTextureHolder) && res.texture != null;
         }
 
-        public AudioClip GetWAV(int id) {
+        public int GetWAV(int id) {
             ResourceObject res;
             if(!wavObjects.TryGetValue(id, out res))
-                return null;
+                return -1;
             return res.soundEffect;
         }
 
