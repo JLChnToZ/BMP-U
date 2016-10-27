@@ -1,6 +1,8 @@
 # BananaBeats
 (Formly named: Be-Music-Player Unity Edition)
 
+![icon](Assets/Textures/bbicon.png)
+
 **Yet-Another Unity-based [Be-Music Script/Source](https://en.wikipedia.org/wiki/Be-Music_Source) (BMS) Player**
 
 This project aims to parse BMS scores and allows everyone to play with them as a rhythm game. You may play with your BMS track with keyboard, game controllers or even with touch screen.

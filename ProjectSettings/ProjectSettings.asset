@@ -179,7 +179,7 @@ PlayerSettings:
   - m_BuildTarget: 
     m_Icons:
     - serializedVersion: 2
-      m_Icon: {fileID: 0}
+      m_Icon: {fileID: 2800000, guid: d327c030a5a082142b6bc21d1c6a5169, type: 3}
       m_Width: 128
       m_Height: 128
   m_BuildTargetBatching: []
@@ -341,7 +341,8 @@ PlayerSettings:
   psp2UseDebugIl2cppLibs: 0
   psmSplashimage: {fileID: 0}
   spritePackerPolicy: 
-  scriptingDefineSymbols: {}
+  scriptingDefineSymbols:
+    4: 
   metroPackageName: BeMusicPlayerU
   metroPackageVersion: 
   metroCertificatePath: 
