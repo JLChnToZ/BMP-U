@@ -4,15 +4,6 @@ using UnityObject = UnityEngine.Object;
 using ManagedBass;
 
 namespace BMS {
-    public enum ResourceType {
-        Unknown,
-        bmp,
-        wav,
-        bpm,
-        stop,
-        bga,
-    }
-
     public class ResourceObject {
         readonly int index;
         internal readonly ResourceType type;
