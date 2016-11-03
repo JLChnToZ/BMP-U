@@ -8,6 +8,7 @@ namespace BMS.Visualization {
         None,
         Timing,
         Channel,
+        Beat,
     }
 
     public class NoteSpawner: MonoBehaviour {
@@ -73,9 +74,22 @@ namespace BMS.Visualization {
             spawnedNoteHandlers.Clear();
             noteHandlers.Clear();
             matchingTimeNoteHandlers.Clear();
+            ResetBPMEvents();
         }
 
         protected virtual void PreNoteEvent(BMSEvent bmsEvent) {
+            switch(bmsEvent.type) {
+                case BMSEventType.Note:
+                case BMSEventType.LongNoteStart:
+                case BMSEventType.LongNoteEnd:
+                    break;
+                case BMSEventType.BeatReset:
+                case BMSEventType.BPM:
+                case BMSEventType.STOP:
+                    UpdateBPMEvents(bmsEvent);
+                    return;
+                default: return;
+            }
             bool isLongNote = bmsManager.LongNoteType > 0 && _handledChannels.Contains(bmsEvent.data1) && (bmsEvent.type == BMSEventType.LongNoteStart || 
                 bmsEvent.type == BMSEventType.LongNoteEnd);
             if(!_handledChannels.Contains(bmsEvent.data1)) return;
@@ -125,6 +139,12 @@ namespace BMS.Visualization {
                             noteHandler.SetColor(matchColors[colorId > 0 ? colorId % matchColors.Length : 0]);
                         }
                         break;
+                    case ColoringMode.Beat:
+                        double currentBeat = ((double)(bmsEvent.time - bpmBasePoint).Ticks / TimeSpan.TicksPerMinute * bpm) % timeSign;
+                        int d, n;
+                        HelperFunctions.FindContinuedFraction(currentBeat, out d, out n, 5, 0);
+                        noteHandler.SetColor(HelperFunctions.ColorFromHSL((1 - 1 / (float)d), 1, 0.5F));
+                        break;
                     default:
                         noteHandler.SetColor(defaultColor);
                         break;
@@ -134,7 +154,40 @@ namespace BMS.Visualization {
             noteHandler.gameObject.name = string.Format("NOTE #{0:0000}:{1:0000} @{2}", bmsEvent.data1, bmsEvent.data2, bmsEvent.time);
 #endif
         }
-        
+
+        #region BPM Events
+        float bpmBasePointBeatFlow, timeSign, bpm;
+        TimeSpan bpmBasePoint;
+
+        private void ResetBPMEvents() {
+            bpmBasePointBeatFlow = 0;
+            timeSign = 4;
+            bpm = bmsManager.LoadedChart.BPM;
+            bpmBasePoint = TimeSpan.Zero;
+        }
+
+        private void UpdateBPMEvents(BMSEvent bmsEvent) {
+            // No need to handle this unless it is beat coloring mode
+            if(coloringMode != ColoringMode.Beat) return;
+            switch(bmsEvent.type) {
+                case BMSEventType.BeatReset:
+                    bpmBasePointBeatFlow = 0;
+                    bpmBasePoint = bmsEvent.time;
+                    timeSign = (float)BitConverter.Int64BitsToDouble(bmsEvent.data2);
+                    break;
+                case BMSEventType.BPM:
+                    float newBpm = (float)BitConverter.Int64BitsToDouble(bmsEvent.data2);
+                    bpmBasePointBeatFlow += (float)(bmsEvent.time - bpmBasePoint).Ticks / TimeSpan.TicksPerMinute * bpm;
+                    bpmBasePoint = bmsEvent.time;
+                    bpm = newBpm;
+                    break;
+                case BMSEventType.STOP:
+                    bpmBasePoint -= new TimeSpan(bmsEvent.data2);
+                    break;
+            }
+        }
+        #endregion
+
         public Color CurrentMatchColor {
             get { return currentColor < 0 ? defaultColor : matchColors[currentColor % matchColors.Length]; }
         }

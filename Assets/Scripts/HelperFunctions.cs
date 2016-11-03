@@ -182,4 +182,40 @@ public static class HelperFunctions {
     public static DateTime EpochToDateTime(long epoch) {
         return (Epoch0Time + new TimeSpan(epoch * TimeSpan.TicksPerSecond)).ToLocalTime();
     }
+
+    public static void FindContinuedFraction(double num, out int d, out int n, int maxIteration = int.MaxValue, double theshold = double.Epsilon) {
+        List<int> exp = new List<int>();
+        for(int iter = 0; iter < maxIteration; iter++) {
+            int inte = (int)Math.Truncate(num);
+            double frac = num - inte;
+            if(frac <= theshold) break;
+            num = 1 / frac;
+            exp.Add(inte);
+        }
+        ToFraction(exp, out n, out d);
+    }
+
+    private static void ToFraction(IList<int> exp, out int d, out int n) {
+        d = 0;
+        n = 1;
+        for(int i = exp.Count - 1; i >= 0; i--) {
+            if(d == 0) {
+                d = exp[i];
+                continue;
+            }
+            int nn = d * exp[i] + n;
+            n = d;
+            d = nn;
+        }
+        if(d != 0 && n != 0) {
+            int gcd = FindGCD(d, n);
+            d /= gcd;
+            n /= gcd;
+        }
+    }
+
+    private static int FindGCD(double a, double b) {
+        if(b != 0) while((a %= b) != 0 && (b %= a) != 0) { }
+        return (int)(a + b);
+    }
 }
