@@ -140,10 +140,12 @@ namespace BMS.Visualization {
                         }
                         break;
                     case ColoringMode.Beat:
-                        double currentBeat = ((double)(bmsEvent.time - bpmBasePoint).Ticks / TimeSpan.TicksPerMinute * bpm) % timeSign;
-                        int d, n;
-                        HelperFunctions.FindContinuedFraction(currentBeat, out d, out n, 5, 0);
-                        noteHandler.SetColor(HelperFunctions.ColorFromHSL((1 - 1 / (float)d), 1, 0.5F));
+                        const double minBeatTheshold = 0.015625;
+                        double currentBeat = (((double)(bmsEvent.time - bpmBasePoint).Ticks / TimeSpan.TicksPerMinute * bpm) % timeSign) / timeSign;
+                        int n, d;
+                        HelperFunctions.FindContinuedFraction(currentBeat, out n, out d, 10, minBeatTheshold);
+                        if(d == 0) d = (int)timeSign;
+                        noteHandler.SetColor(HelperFunctions.ColorFromHSL(Mathf.Log(d, 2) / 6, 1, 0.55F));
                         break;
                     default:
                         noteHandler.SetColor(defaultColor);
@@ -156,7 +158,7 @@ namespace BMS.Visualization {
         }
 
         #region BPM Events
-        float bpmBasePointBeatFlow, timeSign, bpm;
+        double bpmBasePointBeatFlow, timeSign, bpm;
         TimeSpan bpmBasePoint;
 
         private void ResetBPMEvents() {
@@ -173,11 +175,11 @@ namespace BMS.Visualization {
                 case BMSEventType.BeatReset:
                     bpmBasePointBeatFlow = 0;
                     bpmBasePoint = bmsEvent.time;
-                    timeSign = (float)BitConverter.Int64BitsToDouble(bmsEvent.data2);
+                    timeSign = BitConverter.Int64BitsToDouble(bmsEvent.data2);
                     break;
                 case BMSEventType.BPM:
-                    float newBpm = (float)BitConverter.Int64BitsToDouble(bmsEvent.data2);
-                    bpmBasePointBeatFlow += (float)(bmsEvent.time - bpmBasePoint).Ticks / TimeSpan.TicksPerMinute * bpm;
+                    double newBpm = BitConverter.Int64BitsToDouble(bmsEvent.data2);
+                    bpmBasePointBeatFlow += (double)(bmsEvent.time - bpmBasePoint).Ticks / TimeSpan.TicksPerMinute * bpm;
                     bpmBasePoint = bmsEvent.time;
                     bpm = newBpm;
                     break;

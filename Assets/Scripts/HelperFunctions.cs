@@ -183,7 +183,7 @@ public static class HelperFunctions {
         return (Epoch0Time + new TimeSpan(epoch * TimeSpan.TicksPerSecond)).ToLocalTime();
     }
 
-    public static void FindContinuedFraction(double num, out int d, out int n, int maxIteration = int.MaxValue, double theshold = double.Epsilon) {
+    public static void FindContinuedFraction(double num, out int n, out int d, int maxIteration = int.MaxValue, double theshold = 0) {
         List<int> exp = new List<int>();
         for(int iter = 0; iter < maxIteration; iter++) {
             int inte = (int)Math.Truncate(num);
