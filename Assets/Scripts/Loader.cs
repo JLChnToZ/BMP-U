@@ -39,11 +39,8 @@ public class Loader : SingletonBehaviour<Loader> {
 	}
 
     IEnumerator LoadBMSCoroutine() {
-        string bmsContent;
-        var fileInfo = new FileInfo(songPath);
-        using(var fs = fileInfo.OpenRead())
-        using(var fsRead = new StreamReader(fs, SongInfoLoader.CurrentEncoding))
-            bmsContent = fsRead.ReadToEnd();
+        FileInfo fileInfo = new FileInfo(songPath);
+        string bmsContent = SongInfoLoader.LoadFile(fileInfo);
         bmsManager.DetuneEnabled = enableDetune;
         bmsManager.BGAEnabled = enableBGA;
         bmsManager.DynamicPreEventOffset = dynamicSpeed;

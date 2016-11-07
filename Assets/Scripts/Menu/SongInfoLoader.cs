@@ -12,6 +12,7 @@ using UnityEngine;
 using BMS;
 
 using Entry = SongInfoLoader.Entry;
+using Ude;
 
 public struct SongInfo:IEquatable<SongInfo>, IComparable<SongInfo> {
     public int index;
@@ -177,11 +178,28 @@ public static class SongInfoLoader {
         SongInfoLoader.bmsManager = bmsManager;
     }
 
+    public static string LoadFile(FileInfo fileInfo) {
+        string result;
+        Encoding encoding = CurrentEncoding;
+        using(Stream stream = fileInfo.OpenRead()) {
+            CharsetDetector detector = new CharsetDetector();
+            detector.Feed(stream);
+            detector.DataEnd();
+            stream.Position = 0;
+            if(detector.Charset != null) {
+                Debug.LogFormat("Detected charset of file: {0}", detector.Charset);
+                encoding = Encoding.GetEncoding(detector.Charset);
+            } else {
+                Debug.LogFormat("Failed to detect charset, will use default encoding.");
+            }
+            using(StreamReader reader = new StreamReader(stream, encoding))
+                result = reader.ReadToEnd();
+        }
+        return result;
+    }
+
     public static SongInfo LoadBMS(FileInfo file) {
-        string bmsContent = string.Empty;
-        using(var fs = file.OpenRead())
-        using(var fsRead = new StreamReader(fs, CurrentEncoding))
-            bmsContent = fsRead.ReadToEnd();
+        string bmsContent = LoadFile(file);
         bmsManager.LoadBMS(bmsContent, file.Directory.FullName, file.Extension, true);
         return new SongInfo {
             index = GetNextIndex(),

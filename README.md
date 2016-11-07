@@ -50,6 +50,7 @@ This application uses following products:
 - **[Unity UI Extensions](https://bitbucket.org/ddreaper/unity-ui-extensions)** - [LICENSE](https://bitbucket.org/ddreaper/unity-ui-extensions/src/13e291bef4ff636f49f34b4a949cc0fc7d8edd9d/LICENSE)
 - **[Un4seen BASS](http://www.un4seen.com/bass.html)** - [LICENSE](http://www.un4seen.com/bass.html#license) *
 - **[ManagedBass.PInvoke](https://github.com/ManagedBass/ManagedBass.PInvoke)**
+- **[Ude C# Port](https://github.com/errepi/ude)**
 
 Except the components mentioned above, the whole application (or game) in open-sourced under [Artistic License 2.0](LICENSE).
 
