@@ -188,7 +188,12 @@ public static class SongInfoLoader {
             stream.Position = 0;
             if(detector.Charset != null) {
                 Debug.LogFormat("Detected charset of file: {0}", detector.Charset);
-                encoding = Encoding.GetEncoding(detector.Charset);
+                try {
+                    encoding = Encoding.GetEncoding(detector.Charset);
+                } catch {
+                    Debug.LogWarning("Failed to load encoding, will use default encoding.");
+                    encoding = CurrentEncoding;
+                }
             } else {
                 Debug.LogFormat("Failed to detect charset, will use default encoding.");
             }
