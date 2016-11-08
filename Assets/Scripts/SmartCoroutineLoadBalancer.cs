@@ -35,7 +35,7 @@ public class SmartCoroutineLoadBalancer {
         }
 
         public bool MoveNext() {
-            long startTicks = DateTime.UtcNow.Ticks;
+            DateTime startTime = DateTime.UtcNow;
             while(next = route.MoveNext()) {
                 current = route.Current;
                 var subRoute = current as IEnumerator;
@@ -45,7 +45,7 @@ public class SmartCoroutineLoadBalancer {
                 }
                 if(current != null)
                     break;
-                if((float)(DateTime.UtcNow.Ticks - startTicks) / TimeSpan.TicksPerSecond >= (theshold <= 0 ? Time.maximumDeltaTime : theshold))
+                if((DateTime.UtcNow - startTime).ToAccurateSecondF() >= (theshold <= 0 ? Time.maximumDeltaTime : theshold))
                     break;
             }
             return next;

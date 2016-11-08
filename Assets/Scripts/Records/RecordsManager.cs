@@ -157,7 +157,7 @@ public class RecordsManager {
                 result.GetValueAsInt32(1),
                 result.GetValueAsInt32(2),
                 result.GetValueAsInt32(3),
-                HelperFunctions.EpochToDateTime(result.GetValueAsInt64(4)),
+                DateTimeHelper.FromUnixTime(result.GetValueAsInt64(4)),
                 result.GetValueAsInt32(5)
             );
         }

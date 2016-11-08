@@ -46,7 +46,7 @@ public class CurvedNoteHandler: NoteHandler {
         startNoteHandler.transform.localScale = Vector3.one;
         endNoteHander.transform.localScale = Vector3.one;
         UpdateTimeBetween();
-        endTimeBetween = (float)noteDetector.EndTimeOffset.Ticks / TimeSpan.TicksPerSecond;
+        endTimeBetween = noteDetector.EndTimeOffset.ToAccurateSecondF();
         baseColor = Color.white;
         endNoteHander.gameObject.SetActive(isLongNote);
         lineRenderer.enabled = isLongNote;
@@ -136,6 +136,6 @@ public class CurvedNoteHandler: NoteHandler {
     }
 
     void UpdateTimeBetween(float lerp = 1) {
-        timeBetween = Mathf.Lerp(timeBetween, (float)bmsManager.PreEventOffset.Ticks / TimeSpan.TicksPerSecond, lerp);
+        timeBetween = Mathf.Lerp(timeBetween, bmsManager.PreEventOffset.ToAccurateSecondF(), lerp);
     }
 }

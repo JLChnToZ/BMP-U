@@ -140,12 +140,8 @@ namespace BMS.Visualization {
                         }
                         break;
                     case ColoringMode.Beat:
-                        const double minBeatTheshold = 0.015625;
-                        double currentBeat = (((double)(bmsEvent.time - bpmBasePoint).Ticks / TimeSpan.TicksPerMinute * bpm) % timeSign) / timeSign;
-                        int n, d;
-                        HelperFunctions.FindContinuedFraction(currentBeat, out n, out d, 10, minBeatTheshold);
-                        if(d == 0) d = (int)timeSign;
-                        noteHandler.SetColor(HelperFunctions.ColorFromHSL(Mathf.Log(d, 2) / 6, 1, 0.55F));
+                        double currentBeat = ((bmsEvent.time - bpmBasePoint).ToAccurateMinute() * bpm + bpmBasePointBeatFlow) % timeSign;
+                        noteHandler.SetColor(HelperFunctions.ColorFromHSL(Mathf.Log(HelperFunctions.FindDivision(currentBeat), 2) / 9, 1, 0.55F));
                         break;
                     default:
                         noteHandler.SetColor(defaultColor);
@@ -175,11 +171,11 @@ namespace BMS.Visualization {
                 case BMSEventType.BeatReset:
                     bpmBasePointBeatFlow = 0;
                     bpmBasePoint = bmsEvent.time;
-                    timeSign = BitConverter.Int64BitsToDouble(bmsEvent.data2);
+                    timeSign = bmsEvent.Data2F;
                     break;
                 case BMSEventType.BPM:
-                    double newBpm = BitConverter.Int64BitsToDouble(bmsEvent.data2);
-                    bpmBasePointBeatFlow += (double)(bmsEvent.time - bpmBasePoint).Ticks / TimeSpan.TicksPerMinute * bpm;
+                    double newBpm = bmsEvent.Data2F;
+                    bpmBasePointBeatFlow += (bmsEvent.time - bpmBasePoint).ToAccurateMinute() * bpm;
                     bpmBasePoint = bmsEvent.time;
                     bpm = newBpm;
                     break;

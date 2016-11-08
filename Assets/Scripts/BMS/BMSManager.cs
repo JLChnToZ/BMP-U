@@ -373,7 +373,7 @@ namespace BMS {
                 foreach(var ln in lnHolders.Values)
                     ln.Update(timePosition);
                 if(OnBeatFlow != null) {
-                    float beatFlow = (float)(timePosition - bpmBasePoint).Ticks / TimeSpan.TicksPerMinute * bpm + bpmBasePointBeatFlow;
+                    float beatFlow = (timePosition - bpmBasePoint).ToAccurateMinuteF() * bpm + bpmBasePointBeatFlow;
                     OnBeatFlow.Invoke(Mathf.Repeat(beatFlow, 1), Mathf.Repeat(beatFlow, currentTimeSignature));
                 }
                 if(timePosition > endTimeTheshold && soundPlayer.Polyphony <= 0)
@@ -397,11 +397,11 @@ namespace BMS {
                 case BMSEventType.BeatReset:
                     bpmBasePointBeatFlow = 0;
                     bpmBasePoint = timePosition;
-                    currentTimeSignature = (float)BitConverter.Int64BitsToDouble(bmsEvent.data2);
+                    currentTimeSignature = (float)bmsEvent.Data2F;
                     break;
                 case BMSEventType.BPM:
-                    float newBpm = (float)BitConverter.Int64BitsToDouble(bmsEvent.data2);
-                    bpmBasePointBeatFlow += (float)(timePosition - bpmBasePoint).Ticks / TimeSpan.TicksPerMinute * bpm;
+                    float newBpm = (float)bmsEvent.Data2F;
+                    bpmBasePointBeatFlow += (timePosition - bpmBasePoint).ToAccurateMinuteF() * bpm;
                     bpmBasePoint = timePosition;
                     bpm = newBpm;
                     CalculatePreOffset();

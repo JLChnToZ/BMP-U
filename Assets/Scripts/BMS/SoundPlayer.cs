@@ -20,9 +20,9 @@ namespace BMS {
 
             public SlicedAudioPlayer(int handle, TimeSpan sliceStart, TimeSpan sliceEnd) {
                 this.handle = handle;
-                this.sliceStart = Bass.ChannelSeconds2Bytes(handle, (double)sliceStart.Ticks / TimeSpan.TicksPerSecond);
+                this.sliceStart = Bass.ChannelSeconds2Bytes(handle, sliceStart.ToAccurateSecond());
                 this.sliceEnd = sliceEnd >= TimeSpan.MaxValue ? long.MaxValue :
-                    Bass.ChannelSeconds2Bytes(handle, (double)sliceEnd.Ticks / TimeSpan.TicksPerSecond);
+                    Bass.ChannelSeconds2Bytes(handle, (double)sliceEnd.ToAccurateSecond());
             }
         }
 
@@ -86,7 +86,7 @@ namespace BMS {
             if(!isPaused) {
                 isAdding = true;
                 audioSourceIdMapping[id] = new SlicedAudioPlayer(handle, sliceStart, sliceEnd);
-                long bytePos = Bass.ChannelSeconds2Bytes(handle, (double)sliceStart.Ticks / TimeSpan.TicksPerSecond);
+                long bytePos = Bass.ChannelSeconds2Bytes(handle, sliceStart.ToAccurateSecond());
                 if(bytePos > 0) {
                     Bass.ChannelSetPosition(handle, bytePos);
                     Bass.ChannelPlay(handle, false);

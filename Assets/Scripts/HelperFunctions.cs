@@ -46,7 +46,7 @@ public static class HelperFunctions {
     }
 
     public static void LookAt(this Transform transform, Vector2 worldPosition, float fineTuneAngle = 0) {
-        transform.rotation = GetDirection((Vector2)transform.position, worldPosition, fineTuneAngle);
+        transform.rotation = GetDirection(transform.position, worldPosition, fineTuneAngle);
     }
 
     public static Quaternion GetDirection(Vector2 currentPoint, Vector2 lookAtPoint, float fineTuneAngle = 0) {
@@ -177,45 +177,13 @@ public static class HelperFunctions {
         return result;
     }
 
-    readonly static DateTime Epoch0Time = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-
-    public static DateTime EpochToDateTime(long epoch) {
-        return (Epoch0Time + new TimeSpan(epoch * TimeSpan.TicksPerSecond)).ToLocalTime();
-    }
-
-    public static void FindContinuedFraction(double num, out int n, out int d, int maxIteration = int.MaxValue, double theshold = 0) {
-        List<int> exp = new List<int>();
-        for(int iter = 0; iter < maxIteration; iter++) {
-            int inte = (int)Math.Truncate(num);
-            double frac = num - inte;
-            if(frac <= theshold) break;
-            num = 1 / frac;
-            exp.Add(inte);
-        }
-        ToFraction(exp, out n, out d);
-    }
-
-    private static void ToFraction(IList<int> exp, out int d, out int n) {
-        d = 0;
-        n = 1;
-        for(int i = exp.Count - 1; i >= 0; i--) {
-            if(d == 0) {
-                d = exp[i];
-                continue;
-            }
-            int nn = d * exp[i] + n;
-            n = d;
-            d = nn;
-        }
-        if(d != 0 && n != 0) {
-            int gcd = FindGCD(d, n);
-            d /= gcd;
-            n /= gcd;
-        }
-    }
-
-    private static int FindGCD(double a, double b) {
-        if(b != 0) while((a %= b) != 0 && (b %= a) != 0) { }
-        return (int)(a + b);
+    public static float FindDivision(double beat) {
+        const int maxTheshold = 256;
+        const float minDiv = (float)1 / maxTheshold;
+        beat = Math.Round(beat * maxTheshold / 4) / maxTheshold;
+        for(float i = 1; i < maxTheshold; i *= 2)
+            if(Math.Abs(beat % (1 / i)) < minDiv)
+                return i;
+        return maxTheshold;
     }
 }
