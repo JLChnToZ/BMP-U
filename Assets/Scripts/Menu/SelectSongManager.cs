@@ -4,6 +4,8 @@ using UnityEngine.SceneManagement;
 
 using BMS;
 
+using System.Collections;
+
 public class SelectSongManager: MonoBehaviour {
     static int savedSortMode;
     
@@ -68,6 +70,7 @@ public class SelectSongManager: MonoBehaviour {
         SongInfoLoader.OnStartLoading += OnLoadingChanged;
         SongInfoLoader.OnListUpdated += OnLoadingChanged;
         SongInfoLoader.OnSelectionChanged += SelectionChanged;
+        LanguageLoader.OnLanguageChange += LangChange;
         OnLoadingChanged();
     }
 
@@ -81,6 +84,7 @@ public class SelectSongManager: MonoBehaviour {
         SongInfoLoader.OnStartLoading -= OnLoadingChanged;
         SongInfoLoader.OnListUpdated -= OnLoadingChanged;
         SongInfoLoader.OnSelectionChanged -= SelectionChanged;
+        LanguageLoader.OnLanguageChange -= LangChange;
     }
 
     void OnLoadingChanged() {
@@ -155,6 +159,19 @@ public class SelectSongManager: MonoBehaviour {
     public void ShowOptions() {
         detailsPanel.gameObject.SetActive(false);
         optionsPanel.gameObject.SetActive(true);
+        LangChange();
+    }
+
+    void LangChange() {
+        StartCoroutine(DelayUpdateOptionsLayout());
+    }
+
+    IEnumerator DelayUpdateOptionsLayout() {
+        RectTransform content = optionsPanel.GetComponent<ScrollRect>().content;
+        yield return null;
+        LayoutRebuilder.ForceRebuildLayoutImmediate(content);
+        yield return null;
+        LayoutRebuilder.ForceRebuildLayoutImmediate(content);
     }
 
     public void HideOptions() {

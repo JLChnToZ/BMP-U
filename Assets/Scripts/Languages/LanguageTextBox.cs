@@ -35,5 +35,7 @@ public class LanguageTextBox : Text {
         this.text = text;
         font = LanguageLoader.currentFont;
         SetAllDirty();
+        RectTransform parent = rectTransform.parent as RectTransform;
+        if(parent) LayoutRebuilder.MarkLayoutForRebuild(parent);
     }
 }

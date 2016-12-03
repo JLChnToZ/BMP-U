@@ -17,8 +17,7 @@ public class InfoHandler : MonoBehaviour {
     public Text comboDisplay;
     public Text debugInfoDisplay;
     public RawImage graphDisplay;
-
-    public RectTransform loadingBar;
+    
     public RectTransform durationBar;
     public Image fpsBar, polyphonyBar, accuracyBar;
     public Text fpsText, polyphonyText, accuracyText, bpmText;
@@ -68,8 +67,8 @@ public class InfoHandler : MonoBehaviour {
         bool triggerLoadingbar = bmsLoaded;
         if(bmsLoaded) {
             bmsLoaded = false;
-            infoDisplay.text = string.Format(LanguageLoader.GetText(17), bmsManager.Title, bmsManager.Artist, bmsManager.PlayLevel);
-            infoDisplay2.text = string.Format(LanguageLoader.GetText(18), bmsManager.SubArtist, bmsManager.Comments);
+            infoDisplay.text = string.Format(LanguageLoader.GetText(17), bmsManager.Title, bmsManager.Artist, bmsManager.SubArtist);
+            infoDisplay2.text = bmsManager.PlayLevel.ToString();
             if(startOnLoad) {
                 if(!bmsManager.BGAEnabled)
                     bmsManager.placeHolderTexture = Texture2D.whiteTexture;
@@ -153,17 +152,13 @@ public class InfoHandler : MonoBehaviour {
         comboDisplay.text = (bmsManager.IsStarted && displayCombos >= 3) ? displayCombos.ToString() : "";
         comboDisplay.transform.localScale = Vector3.one * (1 + Mathf.Log(Mathf.Max(0, combosValue) + 1, 8));
         if(bmsManager.IsLoadingResources || triggerLoadingbar) {
-            var anchorMax = loadingBar.anchorMax;
+            var anchorMax = durationBar.anchorMax;
             anchorMax.x = bmsManager.LoadResourceProgress;
-            loadingBar.anchorMax = anchorMax;
-        }
-
-        if(durationBar.gameObject.activeSelf != bmsManager.IsStarted)
-            durationBar.gameObject.SetActive(bmsManager.IsStarted);
-        if(bmsManager.IsStarted) {
-            var anchorPos = new Vector2(bmsManager.PercentageTimePassed, durationBar.anchorMin.y);
-            durationBar.anchorMin = anchorPos;
-            durationBar.anchorMax = anchorPos;
+            durationBar.anchorMax = anchorMax;
+        } else if(bmsManager.IsStarted) {
+            var anchorMax = durationBar.anchorMax;
+            anchorMax.x = bmsManager.PercentageTimePassed;
+            durationBar.anchorMax = anchorMax;
         }
         float deltaTime = Time.unscaledDeltaTime;
         if(fpsBar) UpdateVerticalBar(fpsBar, deltaTime * 10F);

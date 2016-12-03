@@ -11,7 +11,6 @@ using ManagedBass.Mix;
 
 namespace BMS {
     public class SoundPlayer: MonoBehaviour {
-        static PitchShiftParameters fxParams = new PitchShiftParameters();
         bool isAdding;
 
         struct SlicedAudioPlayer {
@@ -94,9 +93,7 @@ namespace BMS {
                     Bass.ChannelPlay(handle, true);
                 }
                 Bass.ChannelSetAttribute(handle, ChannelAttribute.Volume, volume);
-                Bass.FXGetParameters(handle, fxParams);
-                fxParams.fPitchShift = pitch;
-                Bass.FXSetParameters(handle, fxParams);
+                Bass.ChannelSetAttribute(handle, ChannelAttribute.Frequency, pitch == 1 ? 0 : (pitch * Bass.ChannelGetInfo(handle).Frequency));
                 isAdding = false;
             }
         }

@@ -64,7 +64,7 @@ public class SelectSongScrollView: MonoBehaviour {
             if(actualIndex < c) {
                 Vector2 pos = entryDisp.transform.anchoredPosition;
                 pos.y = -actualIndex * sizePerEntry.y;
-                pos.x = Mathf.LerpUnclamped(slopeStart, slopeEnd, Mathf.InverseLerp(offsetMin.y, offsetMax.y, pos.y));
+                pos.x = Mathf.LerpUnclamped(slopeStart, slopeEnd, (pos.y - offsetMin.y) / (offsetMax.y - offsetMin.y));
                 entryDisp.transform.anchoredPosition = pos;
 
                 Entry entry = entries[actualIndex];

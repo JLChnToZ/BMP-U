@@ -19,6 +19,10 @@ public class SelectSongEntry: MonoBehaviour {
     RawImageFitter banner;
     [SerializeField]
     RankControl rankControl;
+    [SerializeField]
+    Sprite dirBackground, songInfoBackground;
+    [SerializeField]
+    Image backgroundHolder;
 
     SelectSongScrollView parent;
 
@@ -59,6 +63,7 @@ public class SelectSongEntry: MonoBehaviour {
         banner.gameObject.SetActive(!isDirectory);
         if(isDirectory) {
             directory.text = isParentDirectory ? string.Concat(dirInfo.Parent.Name, " << ", dirInfo.Name) : dirInfo.Name;
+            backgroundHolder.sprite = dirBackground;
         } else {
             songName.text = songInfo.name;
             artist.text = string.IsNullOrEmpty(songInfo.subArtist) ?
@@ -72,6 +77,7 @@ public class SelectSongEntry: MonoBehaviour {
             if(record.HasValue)
                 otherInfo.text += string.Format(" <size=28>{0}</size>",
                     SongInfoDetails.GetFormattedRankString(rankControl, record.Value.score));
+            backgroundHolder.sprite = songInfoBackground;
         }
     }
 
