@@ -1,3 +1,5 @@
+// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
  /*
  	CAMERA MOTION BLUR IMAGE EFFECTS
 
@@ -22,7 +24,6 @@
 		_NoiseTex ("-", 2D) = "grey" {}
 		_VelTex ("-", 2D) = "black" {}
 		_NeighbourMaxTex ("-", 2D) = "black" {}
-		_TileTexDebug ("-", 2D) = "" {}
 	}
 
 	CGINCLUDE
@@ -89,7 +90,7 @@
 	v2f vert(appdata_img v) 
 	{
 		v2f o;
-		o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+		o.pos = UnityObjectToClipPos(v.vertex);
 		o.uv = v.texcoord.xy;
 		return o;
 	}
@@ -328,7 +329,7 @@
 		float4 sum = cx * weight;
 		
 		float4 jitteredDir = vn.xyxy + noise.xyyz;
-#if defined(SHADER_API_D3D11) || defined(SHADER_API_GLCORE)
+#ifdef SHADER_API_D3D11
 		jitteredDir = max(abs(jitteredDir.xyxy), _MainTex_TexelSize.xyxy * _MaxVelocity * 0.5) * sign(jitteredDir.xyxy)  * float4(1,1,-1,-1);
 #else
 		jitteredDir = max(abs(jitteredDir.xyxy), _MainTex_TexelSize.xyxy * _MaxVelocity * 0.15) * sign(jitteredDir.xyxy)  * float4(1,1,-1,-1);
@@ -358,7 +359,7 @@
 			sum += cy * alphay;
 			weight += alphay;
 
-#if defined(SHADER_API_D3D11) || defined(SHADER_API_GLCORE)
+#ifdef SHADER_API_D3D11
 
 			vy = tex2Dlod(_VelTex, float4(yf.zw,0,0)).xy;
 
