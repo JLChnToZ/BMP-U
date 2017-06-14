@@ -41,3 +41,4 @@ Player Best\nMax Score: {0} <size=28>{4}</size>\nMax Combos: {1}\nPlay Count: {2
 Enable Background Animation
 Enable Detune Effect (Detune when the note is not accurate)
 Dynamic change note speed depends on BPM
+On screen note limit: (Unlimited / less <--> more)

@@ -16,6 +16,7 @@ public class Loader : SingletonBehaviour<Loader> {
     public static int gameMode = 0;
     public static ColoringMode colorMode = ColoringMode.Timing;
     public static int judgeMode = 0;
+    public static float noteLimit = 3;
     public static float speed = 1;
 
     public int sceneIndex;
@@ -41,6 +42,7 @@ public class Loader : SingletonBehaviour<Loader> {
     IEnumerator LoadBMSCoroutine() {
         FileInfo fileInfo = new FileInfo(songPath);
         string bmsContent = SongInfoLoader.LoadFile(fileInfo);
+        bmsManager.NoteLimit = noteLimit >= 1 ? Mathf.FloorToInt(Mathf.Pow(2, 3 + noteLimit)) : 0;
         bmsManager.DetuneEnabled = enableDetune;
         bmsManager.BGAEnabled = enableBGA;
         bmsManager.DynamicPreEventOffset = dynamicSpeed;

@@ -122,6 +122,7 @@ namespace BMS {
         float bpmBasePointBeatFlow = 0;
         float currentTimeSignature = 4;
         float accuracy = 0;
+        int noteLimit;
         bool dynamicPreEvents;
         bool isStarted, isPaused;
         bool tightMode;
@@ -243,6 +244,11 @@ namespace BMS {
         public bool TightMode {
             get { return tightMode; }
             set { tightMode = value; }
+        }
+
+        public int NoteLimit {
+            get { return noteLimit; }
+            set { noteLimit = value; }
         }
 
         public event StateChangedEvent OnGameStarted;

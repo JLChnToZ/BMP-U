@@ -17,6 +17,8 @@ namespace BMS.Visualization {
 
         HashSet<NoteHandler> spawnedNoteHandlers = new HashSet<NoteHandler>();
 
+        private Queue<BMSEvent> holdedEvents = new Queue<BMSEvent>();
+
         public BMSManager bmsManager;
         [NonSerialized]
         protected bool bmsLoadedCalled;
@@ -71,6 +73,7 @@ namespace BMS.Visualization {
             foreach(var handler in spawnedNoteHandlers) {
                 Destroy(handler.gameObject);
             }
+            holdedEvents.Clear();
             spawnedNoteHandlers.Clear();
             noteHandlers.Clear();
             matchingTimeNoteHandlers.Clear();
@@ -90,6 +93,15 @@ namespace BMS.Visualization {
                     return;
                 default: return;
             }
+            if(bmsManager.NoteLimit > 0 && spawnedNoteHandlers.Count >= bmsManager.NoteLimit && noteHandlers.Count <= 0)
+                holdedEvents.Enqueue(bmsEvent);
+            else {
+                SpawnHoldedNotes();
+                HandleSpawn(bmsEvent);
+            }
+        }
+
+        private void HandleSpawn(BMSEvent bmsEvent) {
             bool isLongNote = bmsManager.LongNoteType > 0 && _handledChannels.Contains(bmsEvent.data1) && (bmsEvent.type == BMSEventType.LongNoteStart || 
                 bmsEvent.type == BMSEventType.LongNoteEnd);
             if(!_handledChannels.Contains(bmsEvent.data1)) return;
@@ -220,6 +232,12 @@ namespace BMS.Visualization {
         public virtual void RecycleNote(NoteHandler note) {
             if(note != null)
                 noteHandlers.Enqueue(note);
+            SpawnHoldedNotes();
+        }
+
+        private void SpawnHoldedNotes() {
+            while(noteHandlers.Count > 0 && holdedEvents.Count > 0)
+                HandleSpawn(holdedEvents.Dequeue());
         }
     }
 }

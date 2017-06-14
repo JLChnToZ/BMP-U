@@ -23,6 +23,7 @@ public class SelectSongManager: MonoBehaviour {
     public Toggle dynamicSpeedToggle;
     public Dropdown judgeModeDropDown;
     public Slider speedSlider;
+    public Slider notesLimitSlider;
     public Dropdown sortMode;
     public RawImage background;
     public ColorRampLevel colorSet;
@@ -60,6 +61,8 @@ public class SelectSongManager: MonoBehaviour {
         judgeModeDropDown.onValueChanged.AddListener(JudgeModeChange);
         speedSlider.value = Loader.speed;
         speedSlider.onValueChanged.AddListener(ChangeSpeed);
+        notesLimitSlider.value = Loader.noteLimit;
+        notesLimitSlider.onValueChanged.AddListener(ChangeNoteLimit);
         sortMode.value = savedSortMode;
         sortMode.onValueChanged.AddListener(ChangeSortMode);
         startGameButton.onClick.AddListener(StartGame);
@@ -133,6 +136,10 @@ public class SelectSongManager: MonoBehaviour {
 
     public void ChangeSpeed(float value) {
         Loader.speed = speedSlider.value;
+    }
+
+    public void ChangeNoteLimit(float value) {
+        Loader.noteLimit = notesLimitSlider.value;
     }
 
     public void ChangeSortMode(int mode) {
