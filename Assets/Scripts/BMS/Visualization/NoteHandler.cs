@@ -61,7 +61,6 @@ namespace BMS.Visualization {
                 } else {
                     if(handle) isMissed = true;
                 }
-
                 if(handle && noteDetector != null) {
                     noteDetector.OnNoteClicked -= NoteClicked;
                     noteDetector.OnLongNoteMissed -= LongNoteMissed;
@@ -97,6 +96,10 @@ namespace BMS.Visualization {
         IEnumerator UpdateCoroutine() {
             while(!cycleDone) {
                 UpdatePosition();
+                if((isLongNote ? secondNoteClicked : firstNoteClicked) && noteSpawner.RequireRecycleImmediately) {
+                    cycleDone = true;
+                    break;
+                }
                 yield return null;
             }
             if(noteDetector != null) {

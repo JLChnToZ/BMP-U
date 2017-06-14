@@ -45,6 +45,10 @@ namespace BMS.Visualization {
             get { return new ReadOnlyCollection<int>(channels); }
         }
 
+        public bool RequireRecycleImmediately {
+            get { return holdedEvents.Count > 0 && holdedEvents.Peek().time >= bmsManager.TimePosition + bmsManager.PreEventOffset; }
+        }
+
         protected virtual void Start() {
             hasColors = matchColors.Length > 0;
             _handledChannels.UnionWith(handledChannels);
