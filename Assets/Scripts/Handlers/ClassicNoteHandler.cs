@@ -23,7 +23,7 @@ public class ClassicNoteHandler: NoteHandler {
     public SpriteRenderer startNoteHandler;
     public SpriteRenderer endNoteHander;
     public SpriteRenderer targetPointInd;
-    public SpriteRenderer scoreInd;
+    // public SpriteRenderer scoreInd;
 
     [NonSerialized]
     public ScoreDisplayPack scoreDisplayPack;
@@ -51,7 +51,7 @@ public class ClassicNoteHandler: NoteHandler {
         baseColor = Color.white;
         endNoteHander.gameObject.SetActive(isLongNote);
         lineRenderer.enabled = isLongNote;
-        scoreInd.sprite = null;
+        // scoreInd.sprite = null;
         endDelta = 0;
         endTargetTime = targetTime;
         SetColor(Color.white);
@@ -69,9 +69,11 @@ public class ClassicNoteHandler: NoteHandler {
     protected override void NoteClicked(TimeSpan timePosition, int channel, int data, int flag) {
         base.NoteClicked(timePosition, channel, data, flag);
         if(firstNoteClicked || secondNoteClicked || isMissed) {
-            scoreInd.sprite = scoreDisplayPack.images[resultFlag < 0 ? scoreDisplayPack.images.Length - 1 : resultFlag];
+            ScoreIndicatorHandler.Instance.Spawn(resultFlag, startNoteHandler.transform.position);
+            // scoreInd.sprite = scoreDisplayPack.images[resultFlag < 0 ? scoreDisplayPack.images.Length - 1 : resultFlag];
             if(channel == channelId)
                 particles.Emit(new ParticleSystem.EmitParams { position = startNoteHandler.transform.position }, UnityRandom.Range(3, 5));
+            cycleDone = true;
         }
         if(secondNoteClicked)
             lineRenderer.enabled = false;
@@ -104,7 +106,7 @@ public class ClassicNoteHandler: NoteHandler {
             if(isLongNote ? secondNoteClicked : true) {
                 endDelta = Mathf.Lerp(endDelta, 1, Time.deltaTime * 5);
                 handler.color = new Color(1, 1, 1, 0);// new Color(baseColor.r, baseColor.g, baseColor.b, 1 - endDelta);
-                scoreInd.color = new Color(1, 1, 1, 1 - endDelta);
+                // scoreInd.color = new Color(1, 1, 1, 1 - endDelta);
                 handler.transform.localScale = Vector3.one * (1 + endDelta);
                 if(endDelta >= 0.999F) cycleDone = true;
                 targetPointInd.enabled = false;
@@ -113,10 +115,10 @@ public class ClassicNoteHandler: NoteHandler {
                 particles.Emit(new ParticleSystem.EmitParams { position = startNoteHandler.transform.position }, 1);
         } else if(overTime) {
             if(delta >= 1) {
-                scoreInd.color = new Color(1, 1, 1, 2 - delta);
+                // scoreInd.color = new Color(1, 1, 1, 2 - delta);
                 handler.color = new Color(1, 1, 1, 0);
             } else {
-                scoreInd.color = new Color(1, 1, 1, 0);
+                // scoreInd.color = new Color(1, 1, 1, 0);
                 handler.color = new Color(baseColor.r, baseColor.g, baseColor.b, 1 - delta);
             }
         } else {
