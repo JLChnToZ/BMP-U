@@ -68,15 +68,17 @@ public class CurvedNoteHandler: NoteHandler {
     protected override void NoteClicked(TimeSpan timePosition, int channel, int data, int flag) {
         base.NoteClicked(timePosition, channel, data, flag);
         if(firstNoteClicked || secondNoteClicked || isMissed) {
-            ScoreIndicatorHandler.Instance.Spawn(resultFlag, startNoteHandler.transform.position);
             // scoreInd.sprite = scoreDisplayPack.images[resultFlag < 0 ? scoreDisplayPack.images.Length - 1 : resultFlag];
             if(channel == channelId)
                 particles.Emit(new ParticleSystem.EmitParams { position = startNoteHandler.transform.position }, UnityRandom.Range(3, 5));
-            cycleDone = true;
         }
         // scoreInd.transform.rotation = Quaternion.identity;
         if(secondNoteClicked)
             lineRenderer.enabled = false;
+        if(isLongNote ? secondNoteClicked : firstNoteClicked) {
+            ScoreIndicatorHandler.Instance.Spawn(resultFlag, startNoteHandler.transform.position);
+            cycleDone = true;
+        }
     }
 
     protected override void UpdatePosition() {
