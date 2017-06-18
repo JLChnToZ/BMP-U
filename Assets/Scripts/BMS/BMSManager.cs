@@ -116,6 +116,7 @@ namespace BMS {
         Chart.EventDispatcher preTimingHelper;
         DateTime startTime;
         TimeSpan timePosition;
+        TimeSpan stopPosition;
         TimeSpan preEventOffset, calculatedPreOffset;
         TimeSpan preOffset;
         TimeSpan bpmBasePoint;
@@ -226,6 +227,14 @@ namespace BMS {
         }
 
         public TimeSpan TimePosition {
+            get {
+                if(stopPosition > timePosition)
+                    return stopPosition;
+                return timePosition;
+            }
+        }
+
+        public TimeSpan RealTimePosition {
             get { return timePosition; }
         }
 
@@ -268,7 +277,7 @@ namespace BMS {
                 if(isStarted == _isStarted) return;
                 if(_isStarted) {
                     var preWaitTime = startPos - TimeSpan.FromSeconds(3);
-                    timePosition = preOffset = preWaitTime < TimeSpan.Zero ? preWaitTime : TimeSpan.Zero;
+                    stopPosition = timePosition = preOffset = preWaitTime < TimeSpan.Zero ? preWaitTime : TimeSpan.Zero;
                     startTime = DateTime.Now;
                     combos = maxCombos = 0;
                     score = 0;
@@ -374,12 +383,13 @@ namespace BMS {
             if(isStarted && !isPaused) {
                 var now = DateTime.Now;
                 timePosition = now - startTime + preOffset;
-                mainTimingHelper.Seek(timePosition);
-                preTimingHelper.Seek(timePosition + Scale(preEventOffset, Math.Max(1, 130 / chart.MinBPM)));
+                TimeSpan calculatedTimePosition = TimePosition;
+                mainTimingHelper.Seek(calculatedTimePosition);
+                preTimingHelper.Seek(calculatedTimePosition + Scale(preEventOffset, Math.Max(1, 130 / chart.MinBPM)));
                 foreach(var ln in lnHolders.Values)
-                    ln.Update(timePosition);
+                    ln.Update(calculatedTimePosition);
                 if(OnBeatFlow != null) {
-                    float beatFlow = (timePosition - bpmBasePoint).ToAccurateMinuteF() * bpm + bpmBasePointBeatFlow;
+                    float beatFlow = (calculatedTimePosition - bpmBasePoint).ToAccurateMinuteF() * bpm + bpmBasePointBeatFlow;
                     OnBeatFlow.Invoke(Mathf.Repeat(beatFlow, 1), Mathf.Repeat(beatFlow, currentTimeSignature));
                 }
                 if(timePosition > endTimeTheshold && soundPlayer.Polyphony <= 0)
@@ -415,7 +425,9 @@ namespace BMS {
                         OnChangeBPM.Invoke(newBpm);
                     break;
                 case BMSEventType.STOP:
-                    bpmBasePoint -= new TimeSpan(bmsEvent.data2);
+                    TimeSpan offset = new TimeSpan(bmsEvent.data2);
+                    stopPosition = bmsEvent.time + offset;
+                    bpmBasePoint -= offset;
                     break;
                 default:
                     if(!handledChannels.Contains(bmsEvent.data1)) {
@@ -505,7 +517,7 @@ namespace BMS {
             TimeSpan sliceStart, TimeSpan sliceEnd,
             bool hasSound = true, TimeSpan? endNotePos = null) {
             if(!isStarted || isPaused) return -2;
-            var timeDiff = timePosition - expectedTimePosition;
+            var timeDiff = TimePosition - expectedTimePosition;
 
             int resultFlag = -1;
             if(!countAsMiss) {
