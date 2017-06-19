@@ -83,7 +83,9 @@ public static class SongInfoLoader {
 
     static List<Entry> entries = new List<Entry>();
     static Dictionary<string, Entry> cachedEntries = new Dictionary<string, Entry>();
+    static Dictionary<string, Vector2> cachedScrollPosition = new Dictionary<string, Vector2>();
     static DirectoryInfo rootDiectory, currentDirectory;
+    static string dirName;
     static SongInfo? selectedEntry;
 
     static Coroutine loadResourceCoroutine;
@@ -127,7 +129,20 @@ public static class SongInfoLoader {
             if(value == null || string.Equals(currentDirectory.FullName, value.FullName, StringComparison.Ordinal))
                 return;
             currentDirectory = value;
+            dirName = value.FullName;
             ReloadDirectory();
+        }
+    }
+
+    public static Vector2 ScrollPosition {
+        get {
+            if(dirName == null || !ready) return Vector2.up;
+            Vector2 result;
+            return cachedScrollPosition.TryGetValue(dirName, out result) ? result : Vector2.up;
+        }
+        set {
+            if(dirName == null || !ready) return;
+            cachedScrollPosition[dirName] = value;
         }
     }
 

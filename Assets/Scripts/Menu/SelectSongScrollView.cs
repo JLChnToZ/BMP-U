@@ -77,11 +77,13 @@ public class SelectSongScrollView: MonoBehaviour {
                 entryDisp.gameObject.SetActive(false);
             }
         }
+        SongInfoLoader.ScrollPosition = position;
     }
 
     void UpdateList() {
         RectTransform content = scroller.content;
         content.sizeDelta = new Vector2(content.sizeDelta.x, sizePerEntry.y * entries.Count);
+        scroller.normalizedPosition = SongInfoLoader.ScrollPosition;
         OnScroll();
     }
 
