@@ -21,7 +21,7 @@ GameObject:
   - component: {fileID: 4485125525569892}
   - component: {fileID: 198059432213827926}
   - component: {fileID: 199907609302046208}
-  m_Layer: 9
+  m_Layer: 12
   m_Name: ScoreIndicator1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -38,7 +38,7 @@ GameObject:
   - component: {fileID: 4413909593128138}
   - component: {fileID: 198041258211675754}
   - component: {fileID: 199736324505748690}
-  m_Layer: 9
+  m_Layer: 12
   m_Name: ScoreIndicator4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -54,7 +54,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4708068773797310}
   - component: {fileID: 114366514840370468}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Score Indicators
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -71,7 +71,7 @@ GameObject:
   - component: {fileID: 4259497703473570}
   - component: {fileID: 198349108382728196}
   - component: {fileID: 199797262867898568}
-  m_Layer: 9
+  m_Layer: 12
   m_Name: ScoreIndicator2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -88,7 +88,7 @@ GameObject:
   - component: {fileID: 4457013708125402}
   - component: {fileID: 198834488172014784}
   - component: {fileID: 199782545744609818}
-  m_Layer: 9
+  m_Layer: 12
   m_Name: ScoreIndicator3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
