@@ -82,10 +82,12 @@ public static class SongInfoLoader {
     }
 
     static List<Entry> entries = new List<Entry>();
+    static List<Entry> filteredEntries = entries;
     static Dictionary<string, Entry> cachedEntries = new Dictionary<string, Entry>();
     static Dictionary<string, Vector2> cachedScrollPosition = new Dictionary<string, Vector2>();
     static DirectoryInfo rootDiectory, currentDirectory;
     static string dirName;
+    static string filterText = "", processedFilterText = "";
     static SongInfo? selectedEntry;
 
     static Coroutine loadResourceCoroutine;
@@ -143,6 +145,20 @@ public static class SongInfoLoader {
         set {
             if(dirName == null || !ready) return;
             cachedScrollPosition[dirName] = value;
+        }
+    }
+
+    public static string FilterText {
+        get { return filterText; }
+        set {
+            if(string.IsNullOrEmpty(value))
+                value = "";
+            else
+                value = value.Trim();
+            if(string.Equals(value, filterText, StringComparison.InvariantCultureIgnoreCase))
+                return;
+            filterText = value;
+            if(ready) Sort();
         }
     }
 
@@ -268,7 +284,8 @@ public static class SongInfoLoader {
                 entries.Add(new Entry {
                     isDirectory = true,
                     isParentDirectory = true,
-                    dirInfo = currentDirectory
+                    dirInfo = currentDirectory,
+                    summary = ""
                 });
             foreach(var dirInfo in currentDirectory.GetDirectories())
                 try {
@@ -276,7 +293,8 @@ public static class SongInfoLoader {
                         dirInfo.GetDirectories().Any())
                         entries.Add(new Entry {
                             isDirectory = true,
-                            dirInfo = dirInfo
+                            dirInfo = dirInfo,
+                            summary = ""
                         });
                 } catch(Exception ex) {
                     Debug.LogException(ex);
@@ -289,6 +307,13 @@ public static class SongInfoLoader {
                             isDirectory = false,
                             songInfo = LoadBMS(fileInfo)
                         };
+                        current.summary = string.Format("{0}\n{1}\n{2}\n{3}\n{4}",
+                            current.songInfo.name,
+                            current.songInfo.artist,
+                            current.songInfo.subArtist,
+                            current.songInfo.genre,
+                            current.songInfo.comments
+                        );
                         if(string.IsNullOrEmpty(current.songInfo.name))
                             current.songInfo.name = fileInfo.Name;
                         cachedEntries.Add(fileInfo.FullName, current);
@@ -318,11 +343,21 @@ public static class SongInfoLoader {
     static void SortInThread() {
         bool _ready = ready;
         ready = false;
-        entries.Sort(SongInfoComparer.GetComparer(savedSortMode));
+        if(!string.IsNullOrEmpty(filterText)) {
+            if(string.Equals(processedFilterText, filterText, StringComparison.InvariantCultureIgnoreCase))
+                filteredEntries = entries.FindAll(Filter);
+        } else
+            filteredEntries = entries;
+        processedFilterText = filterText;
+        filteredEntries.Sort(SongInfoComparer.GetComparer(savedSortMode));
         if(_ready) {
             ready = true;
             ThreadHelper.RunInUnityThread(InvokeListUpdated);
         }
+    }
+
+    static bool Filter(Entry entry) {
+        return entry.isParentDirectory || entry.summary.IndexOf(filterText, StringComparison.InvariantCultureIgnoreCase) >= 0;
     }
 
     static void UpdateList() {
@@ -385,6 +420,7 @@ public static class SongInfoLoader {
 
     public struct Entry {
         public bool isDirectory, isParentDirectory;
+        public string summary;
         public SongInfo songInfo;
         public DirectoryInfo dirInfo;
     }
