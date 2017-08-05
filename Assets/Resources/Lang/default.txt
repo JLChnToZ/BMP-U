@@ -15,7 +15,7 @@ Reset
 Edit Keycode for {0}
 Done
 Now Loading
-{0}\n{1} / {2}
+{0} / {1}
 {0}\n{1}
 Pause
 Result

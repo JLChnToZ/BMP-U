@@ -22,7 +22,6 @@ GameObject:
   - component: {fileID: 20852035643394810}
   - component: {fileID: 124324042957415848}
   - component: {fileID: 92737118809353172}
-  - component: {fileID: 81236177904804258}
   m_Layer: 12
   m_Name: Effect Camera
   m_TagString: Untagged
@@ -41,7 +40,6 @@ GameObject:
   - component: {fileID: 20410559183815410}
   - component: {fileID: 124332694541556798}
   - component: {fileID: 92088479898263604}
-  - component: {fileID: 81928725546894164}
   m_Layer: 5
   m_Name: UI Camera
   m_TagString: Untagged
@@ -148,20 +146,6 @@ Camera:
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
   m_StereoMirrorMode: 0
---- !u!81 &81236177904804258
-AudioListener:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1066776692781506}
-  m_Enabled: 1
---- !u!81 &81928725546894164
-AudioListener:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1634218610404428}
-  m_Enabled: 1
 --- !u!92 &92088479898263604
 Behaviour:
   m_ObjectHideFlags: 1

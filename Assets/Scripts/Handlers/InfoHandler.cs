@@ -2,6 +2,7 @@
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System.Collections;
+using UnityEngine.Serialization;
 
 using BMS;
 
@@ -10,8 +11,11 @@ public class InfoHandler : MonoBehaviour {
     public BMSManager bmsManager;
     public GraphHelper graphHandler;
 
-    public Text infoDisplay;
-    public Text infoDisplay2;
+    [FormerlySerializedAs("infoDisplay")]
+    public Text titleDisplay;
+    public Text artistDisplay;
+    [FormerlySerializedAs("infoDisplay2")]
+    public Text levelDisplay;
     public RawImageFitter bgTexture;
     public Text scoreDisplay;
     public Text comboDisplay;
@@ -67,8 +71,9 @@ public class InfoHandler : MonoBehaviour {
         bool triggerLoadingbar = bmsLoaded;
         if(bmsLoaded) {
             bmsLoaded = false;
-            infoDisplay.text = string.Format(LanguageLoader.GetText(17), bmsManager.Title, bmsManager.Artist, bmsManager.SubArtist);
-            infoDisplay2.text = bmsManager.PlayLevel.ToString();
+            titleDisplay.text = bmsManager.Title;
+            artistDisplay.text = string.Format(LanguageLoader.GetText(17), bmsManager.Artist, bmsManager.SubArtist.Replace("\n", " / "));
+            levelDisplay.text = bmsManager.PlayLevel.ToString();
             if(startOnLoad) {
                 if(!bmsManager.BGAEnabled)
                     bmsManager.placeHolderTexture = Texture2D.whiteTexture;
