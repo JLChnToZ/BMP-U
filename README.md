@@ -1,7 +1,7 @@
 # BananaBeats
 (Formly named: Be-Music-Player Unity Edition)
 
-![icon](Assets/Textures/bbicon.png)
+<img src="Assets/Textures/bbicon.png" width="48" height="48" alt="icon" />
 
 **Yet-Another Unity-based [Be-Music Script/Source](https://en.wikipedia.org/wiki/Be-Music_Source) (BMS) Player**
 
@@ -46,6 +46,7 @@ Currently the whole stuff is lack of graphics and some of the features are missi
 This application uses following products:
 - **[Makinas Font（マキナス）](http://moji-waku.com/makinas/)** by [もじワク研究](http://moji-waku.com) - [LICENSE](http://moji-waku.com/mj_work_license/)
 - **[5 Identification Mono Font](http://www.dafont.com/5identification-mono.font)** by [Winter Design Studio](http://www.dafont.com/winty5.d4560)
+- **[DSEG Font Family](https://github.com/keshikan/DSEG)** by [keshikan](http://www.keshikan.net) - [LICENSE](https://github.com/keshikan/DSEG/blob/master/DSEG-LICENSE.txt)
 - **[VideoStreamer & VideoStreamer.NET](http://fr.sfml-dev.org/forums/index.php?topic=12305.0)** by Brown Star - [LICENSE](https://bitbucket.org/zsbzsb/videostreamer/src/df763ea34e6e8be6576dea3fb7843a7e1c193dda/license.txt)
 - **[Unity UI Extensions](https://bitbucket.org/ddreaper/unity-ui-extensions)** - [LICENSE](https://bitbucket.org/ddreaper/unity-ui-extensions/src/13e291bef4ff636f49f34b4a949cc0fc7d8edd9d/LICENSE)
 - **[Un4seen BASS](http://www.un4seen.com/bass.html)** - [LICENSE](http://www.un4seen.com/bass.html#license) *
