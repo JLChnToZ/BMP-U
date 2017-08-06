@@ -62,9 +62,9 @@ public class SelectSongScrollView: MonoBehaviour {
         Vector2 offsetMin = viewportRect.min - contentPosition;
         Vector2 offsetMax = viewportRect.max - contentPosition;
         for(int i = 0, l = entryDisplay.Count, c = entries.Count; i < l; i++) {
-            int actualIndex = startIndex + i;
-            SelectSongEntry entryDisp = entryDisplay[actualIndex % l];
-            if(actualIndex < c) {
+            int actualIndex = startIndex + i - 1;
+            SelectSongEntry entryDisp = entryDisplay[(actualIndex + l) % l];
+            if(actualIndex < c && actualIndex >= 0) {
                 Vector2 pos = entryDisp.transform.anchoredPosition;
                 pos.y = -actualIndex * sizePerEntry.y;
                 float lerp = (pos.y - offsetMin.y) / (offsetMax.y - offsetMin.y);
