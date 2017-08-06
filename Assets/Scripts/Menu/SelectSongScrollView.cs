@@ -34,7 +34,7 @@ public class SelectSongScrollView: MonoBehaviour {
 
     IEnumerator Start() {
         yield return null;
-        for(float y = 0, h = scroller.viewport.rect.height + sizePerEntry.y; y < h; y += sizePerEntry.y) {
+        for(float y = 0, h = scroller.viewport.rect.height + sizePerEntry.y * 2; y < h; y += sizePerEntry.y) {
             var go = Instantiate(prefab);
             var t = go.GetComponent<RectTransform>();
             t.SetParent(scroller.content, false);
