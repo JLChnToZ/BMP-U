@@ -23,6 +23,10 @@ public class SelectSongEntry: MonoBehaviour {
     Sprite dirBackground, songInfoBackground;
     [SerializeField]
     Image backgroundHolder;
+    [SerializeField]
+    RectTransform[] displayAnchors;
+    [SerializeField]
+    Marquee[] displayMarquees;
 
     SelectSongScrollView parent;
 
@@ -68,7 +72,7 @@ public class SelectSongEntry: MonoBehaviour {
             songName.text = songInfo.name;
             artist.text = string.IsNullOrEmpty(songInfo.subArtist) ?
                 songInfo.artist :
-                string.Concat(songInfo.artist, " / ", songInfo.subArtist);
+                string.Concat(songInfo.artist, " / ", songInfo.subArtist.Replace("\n", " / "));
             otherInfo.text = string.Format("Lv{0} {1}BPM", songInfo.level, songInfo.bpm);
             banner.SetTexture(songInfo.banner);
             banner.gameObject.SetActive(songInfo.banner);
@@ -79,6 +83,16 @@ public class SelectSongEntry: MonoBehaviour {
                     SongInfoDetails.GetFormattedRankString(rankControl, record.Value.score));
             backgroundHolder.sprite = songInfoBackground;
         }
+    }
+
+    public void UpdateChildTransform(float lerpLeft) {
+        foreach(RectTransform anchorTransform in displayAnchors) {
+            Vector2 offsetMin = anchorTransform.offsetMin;
+            offsetMin.x = lerpLeft;
+            anchorTransform.offsetMin = offsetMin;
+        }
+        foreach(Marquee marquee in displayMarquees)
+            marquee.CheckSize();
     }
 
     void OnSelect() {

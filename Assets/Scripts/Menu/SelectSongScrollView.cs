@@ -18,6 +18,9 @@ public class SelectSongScrollView: MonoBehaviour {
 
     public float slopeStart = 0;
     public float slopeEnd = 0;
+
+    public float slopeAnchorStart = 0;
+    public float slopeAnchorEnd = 0;
     
     IList<Entry> entries;
     readonly List<SelectSongEntry> entryDisplay = new List<SelectSongEntry>();
@@ -64,7 +67,8 @@ public class SelectSongScrollView: MonoBehaviour {
             if(actualIndex < c) {
                 Vector2 pos = entryDisp.transform.anchoredPosition;
                 pos.y = -actualIndex * sizePerEntry.y;
-                pos.x = Mathf.LerpUnclamped(slopeStart, slopeEnd, (pos.y - offsetMin.y) / (offsetMax.y - offsetMin.y));
+                float lerp = (pos.y - offsetMin.y) / (offsetMax.y - offsetMin.y);
+                pos.x = Mathf.LerpUnclamped(slopeStart, slopeEnd, lerp);
                 entryDisp.transform.anchoredPosition = pos;
 
                 Entry entry = entries[actualIndex];
@@ -73,6 +77,7 @@ public class SelectSongScrollView: MonoBehaviour {
                 else
                     entryDisp.Load(entry.songInfo, this);
                 entryDisp.gameObject.SetActive(true);
+                entryDisp.UpdateChildTransform(Mathf.LerpUnclamped(slopeAnchorStart, slopeAnchorEnd, lerp));
             } else {
                 entryDisp.gameObject.SetActive(false);
             }

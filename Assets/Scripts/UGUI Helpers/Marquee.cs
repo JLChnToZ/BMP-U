@@ -6,6 +6,7 @@ public class Marquee: MonoBehaviour {
     private RectTransform parentTransform;
     private bool enableX, enableY;
     public Vector2 speed = new Vector2(-100, 0);
+    public Vector2 scrollInSpeedMultiply = new Vector2(2, 2);
 
     protected void Awake() {
         rectTransform = GetComponent<RectTransform>();
@@ -21,7 +22,7 @@ public class Marquee: MonoBehaviour {
         parentTransform = rectTransform.parent as RectTransform;
     }
 
-    private void CheckSize() {
+    public void CheckSize() {
         if(parentTransform == null) return;
         Rect rect = rectTransform.rect;
         Rect parentRect = parentTransform.rect;
@@ -39,22 +40,33 @@ public class Marquee: MonoBehaviour {
         if(parentTransform == null) return;
         float delta = Time.unscaledDeltaTime;
         Rect rect = rectTransform.rect;
-        Rect parentRect = parentTransform.rect;
-        Vector2 currentPos = rectTransform.anchoredPosition;
+        Vector2 parentSize = parentTransform.rect.size;
+        Vector2 parentPivot = parentTransform.pivot;
+        Vector3 position = rectTransform.localPosition;
         if(enableX && !Mathf.Approximately(speed.x, 0)) {
-            currentPos.x += speed.x * delta;
-            if(speed.x < 0 && currentPos.x < -rect.width)
-                currentPos.x = parentRect.width;
-            else if(speed.x > 0 && currentPos.x > parentRect.width)
-                currentPos.x = -rect.width;
+            float pivotPos = parentSize.x * parentPivot.x;
+            if(speed.x < 0) {
+                if(position.x + rect.xMax < -pivotPos)
+                    position.x += rect.width + parentSize.x;
+                position.x += speed.x * delta * Mathf.Lerp(1, scrollInSpeedMultiply.x, (position.x + rect.xMin) / pivotPos + 1);
+            } else {
+                if(position.x + rect.xMin > pivotPos)
+                    position.x -= rect.width + parentSize.x;
+                position.x += speed.x * delta * Mathf.Lerp(1, scrollInSpeedMultiply.x, (position.x + rect.xMax) / -pivotPos + 1);
+            }
         }
         if(enableY && !Mathf.Approximately(speed.y, 0)) {
-            currentPos.y += speed.y * delta;
-            if(speed.y < 0 && currentPos.y < -rect.height)
-                currentPos.y = parentRect.height;
-            else if(speed.y > 0 && currentPos.y > parentRect.height)
-                currentPos.y = -rect.height;
+            float pivotPos = parentSize.y * parentPivot.y;
+            if(speed.y < 0) {
+                if(position.y + rect.yMax < -pivotPos)
+                    position.y += rect.width + parentSize.y;
+                position.y += speed.y * delta * Mathf.Lerp(1, scrollInSpeedMultiply.y, (position.y + rect.yMin) / pivotPos + 1);
+            } else {
+                if(position.y + rect.yMin > pivotPos)
+                    position.y -= rect.width + parentSize.y;
+                position.y += speed.y * delta * Mathf.Lerp(1, scrollInSpeedMultiply.y, (position.y + rect.yMax) / -pivotPos + 1);
+            }
         }
-        rectTransform.anchoredPosition = currentPos;
+        rectTransform.localPosition = position;
     }
 }
