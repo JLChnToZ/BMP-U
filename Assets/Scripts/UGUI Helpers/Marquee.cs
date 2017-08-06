@@ -7,6 +7,7 @@ public class Marquee: MonoBehaviour {
     private bool enableX, enableY;
     public Vector2 speed = new Vector2(-100, 0);
     public Vector2 scrollInSpeedMultiply = new Vector2(2, 2);
+    public Vector2 defaultPosition = new Vector2(0, 0);
 
     protected void Awake() {
         rectTransform = GetComponent<RectTransform>();
@@ -30,9 +31,9 @@ public class Marquee: MonoBehaviour {
         enableX = rect.width > parentRect.width;
         enableY = rect.height > parentRect.height;
         if(!enableX && !Mathf.Approximately(speed.x, 0))
-            currentPos.x = 0;
+            currentPos.x = defaultPosition.x;
         if(!enableY && !Mathf.Approximately(speed.y, 0))
-            currentPos.y = 0;
+            currentPos.y = defaultPosition.y;
         rectTransform.anchoredPosition = currentPos;
     }
     
