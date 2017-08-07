@@ -2177,6 +2177,31 @@ Prefab:
       value: 
       objectReference: {fileID: 12800000, guid: fa5b6f1e2adf02848b98b94d9f0d9b69,
         type: 3}
+    - target: {fileID: 114000012613030214, guid: 93231dfafb95718428675196e8bfd5c7,
+        type: 2}
+      propertyPath: noteSpawner
+      value: 
+      objectReference: {fileID: 1050942000}
+    - target: {fileID: 114000011422397036, guid: 93231dfafb95718428675196e8bfd5c7,
+        type: 2}
+      propertyPath: noteSpawner
+      value: 
+      objectReference: {fileID: 496827475}
+    - target: {fileID: 114000012613030214, guid: 93231dfafb95718428675196e8bfd5c7,
+        type: 2}
+      propertyPath: bmsManager
+      value: 
+      objectReference: {fileID: 1155440623}
+    - target: {fileID: 114000011422397036, guid: 93231dfafb95718428675196e8bfd5c7,
+        type: 2}
+      propertyPath: bmsManager
+      value: 
+      objectReference: {fileID: 1155440623}
+    - target: {fileID: 114000012613030214, guid: 93231dfafb95718428675196e8bfd5c7,
+        type: 2}
+      propertyPath: distance
+      value: 440
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 93231dfafb95718428675196e8bfd5c7, type: 2}
   m_IsPrefabParent: 0
