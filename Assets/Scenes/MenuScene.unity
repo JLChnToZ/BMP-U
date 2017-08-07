@@ -4575,6 +4575,7 @@ GameObject:
   - component: {fileID: 782679362}
   - component: {fileID: 782679361}
   - component: {fileID: 782679363}
+  - component: {fileID: 782679364}
   m_Layer: 5
   m_Name: Footer
   m_TagString: Untagged
@@ -4632,9 +4633,9 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: 'BananaBeats - Alpha Build. [20170805]
+  m_Text: '{0} - Alpha Build Ver. {1}
 
-    (C) JLChnToZ, 2013-2016. Licensed under Artistic License 2.0'
+    (C) JLChnToZ, 2013-2017. Licensed under Artistic License 2.0'
 --- !u!222 &782679362
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -4649,12 +4650,24 @@ MonoBehaviour:
   m_GameObject: {fileID: 782679359}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -900027084, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
+  m_Script: {fileID: 11500000, guid: 15e29ecfd1716c946b7a32884e7cdf07, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_EffectColor: {r: 1, g: 1, b: 1, a: 1}
   m_EffectDistance: {x: 1, y: 1}
   m_UseGraphicAlpha: 1
+  iteration: 1
+--- !u!114 &782679364
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 782679359}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5088f69056bd5e84f92965f6a08e689c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &787615095
 GameObject:
   m_ObjectHideFlags: 0
