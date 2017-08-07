@@ -6,6 +6,7 @@ public class ParticleColorChange : MonoBehaviour {
     public ColorToneHandler colors;
 
 	void Update () {
-        particles.startColor = colors.ResultColor;
+        ParticleSystem.MainModule main = particles.main;
+        main.startColor = colors.ResultColor;
     }
 }
