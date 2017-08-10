@@ -42,6 +42,7 @@ namespace BMS {
         public float PlayLevel { get { return chart.PlayLevel; } }
         public int Rank { get { return chart.Rank; } }
         public float Volume { get { return chart.Volume; } }
+        public BMSKeyLayout OriginalLayout { get { return chart.Layout; } }
         public Texture StageFile { get { return stageFile; } }
         public Texture BannerFile { get { return bannerFile; } }
         public int LongNoteType { get { return 1; } }
@@ -129,7 +130,7 @@ namespace BMS {
         void ReloadTimelineInThread() {
             try {
                 ParseType parseType = ParseType.None;
-                if(parseHeader) parseType |= ParseType.Header;
+                if(parseHeader) parseType |= ParseType.Header | ParseType.ContentSummary;
                 if(parseResHeader) parseType |= ParseType.Resources;
                 if(parseBody) parseType |= ParseType.Content;
                 chart.Parse(parseType);

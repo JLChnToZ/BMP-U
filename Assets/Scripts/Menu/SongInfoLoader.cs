@@ -14,7 +14,7 @@ using BMS;
 using Entry = SongInfoLoader.Entry;
 using Ude;
 
-public struct SongInfo:IEquatable<SongInfo>, IComparable<SongInfo> {
+public struct SongInfo: IEquatable<SongInfo>, IComparable<SongInfo> {
     public int index;
     public string filePath;
     public string name;
@@ -29,6 +29,7 @@ public struct SongInfo:IEquatable<SongInfo>, IComparable<SongInfo> {
     public Texture banner;
     public string bannerPath;
     public string bmsHash;
+    public BMSKeyLayout layout;
 
     public override bool Equals(object obj) {
         if(obj == null || !(obj is SongInfo))
@@ -249,7 +250,8 @@ public static class SongInfoLoader {
             comments = bmsManager.Comments,
             backgroundPath = bmsManager.StageFilePath,
             bannerPath = bmsManager.BannerFilePath,
-            bmsHash = bmsManager.GetHash(CurrentEncoding, RecordsManager.Instance.HashAlgorithm)
+            bmsHash = bmsManager.GetHash(CurrentEncoding, RecordsManager.Instance.HashAlgorithm),
+            layout = bmsManager.OriginalLayout
         };
     }
 

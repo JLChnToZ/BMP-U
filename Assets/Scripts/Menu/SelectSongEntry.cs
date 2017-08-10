@@ -3,6 +3,8 @@ using UnityEngine.UI;
 using System.Collections;
 using System.IO;
 
+using BMSKeyLayout = BMS.BMSKeyLayout;
+
 [RequireComponent(typeof(RectTransform))]
 public class SelectSongEntry: MonoBehaviour {
     [SerializeField]
@@ -73,7 +75,7 @@ public class SelectSongEntry: MonoBehaviour {
             artist.text = string.IsNullOrEmpty(songInfo.subArtist) ?
                 songInfo.artist :
                 string.Concat(songInfo.artist, " / ", songInfo.subArtist.Replace("\n", " / "));
-            otherInfo.text = string.Format("Lv{0} {1}BPM", songInfo.level, songInfo.bpm);
+            otherInfo.text = string.Format("{2} Lv{0} {1}BPM", songInfo.level, songInfo.bpm, GetLayoutName(songInfo.layout));
             banner.SetTexture(songInfo.banner);
             banner.gameObject.SetActive(songInfo.banner);
             
@@ -100,5 +102,17 @@ public class SelectSongEntry: MonoBehaviour {
             SongInfoLoader.CurrentDirectory = isParentDirectory ? dirInfo.Parent : dirInfo;
         else
             SongInfoLoader.SelectedSong = songInfo;
+    }
+
+    string GetLayoutName(BMSKeyLayout layout) {
+        switch(layout) {
+            case BMSKeyLayout.Single5Key: return "5-SP";
+            case BMSKeyLayout.Single7Key: return "7-SP";
+            case BMSKeyLayout.Single9Key:
+            case BMSKeyLayout.Single9KeyAlt: return "9-SP";
+            case BMSKeyLayout.Duel10Key: return "10-DP";
+            case BMSKeyLayout.Duel14Key: return "14-DP";
+            default: return "Custom";
+        }
     }
 }
