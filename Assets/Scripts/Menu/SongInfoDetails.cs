@@ -54,6 +54,8 @@ public class SongInfoDetails: MonoBehaviour {
             songInfo.subArtist,
             songInfo.genre,
             songInfo.bpm,
+            songInfo.notes,
+            songInfo.LayoutName,
             songInfo.comments
         ) : string.Empty;
         ReloadRecord();

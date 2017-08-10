@@ -24,6 +24,7 @@ public struct SongInfo: IEquatable<SongInfo>, IComparable<SongInfo> {
     public string comments;
     public float level;
     public float bpm;
+    public int notes;
     public Texture background;
     public string backgroundPath;
     public Texture banner;
@@ -51,6 +52,20 @@ public struct SongInfo: IEquatable<SongInfo>, IComparable<SongInfo> {
 
     public bool Exists {
         get { return !string.IsNullOrEmpty(filePath) && File.Exists(SongInfoLoader.GetAbsolutePath(filePath)); }
+    }
+    
+    public string LayoutName {
+        get {
+            switch(layout) {
+                case BMSKeyLayout.Single5Key: return "5-SP";
+                case BMSKeyLayout.Single7Key: return "7-SP";
+                case BMSKeyLayout.Single9Key:
+                case BMSKeyLayout.Single9KeyAlt: return "9-SP";
+                case BMSKeyLayout.Duel10Key: return "10-DP";
+                case BMSKeyLayout.Duel14Key: return "14-DP";
+                default: return "Custom";
+            }
+        }
     }
 }
 
@@ -246,6 +261,7 @@ public static class SongInfoLoader {
             subArtist = bmsManager.SubArtist,
             genre = bmsManager.Genre,
             bpm = bmsManager.BPM,
+            notes = bmsManager.MaxCombos,
             level = bmsManager.PlayLevel,
             comments = bmsManager.Comments,
             backgroundPath = bmsManager.StageFilePath,

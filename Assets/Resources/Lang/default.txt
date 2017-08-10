@@ -1,5 +1,5 @@
 Makinas-Scrap-5
-{0} (Lv.{1})\n{2}\n{3}\n{4}\n{5:#.#}BPM\n{6}
+{0} (Lv.{1})\n{2}\n{3}\n{4}\n{5:#.#}BPM, {6} Notes, Layout: {7}\n{8}
 Song Name\nArtist\nGenre\nLevel\nBPM
 Options
 Auto Mode
