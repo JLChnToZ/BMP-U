@@ -261,7 +261,7 @@ public static class SongInfoLoader {
             subArtist = bmsManager.SubArtist,
             genre = bmsManager.Genre,
             bpm = bmsManager.BPM,
-            notes = bmsManager.MaxCombos,
+            notes = bmsManager.OriginalNotesCount,
             level = bmsManager.PlayLevel,
             comments = bmsManager.Comments,
             backgroundPath = bmsManager.StageFilePath,

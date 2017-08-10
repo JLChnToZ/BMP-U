@@ -43,6 +43,7 @@ namespace BMS {
         public int Rank { get { return chart.Rank; } }
         public float Volume { get { return chart.Volume; } }
         public BMSKeyLayout OriginalLayout { get { return chart.Layout; } }
+        public int OriginalNotesCount { get { return chart.MaxCombos; } }
         public Texture StageFile { get { return stageFile; } }
         public Texture BannerFile { get { return bannerFile; } }
         public int LongNoteType { get { return 1; } }
