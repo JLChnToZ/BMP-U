@@ -14,6 +14,8 @@ public class SongInfoDetails: MonoBehaviour {
     Text playerBest;
     [SerializeField]
     RankControl rankControl;
+    [SerializeField]
+    RectTransform detailsContainer;
 
     GameObject bannerParent;
     SongInfo songInfo;
@@ -39,6 +41,7 @@ public class SongInfoDetails: MonoBehaviour {
 
     void OnUpdateInfo(SongInfo? newInfo) {
         bool hasInfo = newInfo.HasValue;
+        detailsContainer.gameObject.SetActive(hasInfo);
         songInfo = newInfo.GetValueOrDefault();
         if(!songInfo.banner && songInfo.background)
             songInfo.banner = songInfo.background;
