@@ -496,7 +496,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &302655680
 Transform:
   m_ObjectHideFlags: 0
@@ -2439,7 +2439,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9162a075d69c3914a9e4cbd2e8f04fcb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  placeHolderTexture: {fileID: 8400000, guid: 8615cd369f4523246bc9700504142414, type: 2}
+  placeHolderTexture: {fileID: 8600000, guid: 1d4bbef773091994f9d4092a78a02683, type: 2}
   maxScore: 1000000
   noteOffsetThesholds:
   - -0.3
@@ -3078,6 +3078,26 @@ Prefab:
         type: 2}
       propertyPath: m_SizeDelta.y
       value: 639.99994
+      objectReference: {fileID: 0}
+    - target: {fileID: 224866355480803560, guid: 93231dfafb95718428675196e8bfd5c7,
+        type: 2}
+      propertyPath: m_SizeDelta.x
+      value: 19.812384
+      objectReference: {fileID: 0}
+    - target: {fileID: 224866355480803560, guid: 93231dfafb95718428675196e8bfd5c7,
+        type: 2}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 224000010379698588, guid: 93231dfafb95718428675196e8bfd5c7,
+        type: 2}
+      propertyPath: m_SizeDelta.x
+      value: 27.917448
+      objectReference: {fileID: 0}
+    - target: {fileID: 224000010379698588, guid: 93231dfafb95718428675196e8bfd5c7,
+        type: 2}
+      propertyPath: m_SizeDelta.y
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 93231dfafb95718428675196e8bfd5c7, type: 2}
