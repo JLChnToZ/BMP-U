@@ -99,8 +99,8 @@ public class InfoHandler : MonoBehaviour {
                 resultText.text = "";
                 detailsPanel.gameObject.SetActive(true);
                 for(int i = 0; i < resultCountText.Length; i++)
-                    resultCountText[i].text = bmsManager.GetNoteScoreCount(i).ToString("x0");
-                resultComboText.text = bmsManager.MaxCombos.ToString("x0");
+                    resultCountText[i].text = bmsManager.GetNoteScoreCount(i).ToString("\\x0");
+                resultComboText.text = bmsManager.MaxCombos.ToString("\\x0");
                 resultScoreText.text = bmsManager.Score.ToString("0000000");
                 resultRankText.text = string.Format(
                     "<color=#{0}>{1}</color>",

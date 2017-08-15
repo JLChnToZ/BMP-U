@@ -3200,7 +3200,7 @@ MonoBehaviour:
     m_VerticalOverflow: 1
     m_LineSpacing: 1
   m_Text: Score
-  langId: 44
+  langId: 21
 --- !u!114 &114467797888122688
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3333,7 +3333,7 @@ MonoBehaviour:
     m_VerticalOverflow: 1
     m_LineSpacing: 1
   m_Text: Combo
-  langId: 21
+  langId: 44
 --- !u!114 &114550880172623768
 MonoBehaviour:
   m_ObjectHideFlags: 1
