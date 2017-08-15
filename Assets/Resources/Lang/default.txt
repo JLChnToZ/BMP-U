@@ -19,7 +19,7 @@ Now Loading
 {0}\n{1}
 Pause
 Result
-Score: {0:0000000}\nMax. Combos: {1}\n<color=#FFFF00FF>Bravo!</color> x{2}\n<color=#00FF00FF>OK</color> x{3}\n<color=#00FFFFFF>NotBad</color> x{4}\n<color=#8800FFFF>NG</color> x{5}\n  Crystal Quality: <size=28>{6}</size>
+Score
 Retart
 Back
 Replay
@@ -42,3 +42,5 @@ Enable Background Animation
 Enable Detune Effect (Detune when the note is not accurate)
 Dynamic change note speed depends on BPM
 On screen note limit: (Unlimited / less <--> more)
+Max. Combos
+Crystal Quality

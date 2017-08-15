@@ -19,7 +19,7 @@ Makinas-Scrap-5
 {0}\n{1}
 暫停
 結果
-成績: {0:0000000}\n最大連擊數: {1}\n<color=#FFFF00FF>Bravo!</color> x{2}\n<color=#00FF00FF>OK</color> x{3}\n<color=#00FFFFFF>NotBad</color> x{4}\n<color=#8800FFFF>NG</color> x{5}\n  水晶等級: <size=28>{6}</size>
+成績
 重來
 返回
 重來
@@ -42,3 +42,5 @@ BananaBeats 原創模式\nBMS 經典模式
 開啟走音效果 (拍子打不準就會走音)
 根據曲速自動調整音符出現速度
 畫面音符數量限制: 不限 / 少 <--> 多
+最大連打數
+水晶等級

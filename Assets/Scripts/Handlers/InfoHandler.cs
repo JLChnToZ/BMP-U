@@ -26,8 +26,13 @@ public class InfoHandler : MonoBehaviour {
     public Image fpsBar, polyphonyBar, accuracyBar;
     public Text fpsText, polyphonyText, accuracyText, bpmText;
 
-    public RectTransform panel;
+    public RectTransform panel, detailsPanel;
     public Text resultText;
+
+    public Text[] resultCountText;
+    public Text resultComboText;
+    public Text resultScoreText;
+    public Text resultRankText;
 
     public RectTransform pausePanel;
 
@@ -90,20 +95,19 @@ public class InfoHandler : MonoBehaviour {
         if(gameEnded) {
             gameEnded = false;
             panel.gameObject.SetActive(true);
-            if(Loader.judgeMode != 2)
-                resultText.text = string.Format(LanguageLoader.GetText(21),
-                    bmsManager.Score,
-                    bmsManager.MaxCombos,
-                    bmsManager.GetNoteScoreCount(0),
-                    bmsManager.GetNoteScoreCount(1),
-                    bmsManager.GetNoteScoreCount(2),
-                    bmsManager.GetNoteScoreCount(3),
-                    string.Format(
-                        "<color=#{0}>{1}</color>",
-                        ColorUtility.ToHtmlStringRGBA(bmsManager.RankColor),
-                        bmsManager.RankString
-                    )
+            if(Loader.judgeMode != 2) {
+                resultText.text = "";
+                detailsPanel.gameObject.SetActive(true);
+                for(int i = 0; i < resultCountText.Length; i++)
+                    resultCountText[i].text = bmsManager.GetNoteScoreCount(i).ToString("x0");
+                resultComboText.text = bmsManager.MaxCombos.ToString("x0");
+                resultScoreText.text = bmsManager.Score.ToString("0000000");
+                resultRankText.text = string.Format(
+                    "<color=#{0}>{1}</color>",
+                    ColorUtility.ToHtmlStringRGBA(bmsManager.RankColor),
+                    bmsManager.RankString
                 );
+            }
             bgTexture.rawImage.enabled = bgTexture.rawImage.texture != null;
             if(graphDisplay) {
                 if(graphHandler)
@@ -119,6 +123,7 @@ public class InfoHandler : MonoBehaviour {
                 if(pass && records != null)
                     pass = bmsManager.Score >= records.Value.score;
                 resultText.text = LanguageLoader.GetText(pass ? 33 : 34);
+                detailsPanel.gameObject.SetActive(false);
             }
             if(!Loader.autoMode) {
                 recordsManager.CreateRecord(bmsManager);
