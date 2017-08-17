@@ -49,13 +49,17 @@ This application uses following products:
 - **[DSEG Font Family](https://github.com/keshikan/DSEG)** by [keshikan](http://www.keshikan.net) - [LICENSE](https://github.com/keshikan/DSEG/blob/master/DSEG-LICENSE.txt)
 - **[VideoStreamer & VideoStreamer.NET](http://fr.sfml-dev.org/forums/index.php?topic=12305.0)** by Brown Star - [LICENSE](https://bitbucket.org/zsbzsb/videostreamer/src/df763ea34e6e8be6576dea3fb7843a7e1c193dda/license.txt)
 - **[Unity UI Extensions](https://bitbucket.org/ddreaper/unity-ui-extensions)** - [LICENSE](https://bitbucket.org/ddreaper/unity-ui-extensions/src/13e291bef4ff636f49f34b4a949cc0fc7d8edd9d/LICENSE)
-- **[Un4seen BASS](http://www.un4seen.com/bass.html)** - [LICENSE](http://www.un4seen.com/bass.html#license) *
+- **[Un4seen BASS](http://www.un4seen.com/bass.html)** - [LICENSE](http://www.un4seen.com/bass.html#license) (*)
 - **[ManagedBass.PInvoke](https://github.com/ManagedBass/ManagedBass.PInvoke)**
 - **[Ude C# Port](https://github.com/errepi/ude)**
 
 Except the components mentioned above, the whole application (or game) in open-sourced under [Artistic License 2.0](LICENSE).
 
-* Commercial license of BASS is **NOT** included or covered in any official binaries or sources of BananaBeats (Indeed, BananaBeats is not a commercial project), for any commercial usage of BananaBeats with BASS (For example, selling it) have to purchase the license individually.
+(*) Commercial license of BASS is **NOT** included or covered in any official binaries or sources of BananaBeats (Indeed, BananaBeats is not a commercial project), for any commercial usage of BananaBeats with BASS (For example, selling it) have to purchase the license individually.
+
+## Special Thanks
+
+- UI Design: CxB
 
 ## Snapshots
 
