@@ -5550,7 +5550,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 30}
+  m_AnchoredPosition: {x: 0, y: -10}
   m_SizeDelta: {x: -20, y: 30}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &862767839
@@ -6428,8 +6428,6 @@ MonoBehaviour:
     path: default
   - name: "\u7E41\u9AD4\u4E2D\u6587"
     path: zh-tw
-  - name: "\u7B80\u4F53\u4E2D\u6587"
-    path: zh-cn
   - name: "\u65E5\u672C\u8A9E "
     path: ja-jp
 --- !u!1 &1037613588

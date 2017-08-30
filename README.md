@@ -60,6 +60,7 @@ Except the components mentioned above, the whole application (or game) in open-s
 ## Special Thanks
 
 - UI Design: CxB
+- Japanese Translation: 千
 
 ## Snapshots
 
