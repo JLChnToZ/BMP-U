@@ -37,11 +37,14 @@ public class InfoHandler : MonoBehaviour {
     public RectTransform pausePanel;
 
     public GameObject dummyBGA;
+    public Color bpmLightColor = Color.yellow;
 
     int displayingScore, displayCombos, targetCombos;
     float combosValue;
 
     bool bmsLoaded, stageFileLoaded, gameStarted, gameEnded, pauseChanged, startOnLoad, backgroundChanged;
+    string bpmFormatText = "{0:0.0}BPM";
+    float bpmLightLerp = 0;
     
     void Start () {
         if(bmsManager) {
@@ -51,6 +54,7 @@ public class InfoHandler : MonoBehaviour {
             bmsManager.OnGameEnded += OnGameEnded;
             bmsManager.OnPauseChanged += OnPauseChanged;
             bmsManager.OnChangeBackground += OnChangeBackground;
+            bmsManager.OnBeatFlow += BeatFlow;
         }
         if(graphDisplay) {
             if(graphHandler)
@@ -69,6 +73,7 @@ public class InfoHandler : MonoBehaviour {
             bmsManager.OnGameEnded -= OnGameEnded;
             bmsManager.OnPauseChanged -= OnPauseChanged;
             bmsManager.OnChangeBackground -= OnChangeBackground;
+            bmsManager.OnBeatFlow -= BeatFlow;
         }
     }
 
@@ -177,7 +182,11 @@ public class InfoHandler : MonoBehaviour {
         if(polyphonyText) polyphonyText.text = string.Format("{0} POLY", bmsManager.Polyphony);
         if(accuracyBar) UpdateHorzBar(accuracyBar, bmsManager.Accuracy / 50F);
         if(accuracyText) accuracyText.text = string.Format("{0:+0000;-0000}MS", bmsManager.Accuracy);
-        if(bpmText) bpmText.text = string.Format("{0:0.0}BPM", bmsManager.BPM);
+        if(bpmText) bpmText.text = string.Format(
+            bpmFormatText, bmsManager.BPM,
+            ColorUtility.ToHtmlStringRGBA(
+                Color.Lerp(bpmText.color, bpmLightColor, bpmLightLerp)
+            ));
     }
 
     void OnBMSLoaded() {
@@ -235,6 +244,25 @@ public class InfoHandler : MonoBehaviour {
         percentage = Mathf.Clamp01(Mathf.Abs(percentage));
         if(percentage < 0.5) image.color = Color.Lerp(Color.green, Color.yellow, percentage * 2);
         else image.color = Color.Lerp(Color.yellow, Color.red, percentage * 2 - 1);
+    }
+
+    void BeatFlow(float beat, float measure) {
+        int beatIndex = Mathf.FloorToInt(measure);
+        bpmLightLerp = 1 - beat;
+        switch(Mathf.FloorToInt(measure) % 3) {
+            case 0:
+                if(beatIndex == 0)
+                    bpmFormatText = "<color=#{1}>{0:0.0}</color>BPM";
+                else
+                    bpmFormatText = "{0:0.0}BP<color=#{1}>M</color>";
+                break;
+            case 1:
+                bpmFormatText = "{0:0.0}<color=#{1}>B</color>PM";
+                break;
+            case 2:
+                bpmFormatText = "{0:0.0}B<color=#{1}>P</color>M";
+                break;
+        }
     }
 
     public void AgainClick() {
