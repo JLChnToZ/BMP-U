@@ -219,8 +219,8 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 0
   colorToneHandler: {fileID: 576865162}
-  notStartedScale: 1.6
   useMeasureFlow: 0
+  notStartedScale: 1.6
 --- !u!1 &174800912
 GameObject:
   m_ObjectHideFlags: 0
@@ -290,8 +290,8 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 0
   colorToneHandler: {fileID: 576865162}
-  notStartedScale: 1.6
   useMeasureFlow: 1
+  notStartedScale: 1.6
 --- !u!212 &174800915
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -2559,7 +2559,7 @@ Camera:
   field of view: 20
   orthographic: 0
   orthographic size: 1.1
-  m_Depth: 1
+  m_Depth: 3
   m_CullingMask:
     serializedVersion: 2
     m_Bits: 512
