@@ -124,7 +124,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &120967758
 Transform:
   m_ObjectHideFlags: 0
@@ -219,8 +219,8 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 0
   colorToneHandler: {fileID: 576865162}
-  notStartedScale: 1.6
   useMeasureFlow: 0
+  notStartedScale: 1.6
 --- !u!1 &185620790
 GameObject:
   m_ObjectHideFlags: 0
@@ -1244,6 +1244,7 @@ GameObject:
   - component: {fileID: 828064593}
   - component: {fileID: 828064595}
   - component: {fileID: 828064594}
+  - component: {fileID: 828064596}
   m_Layer: 5
   m_Name: Lower
   m_TagString: Untagged
@@ -1302,6 +1303,46 @@ CanvasRenderer:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 828064592}
+--- !u!114 &828064596
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 828064592}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55119597be037f84fbac29d870e5614f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bmsManager: {fileID: 1155440623}
+  color1: {r: 1, g: 1, b: 1, a: 1}
+  color2: {r: 1, g: 1, b: 1, a: 0.5019608}
+  colorTransformCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 2
+      time: 0
+      value: 0.012499999
+      inSlope: 4.4902945
+      outSlope: 4.4902945
+      tangentMode: 0
+    - serializedVersion: 2
+      time: 0.5
+      value: 1
+      inSlope: 0.03159046
+      outSlope: 0.03159046
+      tangentMode: 0
+    - serializedVersion: 2
+      time: 1
+      value: 0.012499999
+      inSlope: -4.63996
+      outSlope: -4.63996
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
+  colorToneHandler: {fileID: 576865162}
+  useMeasureFlow: 0
 --- !u!1 &833815133
 GameObject:
   m_ObjectHideFlags: 0
@@ -2482,7 +2523,7 @@ Prefab:
     - target: {fileID: 224866355480803560, guid: 93231dfafb95718428675196e8bfd5c7,
         type: 2}
       propertyPath: m_SizeDelta.y
-      value: 0
+      value: 13.533834
       objectReference: {fileID: 0}
     - target: {fileID: 224000010379698588, guid: 93231dfafb95718428675196e8bfd5c7,
         type: 2}
@@ -2492,7 +2533,7 @@ Prefab:
     - target: {fileID: 224000010379698588, guid: 93231dfafb95718428675196e8bfd5c7,
         type: 2}
       propertyPath: m_SizeDelta.y
-      value: 0
+      value: 13.533834
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 93231dfafb95718428675196e8bfd5c7, type: 2}
@@ -2741,6 +2782,7 @@ GameObject:
   - component: {fileID: 1129732777}
   - component: {fileID: 1129732779}
   - component: {fileID: 1129732778}
+  - component: {fileID: 1129732780}
   m_Layer: 5
   m_Name: Line2
   m_TagString: Untagged
@@ -2799,6 +2841,46 @@ CanvasRenderer:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1129732776}
+--- !u!114 &1129732780
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1129732776}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55119597be037f84fbac29d870e5614f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bmsManager: {fileID: 1155440623}
+  color1: {r: 1, g: 1, b: 1, a: 1}
+  color2: {r: 1, g: 1, b: 1, a: 0.5019608}
+  colorTransformCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 2
+      time: 0
+      value: 0.012499999
+      inSlope: 4.4902945
+      outSlope: 4.4902945
+      tangentMode: 0
+    - serializedVersion: 2
+      time: 0.5
+      value: 1
+      inSlope: 0.03159046
+      outSlope: 0.03159046
+      tangentMode: 0
+    - serializedVersion: 2
+      time: 1
+      value: 0.012499999
+      inSlope: -4.63996
+      outSlope: -4.63996
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
+  colorToneHandler: {fileID: 576865162}
+  useMeasureFlow: 1
 --- !u!1 &1155440622
 GameObject:
   m_ObjectHideFlags: 0
