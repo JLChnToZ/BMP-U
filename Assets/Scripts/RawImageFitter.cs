@@ -3,6 +3,7 @@ using UnityEngine.UI;
 
 [RequireComponent(typeof(RawImage)), RequireComponent(typeof(AspectRatioFitter))]
 public class RawImageFitter: MonoBehaviour {
+    public GameObject dummy;
     RawImage _rawImage;
     AspectRatioFitter _aspectRatioFitter;
 
@@ -21,6 +22,8 @@ public class RawImageFitter: MonoBehaviour {
 
     public void SetTexture(Texture texture) {
         _rawImage.texture = texture;
+        _rawImage.enabled = texture != null;
+        if(dummy != null) dummy.SetActive(texture == null);
         UpdateAspectRatio();
     }
 

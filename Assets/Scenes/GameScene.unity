@@ -433,7 +433,6 @@ GameObject:
   - component: {fileID: 388436622}
   - component: {fileID: 388436625}
   - component: {fileID: 388436624}
-  - component: {fileID: 388436623}
   m_Layer: 5
   m_Name: Lower
   m_TagString: Untagged
@@ -462,46 +461,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &388436623
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 388436621}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 55119597be037f84fbac29d870e5614f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  bmsManager: {fileID: 1155440623}
-  color1: {r: 1, g: 1, b: 1, a: 1}
-  color2: {r: 1, g: 1, b: 1, a: 0.5019608}
-  colorTransformCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 2
-      time: 0
-      value: 0.012499999
-      inSlope: 4.4902945
-      outSlope: 4.4902945
-      tangentMode: 0
-    - serializedVersion: 2
-      time: 0.5
-      value: 1
-      inSlope: 0.03159046
-      outSlope: 0.03159046
-      tangentMode: 0
-    - serializedVersion: 2
-      time: 1
-      value: 0.012499999
-      inSlope: -4.63996
-      outSlope: -4.63996
-      tangentMode: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 0
-  colorToneHandler: {fileID: 576865162}
-  useMeasureFlow: 0
 --- !u!114 &388436624
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2348,7 +2307,7 @@ Prefab:
     - target: {fileID: 224000010430269906, guid: 93231dfafb95718428675196e8bfd5c7,
         type: 2}
       propertyPath: m_SizeDelta.y
-      value: 639.99994
+      value: 640.3002
       objectReference: {fileID: 0}
     - target: {fileID: 224000012716902994, guid: 93231dfafb95718428675196e8bfd5c7,
         type: 2}
