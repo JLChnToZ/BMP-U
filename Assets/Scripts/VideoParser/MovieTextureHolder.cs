@@ -124,6 +124,10 @@ public class MovieTextureHolder:ScriptableObject {
         get { return TimeSpan.Zero; }
     }
 
+    public bool IsPlaying {
+        get { return false; }
+    }
+
     public static MovieTextureHolder Create(FileInfo file) {
         throw new NotSupportedException();
     }

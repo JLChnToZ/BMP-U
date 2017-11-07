@@ -108,7 +108,9 @@ namespace BMS {
         }
 
         SoundPlayer _soundPlayer;
+#if !UNITY_ANDROID
         readonly HashSet<MovieTexture> playingMovieTextures = new HashSet<MovieTexture>();
+#endif
         readonly HashSet<MovieTextureHolder> playingMovieTextureHolders = new HashSet<MovieTextureHolder>();
         readonly HashSet<int> handledChannels = new HashSet<int>();
         readonly Dictionary<int, int> autoPlayLNState = new Dictionary<int, int>();
@@ -300,9 +302,11 @@ namespace BMS {
                         OnGameStarted.Invoke();
                 } else {
                     soundPlayer.StopAll();
+#if !UNITY_ANDROID
                     foreach(var movTexture in playingMovieTextures)
                         movTexture.Stop();
                     playingMovieTextures.Clear();
+#endif
                     foreach(var movTexture in playingMovieTextureHolders)
                         movTexture.Stop();
                     playingMovieTextureHolders.Clear();
@@ -325,11 +329,13 @@ namespace BMS {
                 soundPlayer.PauseChanged(_isPaused);
                 if(_isPaused) {
                     preOffset = timePosition;
+#if !UNITY_ANDROID
                     var temp = new HashSet<MovieTexture>();
                     foreach(var movTexture in playingMovieTextures)
                         if(movTexture.isPlaying) movTexture.Pause();
                         else temp.Add(movTexture);
                     playingMovieTextures.ExceptWith(temp);
+#endif
                     var temp2 = new HashSet<MovieTextureHolder>();
                     foreach(var movTexture in playingMovieTextureHolders)
                         if(movTexture.IsPlaying) movTexture.Pause();
@@ -337,8 +343,10 @@ namespace BMS {
                     playingMovieTextureHolders.ExceptWith(temp2);
                 } else {
                     startTime = DateTime.Now;
+#if !UNITY_ANDROID
                     foreach(var movTexture in playingMovieTextures)
                         movTexture.Play();
+#endif
                     foreach(var movTexture in playingMovieTextureHolders)
                         movTexture.Play();
                 }

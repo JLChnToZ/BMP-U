@@ -151,7 +151,7 @@ PlayerSettings:
   buildNumber:
     iOS: 0
   AndroidBundleVersionCode: 1
-  AndroidMinSdkVersion: 16
+  AndroidMinSdkVersion: 21
   AndroidTargetSdkVersion: 0
   AndroidPreferredInstallLocation: 1
   aotOptions: 
@@ -159,7 +159,7 @@ PlayerSettings:
   iPhoneStrippingLevel: 0
   iPhoneScriptCallOptimization: 0
   ForceInternetPermission: 0
-  ForceSDCardPermission: 0
+  ForceSDCardPermission: 1
   CreateWallpaper: 0
   APKExpansionFiles: 0
   keepLoadedShadersAlive: 0
@@ -228,7 +228,7 @@ PlayerSettings:
   AndroidKeyaliasName: 
   AndroidTVCompatibility: 1
   AndroidIsGame: 1
-  androidEnableBanner: 1
+  androidEnableBanner: 0
   m_AndroidBanners:
   - width: 320
     height: 180
@@ -247,6 +247,9 @@ PlayerSettings:
   - m_BuildTarget: WindowsStandaloneSupport
     m_APIs: 0200000001000000
     m_Automatic: 1
+  - m_BuildTarget: AndroidPlayer
+    m_APIs: 0b0000000800000015000000
+    m_Automatic: 0
   m_BuildTargetVRSettings:
   - m_BuildTarget: Android
     m_Enabled: 0
@@ -569,7 +572,7 @@ PlayerSettings:
   platformArchitecture:
     iOS: 2
   scriptingBackend:
-    Android: 0
+    Android: 1
     Metro: 2
     Standalone: 0
     WebGL: 1
@@ -580,6 +583,7 @@ PlayerSettings:
   additionalIl2CppArgs: 
   scriptingRuntimeVersion: 0
   apiCompatibilityLevelPerPlatform:
+    Android: 1
     Standalone: 1
   m_RenderingPath: 1
   m_MobileRenderingPath: 1

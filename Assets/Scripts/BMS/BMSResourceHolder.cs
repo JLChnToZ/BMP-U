@@ -86,11 +86,15 @@ namespace BMS {
             ResourceObject res;
             if(!bmpObjects.TryGetValue(id, out res))
                 return null;
+#if !UNITY_ANDROID
             if(res.texture is MovieTexture) {
                 var movTexture = res.texture as MovieTexture;
                 movTexture.Play();
                 playingMovieTextures.Add(movTexture);
             } else if(res.value is MovieTextureHolder) {
+#else
+            if(res.value is MovieTextureHolder) {
+#endif
                 var movTH = res.value as MovieTextureHolder;
                 movTH.Play();
                 playingMovieTextureHolders.Add(movTH);

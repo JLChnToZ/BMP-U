@@ -212,7 +212,9 @@ public static class SongInfoLoader {
         if(string.IsNullOrEmpty(dataPath))
             dataPath = Application.dataPath.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
         if(rootDiectory == null)
-            rootDiectory =  new DirectoryInfo(GetAbsolutePath("../BMS"));
+            rootDiectory = new DirectoryInfo(GetAbsolutePath("../BMS"));
+        if(!rootDiectory.Exists)
+            rootDiectory.Create();
         if(currentDirectory == null)
             currentDirectory = rootDiectory;
     }
