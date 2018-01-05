@@ -70,6 +70,10 @@ Except the components mentioned above, the whole application (or game) in open-s
 ![Snapshot](Preview/4.png)
 ![Snapshot](Preview/5.png)
 
+Also here has a auto-play live demostration (external link):
+
+[![Youtube](https://img.youtube.com/vi/8-tdskRS4Pw/default.jpg)](https://youtu.be/8-tdskRS4Pw)
+
 ## References
 
 - **[BMS command memo](http://hitkey.nekokan.dyndns.info/cmds.htm)**: Even this is a draft memo, it is deep enough to study the whole BMS format.
