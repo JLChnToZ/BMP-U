@@ -64,11 +64,11 @@ Except the components mentioned above, the whole application (or game) in open-s
 
 ## Snapshots
 
-![Snapshot](http://i.imgur.com/mhzURV2.png)
-![Snapshot](http://i.imgur.com/okMG4iN.png)
-![Snapshot](http://i.imgur.com/tKnLB1l.png)
-![Snapshot](http://i.imgur.com/opabqaF.png)
-![Snapshot](http://i.imgur.com/TSvI0Y3.png)
+![Snapshot](Preview/1.png)
+![Snapshot](Preview/2.png)
+![Snapshot](Preview/3.png)
+![Snapshot](Preview/4.png)
+![Snapshot](Preview/5.png)
 
 ## References
 
