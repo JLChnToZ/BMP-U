@@ -17,5 +17,12 @@ public class ScoreIndicatorHandler: MonoBehaviour {
 
     private void Awake() {
         instance = this;
+
+        // HACK: Work around on crashing in some versions
+        // https://issuetracker.unity3d.com/issues/unity-crashes-when-particles-are-awaken-by-script
+        foreach(ParticleSystem p in particles) {
+            p.Emit(1);
+            p.Clear();
+        }
     }
 }
