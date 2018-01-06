@@ -57,10 +57,11 @@ namespace BMS {
             var finfo = FindRes(resource, ".wav");
             if(finfo != null && finfo.Exists) {
                 try {
-                    if(!objectCache.TryGetValue(finfo.FullName, out resource.value)) {
+                    /*if(!objectCache.TryGetValue(finfo.FullName, out resource.value)) {
                         resource.value = ReadAudioClipExtended(finfo);
                         objectCache.Add(finfo.FullName, resource.value);
-                    }
+                    }*/
+                    resource.value = ReadAudioClipExtended(finfo);
                 } catch(Exception ex) {
                     Debug.LogWarningFormat("Exception thrown while loading \"{0}\": {1}\n{2}", finfo.Name, ex.Source, ex.StackTrace);
                 }

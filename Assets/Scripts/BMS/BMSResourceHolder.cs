@@ -68,7 +68,7 @@ namespace BMS {
             ResourceObject result;
             bool reCreate = false;
             switch(type) {
-                case ResourceType.wav: dataObjectDict = wavObjects; break;
+                case ResourceType.wav: dataObjectDict = wavObjects; reCreate = true; break;
                 case ResourceType.bmp: dataObjectDict = bmpObjects; break;
                 default: return null;
             }

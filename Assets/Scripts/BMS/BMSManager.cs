@@ -415,6 +415,7 @@ namespace BMS {
         }
 
         void OnEventUpdate(BMSEvent bmsEvent) {
+            System.Console.WriteLine("BMS Event {0} {1} {2}", bmsEvent.type, bmsEvent.data1, bmsEvent.data2);
             switch(bmsEvent.type) {
                 case BMSEventType.WAV: PlayWAV((int)bmsEvent.data2, bmsEvent.sliceStart, bmsEvent.sliceEnd); break;
                 case BMSEventType.BMP: ChangeBGA(bmsEvent.data1, (int)bmsEvent.data2); break;
@@ -437,18 +438,27 @@ namespace BMS {
                     stopPosition = bmsEvent.time + offset;
                     bpmBasePoint -= offset;
                     break;
-                default:
+                case BMSEventType.LongNoteStart:
+                case BMSEventType.LongNoteEnd:
+                case BMSEventType.Note:
                     if(!handledChannels.Contains(bmsEvent.data1)) {
                         bool shouldPlayWav = true;
-                        if(bmsEvent.type == BMSEventType.LongNoteEnd || bmsEvent.type == BMSEventType.LongNoteStart)  {
+                        if(bmsEvent.type == BMSEventType.LongNoteEnd || bmsEvent.type == BMSEventType.LongNoteStart) {
                             int lnState;
                             if(!autoPlayLNState.TryGetValue(bmsEvent.data1, out lnState))
                                 lnState = 0;
                             shouldPlayWav = lnState != bmsEvent.data2;
-                            autoPlayLNState[bmsEvent.data1] = lnState > 0 ? 0 : bmsEvent.data1;
+                            if(lnState > 0)
+                                autoPlayLNState[bmsEvent.data1] = (int)bmsEvent.data2;
+                            else
+                                autoPlayLNState.Remove(bmsEvent.data1);
                         }
                         if(shouldPlayWav) PlayWAV((int)bmsEvent.data2, bmsEvent.sliceStart, bmsEvent.sliceEnd);
                     }
+                    if(OnNoteEvent != null)
+                        OnNoteEvent.Invoke(bmsEvent);
+                    break;
+                default:
                     if(OnNoteEvent != null)
                         OnNoteEvent.Invoke(bmsEvent);
                     break;
