@@ -75,6 +75,8 @@ namespace BMS {
                 TimeSpan timePosition = bmsManager.TimePosition;
                 preQueueMapper.Seek(timePosition + startTimeOffset);
                 postQueueMapper.Seek(timePosition + endTimeOffset);
+                if(Input.GetAxis("Cancel") > 0)
+                    bmsManager.IsPaused = true;
             }
         }
 
