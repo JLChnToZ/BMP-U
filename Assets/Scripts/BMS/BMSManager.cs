@@ -581,7 +581,7 @@ namespace BMS {
             rankSynced = false;
 
             if(hasSound && IsValidFlag(resultFlag))
-                PlayWAV(eventId, sliceStart, sliceEnd, true, detuneEnabled && resultFlag > 0 ? Mathf.Clamp(1 + accuracy / 500, 0.5F, 1.5F) : 1);
+                PlayWAV(eventId, sliceStart, sliceEnd, true, detuneEnabled && resultFlag > 1 ? Mathf.Clamp(1 + accuracy / 1000, 0.5F, 1.5F) : 1);
 
             if(OnNoteClicked != null)
                 OnNoteClicked.Invoke(expectedTimePosition, timePosition, channel, eventId, resultFlag);
