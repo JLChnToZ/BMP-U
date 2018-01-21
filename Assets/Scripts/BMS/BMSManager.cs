@@ -448,7 +448,7 @@ namespace BMS {
                             if(!autoPlayLNState.TryGetValue(bmsEvent.data1, out lnState))
                                 lnState = 0;
                             shouldPlayWav = lnState != bmsEvent.data2;
-                            if(lnState > 0)
+                            if(bmsEvent.type == BMSEventType.LongNoteStart)
                                 autoPlayLNState[bmsEvent.data1] = (int)bmsEvent.data2;
                             else
                                 autoPlayLNState.Remove(bmsEvent.data1);
