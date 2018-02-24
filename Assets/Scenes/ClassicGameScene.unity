@@ -676,8 +676,8 @@ MonoBehaviour:
   hitTestCamera: {fileID: 1258345987}
   noteDetector: {fileID: 1109075197}
   noteSpawner: {fileID: 496827475}
-  startLength: 1.5
-  endLength: 2.5
+  startLength: 1
+  endLength: 0.5
 --- !u!114 &496827475
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2087,8 +2087,8 @@ MonoBehaviour:
   hitTestCamera: {fileID: 1258345987}
   noteDetector: {fileID: 1109075197}
   noteSpawner: {fileID: 1050942000}
-  startLength: 1.5
-  endLength: 2.5
+  startLength: -1
+  endLength: -0.5
 --- !u!1 &1052466147
 GameObject:
   m_ObjectHideFlags: 0
@@ -3296,27 +3296,27 @@ Prefab:
     - target: {fileID: 224000010430269906, guid: 93231dfafb95718428675196e8bfd5c7,
         type: 2}
       propertyPath: m_SizeDelta.y
-      value: 640.3002
+      value: 639.99994
       objectReference: {fileID: 0}
     - target: {fileID: 224866355480803560, guid: 93231dfafb95718428675196e8bfd5c7,
         type: 2}
       propertyPath: m_SizeDelta.x
-      value: 19.812384
+      value: 20.13986
       objectReference: {fileID: 0}
     - target: {fileID: 224866355480803560, guid: 93231dfafb95718428675196e8bfd5c7,
         type: 2}
       propertyPath: m_SizeDelta.y
-      value: 0
+      value: 13.426573
       objectReference: {fileID: 0}
     - target: {fileID: 224000010379698588, guid: 93231dfafb95718428675196e8bfd5c7,
         type: 2}
       propertyPath: m_SizeDelta.x
-      value: 27.917448
+      value: 26.853146
       objectReference: {fileID: 0}
     - target: {fileID: 224000010379698588, guid: 93231dfafb95718428675196e8bfd5c7,
         type: 2}
       propertyPath: m_SizeDelta.y
-      value: 0
+      value: 13.426573
       objectReference: {fileID: 0}
     - target: {fileID: 0}
       propertyPath: m_Enabled

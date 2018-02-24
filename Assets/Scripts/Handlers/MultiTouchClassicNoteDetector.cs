@@ -71,16 +71,15 @@ public class MultiTouchClassicNoteDetector : MonoBehaviour {
     }
 
     int DetectIndex(Vector3 position, IList<int> mapping) {
-        return -1;
-        /*int mappingCount = mapping.Count;
+        int mappingCount = mapping.Count;
         if(mappingCount <= 0) return -1;
         Vector3 localPosition = hitTestCamera.ScreenToWorldPoint(position, Vector3.Distance(hitTestCamera.transform.position, noteSpawner.centroid));
-        float distance = Vector2.Distance(localPosition, noteSpawner.centroid);
-        if(distance < startLength || distance > endLength) return -1;
-        float anglePerSlot = (noteSpawner.clampRangeEnd - noteSpawner.clampRangeStart) / mappingCount;
-        float angle = Mathf.Repeat(Mathf.Atan2(localPosition.y - noteSpawner.centroid.y, localPosition.x - noteSpawner.centroid.x) * Mathf.Rad2Deg, 360F) + anglePerSlot / 2;
-        if(angle < noteSpawner.clampRangeStart || angle > noteSpawner.clampRangeEnd + anglePerSlot) return -1;
-        return Mathf.FloorToInt(Mathf.Clamp(Mathf.InverseLerp(noteSpawner.clampRangeStart, noteSpawner.clampRangeEnd + anglePerSlot, angle) * mappingCount, 0, mappingCount - 1));*/
+        if(localPosition.y < startLength || localPosition.y > endLength) return -1;
+        float notesPerSlot = (noteSpawner.clampRangeEnd - noteSpawner.clampRangeStart) / mappingCount;
+        float rngStart = noteSpawner.clampRangeStart - notesPerSlot / 2;
+        float rngEnd = noteSpawner.clampRangeEnd + notesPerSlot / 2;
+        if(localPosition.x < rngStart || localPosition.x > rngEnd) return -1;
+        return Mathf.FloorToInt(Mathf.Clamp(Mathf.InverseLerp(rngStart, rngEnd, localPosition.x) * mappingCount, 0, mappingCount - 1));
     }
 
     void HandleTouch(int i, IList<int> mapping, bool isDown) {

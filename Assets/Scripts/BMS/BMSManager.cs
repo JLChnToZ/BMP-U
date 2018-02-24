@@ -133,6 +133,7 @@ namespace BMS {
         // Score and combos
         [SerializeField]
         int maxScore = 1000000;
+        int discountMaxScore;
         [SerializeField]
         float[] noteOffsetThesholds = new [] { 0F };
         [Range(0, 1), SerializeField]
@@ -362,11 +363,15 @@ namespace BMS {
         public void InitializeNoteScore() {
             comboPools.Clear();
             score = maxCombos = combos = 0;
-            int noteCount = 0;
-            noteCount = chart.Events.Count(ev => ev.IsNote &&
-                handledChannels.Contains(ev.data1)
-            );
+            int noteCount = 0, noteCount2 = 0;
+            foreach(BMSEvent ev in chart.Events) {
+                if(ev.IsNote) {
+                    if(handledChannels.Contains(ev.data1)) noteCount++;
+                    noteCount2++;
+                }
+            }
             if(noteCount < 1) return;
+            int maxScore = discountMaxScore = Mathf.FloorToInt(this.maxScore * ((float)noteCount / noteCount2));
             int totalNormalScore = Mathf.FloorToInt(maxScore * (1 - comboBonusWeight));
             scorePerNote = totalNormalScore / noteCount;
             extraScore = totalNormalScore - scorePerNote * noteCount;
