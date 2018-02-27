@@ -59,14 +59,14 @@ public class RecordsManager {
         hashAlgorithm = SHA512.Create();
         InitTable();
 #if UNITY_EDITOR
-        EditorApplication.CallbackFunction playModeChangeHandle = null;
-        playModeChangeHandle = () => {
-            if(!Application.isPlaying) {
+        Action<PlayModeStateChange> playModeChangeHandle = null;
+        playModeChangeHandle = (state) => {
+            if(state == PlayModeStateChange.ExitingPlayMode) {
                 CloseDatabase();
-                EditorApplication.playmodeStateChanged -= playModeChangeHandle;
+                EditorApplication.playModeStateChanged -= playModeChangeHandle;
             }
         };
-        EditorApplication.playmodeStateChanged += playModeChangeHandle;
+        EditorApplication.playModeStateChanged += playModeChangeHandle;
 #endif
     }
 
@@ -148,10 +148,10 @@ public class RecordsManager {
     } */
 
     public Record? GetRecord(string bmsHash, int channelConfig, string playerName = DefaultPlayerName) {
-        const string commandText = "SELECT `player_name`, `channel_config`, `combos`, `score`, `time`, `play_count` FROM `records` "+
-            "WHERE `hash` = ? AND `player_name` = ? AND `channel_config` = ?;";
+        const string commandText = "SELECT `player_name`, `channel_config`, `combos`, `score`, `time`, `play_count` FROM `records` " +
+            "WHERE `hash` = ? AND `player_name` = ?;";// AND `channel_config` = ?;";
         OpenDatabase();
-        foreach(var result in database.QuerySql(commandText, bmsHash, playerName, channelConfig)) {
+        foreach(var result in database.QuerySql(commandText, bmsHash, playerName/*, channelConfig*/)) {
             return new Record(
                 result.GetString(0),
                 result.GetValueAsInt32(1),

@@ -119,6 +119,7 @@ public static class SongInfoLoader {
     public static event Action OnStartLoading;
     public static event Action OnListUpdated;
     public static event Action<SongInfo?> OnSelectionChanged;
+    public static event Action OnRecursiveLoaded;
 
     public static bool IsReady {
         get { return ready; }
@@ -285,6 +286,18 @@ public static class SongInfoLoader {
         readDirectoryThread.Start();
     }
 
+    public static void RecursiveLoadDirectory() {
+        AboartReadDirectory();
+        ready = false;
+        if(OnStartLoading != null)
+            OnStartLoading.Invoke();
+        ThreadHelper.InitThreadHandler();
+        readDirectoryThread = new Thread(RecursiveReadDirectoryThread) {
+            IsBackground = true
+        };
+        readDirectoryThread.Start();
+    }
+
     public static void AboartReadDirectory() {
         if(readDirectoryThread != null && readDirectoryThread.IsAlive)
             readDirectoryThread.Abort();
@@ -296,53 +309,100 @@ public static class SongInfoLoader {
         }
     }
 
+    public static void RecursiveReadDirectoryThread() {
+        try {
+            List<Entry> directories = new List<Entry> {
+                new Entry {
+                    dirInfo = currentDirectory
+                }
+            }, childDirectories = new List<Entry>();
+            List<string> bmsEntries = new List<string>();
+            while(directories.Count > 0) {
+                foreach(var dir in directories)
+                    try {
+                        foreach(var child in ReadDirectoryThreadInner(dir.dirInfo)) {
+                            if(child.isParentDirectory) continue;
+                            if(child.isDirectory) {
+                                childDirectories.Add(child);
+                                continue;
+                            }
+                            bmsEntries.Add(GetAbsolutePath(child.songInfo.filePath));
+                        }
+                    } catch (Exception ex) {
+                        Debug.LogException(ex);
+                    }
+                directories.Clear();
+                directories.AddRange(childDirectories);
+                childDirectories.Clear();
+            }
+            Loader.songPaths = bmsEntries.ToArray();
+            ready = true;
+            ThreadHelper.RunInUnityThread(RecursiveLoaded);
+        } catch(ThreadAbortException) {
+        } catch(Exception ex) {
+            Debug.LogException(ex);
+        }
+    }
+
+    static IEnumerable<Entry> ReadDirectoryThreadInner(DirectoryInfo currentDirectory) {
+        var supportedFileTypes = SupportedFileTypes;
+        if(!string.Equals(currentDirectory.FullName, rootDiectory.FullName, StringComparison.Ordinal))
+            yield return new Entry {
+                isDirectory = true,
+                isParentDirectory = true,
+                dirInfo = currentDirectory,
+                summary = ""
+            };
+        Entry current = new Entry();
+        bool hasEntry = false;
+        foreach(var dirInfo in currentDirectory.GetDirectories()) {
+            hasEntry = false;
+            try {
+                if(supportedFileTypes.Any(filter => dirInfo.GetFiles(filter).Any()) ||
+                    dirInfo.GetDirectories().Any()) {
+                    current = new Entry {
+                        isDirectory = true,
+                        dirInfo = dirInfo,
+                        summary = ""
+                    };
+                    hasEntry = true;
+                }
+            } catch(Exception ex) {
+                Debug.LogException(ex);
+            }
+            if(hasEntry) yield return current;
+        }
+        foreach(var fileInfo in supportedFileTypes.SelectMany(filter => currentDirectory.GetFiles(filter))) {
+            hasEntry = false;
+            try {
+                if(!cachedEntries.TryGetValue(fileInfo.FullName, out current)) {
+                    current = new Entry {
+                        isDirectory = false,
+                        songInfo = LoadBMS(fileInfo)
+                    };
+                    current.summary = string.Format("{0}\n{1}\n{2}\n{3}\n{4}",
+                        current.songInfo.name,
+                        current.songInfo.artist,
+                        current.songInfo.subArtist,
+                        current.songInfo.genre,
+                        current.songInfo.comments
+                    );
+                    if(string.IsNullOrEmpty(current.songInfo.name))
+                        current.songInfo.name = fileInfo.Name;
+                    cachedEntries.Add(fileInfo.FullName, current);
+                    hasEntry = true;
+                }
+            } catch(Exception ex) {
+                Debug.LogException(ex);
+            }
+            if(hasEntry) yield return current;
+        }
+    }
+
     static void ReadDirectoryThread() {
         try {
             entries.Clear();
-            var supportedFileTypes = SupportedFileTypes;
-            if(!string.Equals(currentDirectory.FullName, rootDiectory.FullName, StringComparison.Ordinal))
-                entries.Add(new Entry {
-                    isDirectory = true,
-                    isParentDirectory = true,
-                    dirInfo = currentDirectory,
-                    summary = ""
-                });
-            foreach(var dirInfo in currentDirectory.GetDirectories())
-                try {
-                    if(supportedFileTypes.Any(filter => dirInfo.GetFiles(filter).Any()) ||
-                        dirInfo.GetDirectories().Any())
-                        entries.Add(new Entry {
-                            isDirectory = true,
-                            dirInfo = dirInfo,
-                            summary = ""
-                        });
-                } catch(Exception ex) {
-                    Debug.LogException(ex);
-                }
-            foreach(var fileInfo in supportedFileTypes.SelectMany(filter => currentDirectory.GetFiles(filter))) {
-                try {
-                    Entry current;
-                    if(!cachedEntries.TryGetValue(fileInfo.FullName, out current)) {
-                        current = new Entry {
-                            isDirectory = false,
-                            songInfo = LoadBMS(fileInfo)
-                        };
-                        current.summary = string.Format("{0}\n{1}\n{2}\n{3}\n{4}",
-                            current.songInfo.name,
-                            current.songInfo.artist,
-                            current.songInfo.subArtist,
-                            current.songInfo.genre,
-                            current.songInfo.comments
-                        );
-                        if(string.IsNullOrEmpty(current.songInfo.name))
-                            current.songInfo.name = fileInfo.Name;
-                        cachedEntries.Add(fileInfo.FullName, current);
-                    }
-                    entries.Add(current);
-                } catch(Exception ex) {
-                    Debug.LogException(ex);
-                }
-            }
+            entries.AddRange(ReadDirectoryThreadInner(currentDirectory));
             SortInThread();
             ready = true;
             ThreadHelper.RunInUnityThread(UpdateList);
@@ -384,6 +444,10 @@ public static class SongInfoLoader {
         loadResourceCoroutine = SmartCoroutineLoadBalancer.StartCoroutine(bmsManager, LoadResource());
         InvokeListUpdated();
         SelectedSong = null;
+    }
+
+    static void RecursiveLoaded() {
+        if(OnRecursiveLoaded != null) OnRecursiveLoaded();
     }
 
     static void InvokeListUpdated() {

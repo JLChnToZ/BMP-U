@@ -154,13 +154,21 @@ public class SelectSongManager: MonoBehaviour {
     }
 
     public void StartGame() {
-        if(string.IsNullOrEmpty(Loader.songPath))
-            return;
         HideOptions();
+        if(string.IsNullOrEmpty(Loader.songPath)) {
+            SongInfoLoader.OnRecursiveLoaded += StartListen;
+            SongInfoLoader.RecursiveLoadDirectory();
+            return;
+        }
         switch(Loader.gameMode) {
             case 0: SceneManager.LoadScene("GameScene"); break;
             case 1: SceneManager.LoadScene("ClassicGameScene"); break;
         }
+    }
+
+    public void StartListen() {
+        SongInfoLoader.OnRecursiveLoaded -= StartListen;
+        SceneManager.LoadScene("ListenScene");
     }
 
     public void ShowOptions() {

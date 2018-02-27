@@ -99,39 +99,41 @@ public class InfoHandler : MonoBehaviour {
         }
         if(gameEnded) {
             gameEnded = false;
-            panel.gameObject.SetActive(true);
-            if(Loader.judgeMode != 2) {
-                resultText.text = "";
-                detailsPanel.gameObject.SetActive(true);
-                for(int i = 0; i < resultCountText.Length; i++)
-                    resultCountText[i].text = bmsManager.GetNoteScoreCount(i).ToString("\\x0");
-                resultComboText.text = bmsManager.MaxCombos.ToString("\\x0");
-                resultScoreText.text = bmsManager.Score.ToString("0000000");
-                resultRankText.text = string.Format(
-                    "<color=#{0}>{1}</color>",
-                    ColorUtility.ToHtmlStringRGBA(bmsManager.RankColor),
-                    bmsManager.RankString
-                );
-            }
-            bgTexture.rawImage.enabled = bgTexture.rawImage.texture != null;
-            if(graphDisplay) {
-                if(graphHandler)
-                    graphDisplay.texture = graphHandler.Texture;
-                graphDisplay.enabled = graphDisplay.texture;
-            }
-            var recordsManager = RecordsManager.Instance;
-            if(Loader.judgeMode == 2) {
-                var hash = bmsManager.GetHash(SongInfoLoader.CurrentEncoding, recordsManager.HashAlgorithm);
-                int channelHash = RecordsManager.GetAdoptedChannelHash(bmsManager.GetAllAdoptedChannels());
-                var records = recordsManager.GetRecord(hash, channelHash);
-                bool pass = bmsManager.Score >= bmsManager.MaxScore / 2;
-                if(pass && records != null)
-                    pass = bmsManager.Score >= records.Value.score;
-                resultText.text = LanguageLoader.GetText(pass ? 33 : 34);
-                detailsPanel.gameObject.SetActive(false);
-            }
-            if(!Loader.autoMode) {
-                recordsManager.CreateRecord(bmsManager);
+            if(!Loader.listenMode) {
+                panel.gameObject.SetActive(true);
+                if(Loader.judgeMode != 2) {
+                    resultText.text = "";
+                    detailsPanel.gameObject.SetActive(true);
+                    for(int i = 0; i < resultCountText.Length; i++)
+                        resultCountText[i].text = bmsManager.GetNoteScoreCount(i).ToString("\\x0");
+                    resultComboText.text = bmsManager.MaxCombos.ToString("\\x0");
+                    resultScoreText.text = bmsManager.Score.ToString("0000000");
+                    resultRankText.text = string.Format(
+                        "<color=#{0}>{1}</color>",
+                        ColorUtility.ToHtmlStringRGBA(bmsManager.RankColor),
+                        bmsManager.RankString
+                    );
+                }
+                bgTexture.rawImage.enabled = bgTexture.rawImage.texture != null;
+                if(graphDisplay) {
+                    if(graphHandler)
+                        graphDisplay.texture = graphHandler.Texture;
+                    graphDisplay.enabled = graphDisplay.texture;
+                }
+                var recordsManager = RecordsManager.Instance;
+                if(Loader.judgeMode == 2) {
+                    var hash = bmsManager.GetHash(SongInfoLoader.CurrentEncoding, recordsManager.HashAlgorithm);
+                    int channelHash = RecordsManager.GetAdoptedChannelHash(bmsManager.GetAllAdoptedChannels());
+                    var records = recordsManager.GetRecord(hash, channelHash);
+                    bool pass = bmsManager.Score >= bmsManager.MaxScore / 2;
+                    if(pass && records != null)
+                        pass = bmsManager.Score >= records.Value.score;
+                    resultText.text = LanguageLoader.GetText(pass ? 33 : 34);
+                    detailsPanel.gameObject.SetActive(false);
+                }
+                if(!Loader.autoMode) {
+                    recordsManager.CreateRecord(bmsManager);
+                }
             }
         }
         if(gameStarted) {
