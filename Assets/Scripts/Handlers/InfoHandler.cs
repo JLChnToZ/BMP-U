@@ -34,6 +34,8 @@ public class InfoHandler : MonoBehaviour {
     public Text resultScoreText;
     public Text resultRankText;
 
+    public RectTransform pauseButton;
+
     public RectTransform pausePanel;
 
     public GameObject dummyBGA;
@@ -55,6 +57,7 @@ public class InfoHandler : MonoBehaviour {
             bmsManager.OnPauseChanged += OnPauseChanged;
             bmsManager.OnChangeBackground += OnChangeBackground;
             bmsManager.OnBeatFlow += BeatFlow;
+            SetPauseButton();
         }
         if(graphDisplay) {
             if(graphHandler)
@@ -135,6 +138,7 @@ public class InfoHandler : MonoBehaviour {
                     recordsManager.CreateRecord(bmsManager);
                 }
             }
+            SetPauseButton();
         }
         if(gameStarted) {
             gameStarted = false;
@@ -142,10 +146,12 @@ public class InfoHandler : MonoBehaviour {
             pausePanel.gameObject.SetActive(false);
             dummyBGA.SetActive(bmsManager.BGAEnabled);
             bgTexture.rawImage.enabled = false;
+            SetPauseButton();
         }
         if(pauseChanged) {
             pauseChanged = false;
             pausePanel.gameObject.SetActive(bmsManager.IsPaused);
+            SetPauseButton();
         }
         if(backgroundChanged) {
             backgroundChanged = false;
@@ -189,6 +195,11 @@ public class InfoHandler : MonoBehaviour {
             ColorUtility.ToHtmlStringRGBA(
                 Color.Lerp(bpmText.color, bpmLightColor, bpmLightLerp)
             ));
+    }
+
+    void SetPauseButton() {
+        if(bmsManager && pauseButton)
+            pauseButton.gameObject.SetActive(bmsManager.IsStarted && !bmsManager.IsPaused);
     }
 
     void OnBMSLoaded() {

@@ -1257,6 +1257,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2bffae5bce90ce341b69a5e15ff4637e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  dummy: {fileID: 0}
 --- !u!114 &114000010399633924
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2270,6 +2271,7 @@ MonoBehaviour:
   resultComboText: {fileID: 114137378956917494}
   resultScoreText: {fileID: 114697469271125246}
   resultRankText: {fileID: 114922095740446376}
+  pauseButton: {fileID: 224000011480067072}
   pausePanel: {fileID: 224000013345490216}
   dummyBGA: {fileID: 0}
   bpmLightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
