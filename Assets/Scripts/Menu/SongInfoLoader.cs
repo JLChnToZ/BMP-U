@@ -375,7 +375,7 @@ public static class SongInfoLoader {
         foreach(var fileInfo in supportedFileTypes.SelectMany(filter => currentDirectory.GetFiles(filter))) {
             hasEntry = false;
             try {
-                if(!cachedEntries.TryGetValue(fileInfo.FullName, out current)) {
+                if(!(hasEntry = cachedEntries.TryGetValue(fileInfo.FullName, out current))) {
                     current = new Entry {
                         isDirectory = false,
                         songInfo = LoadBMS(fileInfo)
