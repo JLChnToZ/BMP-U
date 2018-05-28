@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace BMS {
-    public class NoteDetector:MonoBehaviour {
+    public class NoteDetector : MonoBehaviour {
         enum NoteType {
             Normal,
             LongStart,
@@ -183,7 +183,7 @@ namespace BMS {
         void HandleNoteEvent(int channel, bool isClicking, bool isDown) {
             var ch = GetChannelQueue(channel);
             var lns = GetLongNoteState(channel);
-            TimeSpan offsetPosition = bmsManager.TimePosition + endTimeOffset;
+            TimeSpan offsetPosition = bmsManager.RealTimePosition + endTimeOffset;
             KeyFrame keyFrame;
             int flag = -1;
             while(ch.Count > 0) {

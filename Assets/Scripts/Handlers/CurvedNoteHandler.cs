@@ -83,13 +83,15 @@ public class CurvedNoteHandler: NoteHandler {
 
     protected override void UpdatePosition() {
         float lerpDelay = (float)noteDetector.EndTimeOffset.TotalMilliseconds;
-        UpdateNotePos(startNoteHandler, (float)(targetTime - bmsManager.TimePosition).TotalSeconds, firstNoteClicked, true);
+        TimeSpan delta = targetTime < bmsManager.TimePosition ? targetTime - bmsManager.RealTimePosition : targetTime - bmsManager.TimePosition;
+        UpdateNotePos(startNoteHandler, delta.ToAccurateSecondF(), firstNoteClicked, true);
         if(isLongNote) {
             if(!longNoteRegistered) endTargetTime = bmsManager.TimePosition + bmsManager.PreEventOffset;
             UpdateNotePos(endNoteHander, (float)(endTargetTime - bmsManager.TimePosition).TotalSeconds, secondNoteClicked, false);
             lineRenderer.SetPosition(0, startNoteHandler.transform.position);
             lineRenderer.SetPosition(1, endNoteHander.transform.position);
-            lineRenderer.SetColors(startNoteHandler.color, endNoteHander.color);
+            lineRenderer.startColor = startNoteHandler.color;
+            lineRenderer.endColor = endNoteHander.color;
         }
     }
 
@@ -133,7 +135,7 @@ public class CurvedNoteHandler: NoteHandler {
         if(clicked || isMissed) {
             if(isFirst && isLongNote) handler.transform.localPosition = Vector3.up * offset + Vector3.forward * targetDistance;
         } else if(overTime) {
-            handler.transform.localPosition = Vector3.up * offset + Vector3.back * (targetDistance + Mathf.Abs(targetDistance - startDistance) * Mathf.Pow(delta, 0.5F) / 16);
+            handler.transform.localPosition = Vector3.up * offset + Vector3.back * (targetDistance + Mathf.Abs(targetDistance - startDistance) * Mathf.Pow(delta, 0.5F) / 64);
         } else {
             handler.transform.localPosition = Vector3.up * offset + Vector3.forward * Mathf.Lerp(startDistance, targetDistance, 1 - delta);
         }
