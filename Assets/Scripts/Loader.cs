@@ -62,7 +62,7 @@ public class Loader : SingletonBehaviour<Loader> {
         bmsManager.IsStarted = false;
         FileInfo fileInfo = new FileInfo(songPath);
         string bmsContent = SongInfoLoader.LoadFile(fileInfo);
-        bmsManager.NoteLimit = noteLimit >= 1 ? Mathf.FloorToInt(Mathf.Pow(2, 3 + noteLimit)) : 0;
+        bmsManager.NoteLimit = noteLimit > 0 ? Mathf.FloorToInt(Mathf.Pow(2, 3 + noteLimit)) : 0;
         bmsManager.DetuneEnabled = enableDetune;
         bmsManager.BGAEnabled = enableBGA;
         bmsManager.DynamicPreEventOffset = dynamicSpeed;
