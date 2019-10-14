@@ -15,9 +15,9 @@ namespace BananaBeats.Visualization {
         [BurstCompile]
         private struct Job: IJobForEach<NoteDisplay, Translation, NonUniformScale> {
             public float time;
-            [DeallocateOnJobCompletion]
+            [DeallocateOnJobCompletion, NativeDisableParallelForRestriction]
             public NativeArray<float3> refStartPos;
-            [DeallocateOnJobCompletion]
+            [DeallocateOnJobCompletion, NativeDisableParallelForRestriction]
             public NativeArray<float3> refEndPos;
 
             public void Execute([ReadOnly] ref NoteDisplay data, ref Translation translation, ref NonUniformScale nonUniformScale) {

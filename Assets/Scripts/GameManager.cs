@@ -24,6 +24,7 @@ namespace BananaBeats {
         private readonly Dictionary<int, int> longNoteIds = new Dictionary<int, int>();
 
         // Start is called before the first frame update
+
         protected void Start() {
             TestLoadBMS().Forget();
             NoteDisplayEntity.ConvertEntity(notePrefab);
