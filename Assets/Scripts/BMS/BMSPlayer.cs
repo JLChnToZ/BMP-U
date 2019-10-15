@@ -7,7 +7,7 @@ using BMS;
 namespace BananaBeats {
     public delegate void BMSEventDelegate(BMSEvent bmsEvent, object resource);
 
-    public class BMSPlayer: IDisposable {
+    public class BMSPlayer: IDisposable, IPlayerLoopItem {
 
         public BMSLoader BMSLoader { get; }
 
@@ -40,14 +40,21 @@ namespace BananaBeats {
         private readonly HashSet<BMSResource> playingResources = new HashSet<BMSResource>();
         private readonly HashSet<BMSResource> endedResources = new HashSet<BMSResource>();
         private DateTime lastUpdate;
+        private UniTask updateTask;
         private bool disposed;
 
         public BMSPlayer(BMSLoader bmsLoader) {
             BMSLoader = bmsLoader;
             timingHelper = new BMSTimingHelper(bmsLoader.Chart);
             timingHelper.EventDispatcher.BMSEvent += OnBMSEvent;
+            RegisterToPlayerLoop();
             Reset();
-            DoUpdateLoop().Forget();
+        }
+
+        private void RegisterToPlayerLoop() {
+            updateTask = UniTask.CompletedTask;
+            lastUpdate = DateTime.UtcNow;
+            PlayerLoopHelper.AddAction(PlayerLoopTiming.Update, this);
         }
 
         public virtual void Play() {
@@ -89,26 +96,25 @@ namespace BananaBeats {
             playingResources.Clear();
         }
 
-        private async UniTaskVoid DoUpdateLoop() {
-            lastUpdate = DateTime.UtcNow;
-            var task = UniTask.CompletedTask;
-            do {
-                await UniTask.Yield();
-                try {
-                    if(task.IsCompleted)
-                        task.GetResult();
-                    else
-                        await task;
-                } catch(Exception ex) {
+        bool IPlayerLoopItem.MoveNext() {
+            if(!updateTask.IsCompleted)
+                return !disposed;
+            try {
+                updateTask.GetResult();
+            } catch(Exception ex) {
 #if UNITY_EDITOR || DEBUG
-                    Debug.LogException(ex);
+                Debug.LogException(ex);
 #endif
-                }
+            }
+            try {
                 var current = DateTime.UtcNow;
                 var delta = current - lastUpdate;
                 lastUpdate = current;
-                task = Update(delta);
-            } while(!disposed);
+                updateTask = Update(delta);
+            } catch(Exception ex) {
+                updateTask = UniTask.FromException(ex);
+            }
+            return !disposed;
         }
 
         protected virtual UniTask Update(TimeSpan delta) {
