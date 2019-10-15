@@ -126,8 +126,11 @@ namespace BananaBeats {
                     playingResources.ExceptWith(endedResources);
                     endedResources.Clear();
                 }
-                if(IsPlaying)
+                if(IsPlaying) {
                     timingHelper.CurrentPosition += delta;
+                    if(timingHelper.EventDispatcher.IsEnd && playingResources.Count == 0)
+                        IsPlaying = false;
+                }
                 return UniTask.CompletedTask;
             } catch(Exception ex) {
                 return UniTask.FromException(ex);
@@ -167,8 +170,6 @@ namespace BananaBeats {
                     break;
             }
             BMSEvent?.Invoke(bmsEvent, resource);
-            if(timingHelper.EventDispatcher.IsEnd)
-                IsPlaying = false;
         }
 
         protected virtual object OnBMPEvent(BMSEvent bmsEvent) {

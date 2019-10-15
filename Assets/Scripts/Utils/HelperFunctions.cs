@@ -55,5 +55,23 @@ namespace BananaBeats.Utils {
             }
             return tempFileName;
         }
+
+        public static V GetOrDefault<K, V>(this IDictionary<K, V> dictionary, K key, V defaultValue = default, bool autoAdd = false) {
+            if(!dictionary.TryGetValue(key, out V value)) {
+                value = defaultValue;
+                if(autoAdd && !dictionary.IsReadOnly)
+                    dictionary.Add(key, value);
+            }
+            return value;
+        }
+
+        public static V GetOrConstruct<K, V>(this IDictionary<K, V> dictionary, K key, bool autoAdd = false) where V : new() {
+            if(!dictionary.TryGetValue(key, out V value)) {
+                value = new V();
+                if(autoAdd && !dictionary.IsReadOnly)
+                    dictionary.Add(key, value);
+            }
+            return value;
+        }
     }
 }

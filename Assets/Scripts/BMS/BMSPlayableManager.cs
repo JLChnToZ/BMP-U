@@ -22,6 +22,8 @@ namespace BananaBeats {
 
         public event BMSEventDelegate PreBMSEvent;
 
+        public event Action<int> OnHitNote;
+
         public BMSPlayableManager(BMSLoader bmsLoader) : base(bmsLoader) {
             PreTimingHelper = new BMSTimingHelper(timingHelper.Chart);
             PreTimingHelper.EventDispatcher.BMSEvent += OnPreBMSEvent;
@@ -41,6 +43,7 @@ namespace BananaBeats {
 
         protected override object OnNoteEvent(BMSEvent bmsEvent) {
             if(!IsChannelPlayable(bmsEvent.data1)) {
+                OnHitNote?.Invoke(bmsEvent.data1);
                 bmsEvent.type = BMSEventType.WAV;
                 return base.OnWAVEvent(bmsEvent);
             }
@@ -50,6 +53,7 @@ namespace BananaBeats {
         protected override object OnLongNoteStartEvent(BMSEvent bmsEvent) {
             if(!IsChannelPlayable(bmsEvent.data1)) {
                 longNoteSound[bmsEvent.data1] = (int)bmsEvent.data2;
+                OnHitNote?.Invoke(bmsEvent.data1);
                 bmsEvent.type = BMSEventType.WAV;
                 return base.OnWAVEvent(bmsEvent);
             }
@@ -57,10 +61,12 @@ namespace BananaBeats {
         }
 
         protected override object OnLongNoteEndEvent(BMSEvent bmsEvent) {
-            if(!IsChannelPlayable(bmsEvent.data1) &&
-                (!longNoteSound.TryGetValue(bmsEvent.data1, out int lnStartId) || lnStartId != (int)bmsEvent.data2)) {
-                bmsEvent.type = BMSEventType.WAV;
-                return base.OnWAVEvent(bmsEvent);
+            if(!IsChannelPlayable(bmsEvent.data1)) {
+                OnHitNote?.Invoke(bmsEvent.data1);
+                if(!longNoteSound.TryGetValue(bmsEvent.data1, out int lnStartId) || lnStartId != (int)bmsEvent.data2) {
+                    bmsEvent.type = BMSEventType.WAV;
+                    return base.OnWAVEvent(bmsEvent);
+                }
             }
             return base.OnLongNoteEndEvent(bmsEvent);
         }
@@ -72,6 +78,7 @@ namespace BananaBeats {
         public void HitNote(int channel, bool isDown) {
             if(!IsChannelPlayable(channel)) return;
             // TODO: Score Calculation & Play sound
+            OnHitNote?.Invoke(channel);
         }
 
         public bool IsChannelPlayable(int channelId) {
