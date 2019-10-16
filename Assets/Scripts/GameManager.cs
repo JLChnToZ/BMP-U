@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -29,15 +30,32 @@ namespace BananaBeats {
                 for(int i = 0; i < notePrefabs.Length; i++)
                     NoteDisplayManager.ConvertPrefab(notePrefabs[i], (NoteType)i);
             NoteDisplayManager.LongNoteMaterial = longNoteBodyMaterial;
-            SetTestPositions();
         }
 
-        private void SetTestPositions() {
+        private void SetTestPositions(BMSKeyLayout layout) {
             var startPos = new Vector3[20];
             var endPos = new Vector3[20];
-            for(int i = 0; i < 20; i++) {
-                startPos[i] = new Vector3((i - 10F) * 1.1F, 0, 100);
-                endPos[i] = new Vector3((i - 10F) * 1.1F, 0, 0);
+
+            var channels = new List<int>(20);
+            if((layout & ~BMSKeyLayout.Single5Key) == BMSKeyLayout.None)
+                channels.AddRange(new[] { 6, 1, 2, 3, 4, 5, });
+            else if((layout & ~BMSKeyLayout.Single7Key) == BMSKeyLayout.None)
+                channels.AddRange(new[] { 6, 1, 2, 3, 4, 5, 8, 9, });
+            else if((layout & ~BMSKeyLayout.Single9Key) == BMSKeyLayout.None)
+                channels.AddRange(new[] { 1, 2, 3, 4, 5, 12, 13, 14, 15, });
+            else if((layout & ~BMSKeyLayout.Single9KeyAlt) == BMSKeyLayout.None)
+                channels.AddRange(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, });
+            else if((layout & ~BMSKeyLayout.Duel10Key) == BMSKeyLayout.None)
+                channels.AddRange(new[] { 6, 1, 2, 3, 4, 5, 11, 12, 13, 14, 15, 16, });
+            else if((layout & ~BMSKeyLayout.Duel14Key) == BMSKeyLayout.None)
+                channels.AddRange(new[] { 6, 1, 2, 3, 4, 5, 8, 9, 11, 12, 13, 14, 15, 18, 19, 16, });
+            else
+                channels.AddRange(Enumerable.Range(0, 20));
+
+            float mid = channels.Count / 2F;
+            for(int i = 0, l = channels.Count; i < l; i++) {
+                startPos[channels[i]] = new Vector3((i - mid) * 1.1F, 0, 100);
+                endPos[channels[i]] = new Vector3((i - mid) * 1.1F, 0, 0);
             }
             NoteDisplayManager.RegisterPosition(startPos, endPos);
         }
@@ -77,6 +95,7 @@ namespace BananaBeats {
                     instaniatedBGADisplays.Add(new BGADisplay(player, renderer, bgaCfg.channel));
                 }
             Debug.Log("Start play BMS (sound only)");
+            SetTestPositions(loader.Chart.Layout);
             player.Play();
         }
 
