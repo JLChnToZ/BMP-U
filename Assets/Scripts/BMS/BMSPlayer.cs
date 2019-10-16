@@ -42,23 +42,27 @@ namespace BananaBeats {
         private DateTime lastUpdate;
         private UniTask updateTask;
         private bool disposed;
+        private bool loopRegistered;
 
         public BMSPlayer(BMSLoader bmsLoader) {
             BMSLoader = bmsLoader;
             timingHelper = new BMSTimingHelper(bmsLoader.Chart);
             timingHelper.EventDispatcher.BMSEvent += OnBMSEvent;
-            RegisterToPlayerLoop();
             Reset();
         }
 
         private void RegisterToPlayerLoop() {
+            if(disposed || loopRegistered) return;
+            loopRegistered = true;
             updateTask = UniTask.CompletedTask;
             lastUpdate = DateTime.UtcNow;
             PlayerLoopHelper.AddAction(PlayerLoopTiming.Update, this);
         }
 
         public virtual void Play() {
+            if(disposed) return;
             IsPlaying = true;
+            RegisterToPlayerLoop();
             foreach(var resource in playingResources)
                 try {
                     resource.Resume();
@@ -70,6 +74,7 @@ namespace BananaBeats {
         }
 
         public virtual void Pause() {
+            if(disposed) return;
             IsPlaying = false;
             foreach(var resource in playingResources)
                 try {
@@ -83,6 +88,7 @@ namespace BananaBeats {
 
         public virtual void Reset() {
             IsPlaying = false;
+            loopRegistered = false;
             timingHelper.Reset();
             timingHelper.EventDispatcher.Seek(TimeSpan.MinValue, false);
             foreach(var resource in playingResources)
@@ -98,7 +104,7 @@ namespace BananaBeats {
 
         bool IPlayerLoopItem.MoveNext() {
             if(!updateTask.IsCompleted)
-                return !disposed;
+                return loopRegistered && !disposed;
             try {
                 updateTask.GetResult();
             } catch(Exception ex) {
@@ -114,7 +120,7 @@ namespace BananaBeats {
             } catch(Exception ex) {
                 updateTask = UniTask.FromException(ex);
             }
-            return !disposed;
+            return loopRegistered && !disposed;
         }
 
         protected virtual UniTask Update(TimeSpan delta) {
@@ -134,9 +140,12 @@ namespace BananaBeats {
                 }
                 if(IsPlaying) {
                     timingHelper.CurrentPosition += delta;
-                    if(timingHelper.EventDispatcher.IsEnd && playingResources.Count == 0)
+                    if(timingHelper.EventDispatcher.IsEnd && playingResources.Count == 0) {
                         IsPlaying = false;
-                }
+                        loopRegistered = false;
+                    }
+                } else if(playingResources.Count == 0)
+                    loopRegistered = false;
                 return UniTask.CompletedTask;
             } catch(Exception ex) {
                 return UniTask.FromException(ex);

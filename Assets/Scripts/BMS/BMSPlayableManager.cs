@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using BananaBeats.Utils;
+using BananaBeats.Visualization;
 using BMS;
 using UniRx.Async;
-using Utils;
 
 namespace BananaBeats {
     [Serializable]
@@ -13,11 +13,20 @@ namespace BananaBeats {
     }
 
     public class BMSPlayableManager: BMSPlayer {
+        private struct NoteData {
+            public int channel;
+            public int id;
+            public NoteType noteType;
+        }
+
         public BMSKeyLayout PlayableLayout { get; set; }
 
         public TimeSpan PreOffset { get; set; } = TimeSpan.FromSeconds(3);
 
         private readonly Dictionary<int, int> longNoteSound = new Dictionary<int, int>();
+        private readonly Dictionary<int, int> longNoteIds = new Dictionary<int, int>();
+        private readonly Dictionary<int, Queue<NoteData>> noteQueues = new Dictionary<int, Queue<NoteData>>();
+
         public BMSTimingHelper PreTimingHelper { get; }
 
         public event BMSEventDelegate PreBMSEvent;
@@ -31,7 +40,13 @@ namespace BananaBeats {
         }
 
         protected override async UniTask Update(TimeSpan delta) {
-            await base.Update(delta);
+            if(IsPlaying)
+                NoteDisplayScroll.time = timingHelper.CurrentPosition.ToAccurateSecondF();
+            var task = base.Update(delta);
+            if(!task.IsCompleted)
+                await task;
+            else
+                task.GetResult();
             if(IsPlaying)
                 PreTimingHelper.CurrentPosition = timingHelper.CurrentPosition + PreOffset;
         }
@@ -39,11 +54,13 @@ namespace BananaBeats {
         public override void Reset() {
             base.Reset();
             PreTimingHelper?.Reset();
+            noteQueues.Clear();
+            NoteDisplayManager.Clear();
         }
 
         protected override object OnNoteEvent(BMSEvent bmsEvent) {
             if(!IsChannelPlayable(bmsEvent.data1)) {
-                OnHitNote?.Invoke(bmsEvent.data1);
+                HitNote(bmsEvent.data1);
                 bmsEvent.type = BMSEventType.WAV;
                 return base.OnWAVEvent(bmsEvent);
             }
@@ -53,7 +70,7 @@ namespace BananaBeats {
         protected override object OnLongNoteStartEvent(BMSEvent bmsEvent) {
             if(!IsChannelPlayable(bmsEvent.data1)) {
                 longNoteSound[bmsEvent.data1] = (int)bmsEvent.data2;
-                OnHitNote?.Invoke(bmsEvent.data1);
+                HitNote(bmsEvent.data1);
                 bmsEvent.type = BMSEventType.WAV;
                 return base.OnWAVEvent(bmsEvent);
             }
@@ -62,7 +79,7 @@ namespace BananaBeats {
 
         protected override object OnLongNoteEndEvent(BMSEvent bmsEvent) {
             if(!IsChannelPlayable(bmsEvent.data1)) {
-                OnHitNote?.Invoke(bmsEvent.data1);
+                HitNote(bmsEvent.data1);
                 if(!longNoteSound.TryGetValue(bmsEvent.data1, out int lnStartId) || lnStartId != (int)bmsEvent.data2) {
                     bmsEvent.type = BMSEventType.WAV;
                     return base.OnWAVEvent(bmsEvent);
@@ -71,13 +88,85 @@ namespace BananaBeats {
             return base.OnLongNoteEndEvent(bmsEvent);
         }
 
+        protected override object OnUnknownEvent(BMSEvent bmsEvent) {
+            if(bmsEvent.data1 > 30 && bmsEvent.data1 < 50)
+                HitNote(bmsEvent.data1);
+            return base.OnUnknownEvent(bmsEvent);
+        }
+
         private void OnPreBMSEvent(BMSEvent bmsEvent) {
+            int channel = (bmsEvent.data1 - 10) % 20;
+            var bpmScale = PreTimingHelper.BPM / 135F;
+            switch(bmsEvent.type) {
+                case BMSEventType.Note: {
+                    int id = NoteDisplayManager.Spawn(channel, bmsEvent.time, NoteType.Normal, bpmScale);
+                    noteQueues.GetOrConstruct(channel, true).Enqueue(new NoteData {
+                        channel = channel,
+                        id = id,
+                        noteType = NoteType.Normal,
+                    });
+                    break;
+                }
+                case BMSEventType.LongNoteStart: {
+                    int id = NoteDisplayManager.Spawn(channel, bmsEvent.time, NoteType.LongStart, bpmScale);
+                    longNoteIds[channel] = id;
+                    noteQueues.GetOrConstruct(channel, true).Enqueue(new NoteData {
+                        channel = channel,
+                        id = id,
+                        noteType = NoteType.LongStart,
+                    });
+                    break;
+                }
+                case BMSEventType.LongNoteEnd: {
+                    if(longNoteIds.TryGetValue(channel, out int id)) {
+                        NoteDisplayManager.SetEndNoteTime(id, bmsEvent.time, bpmScale);
+                        noteQueues.GetOrConstruct(channel, true).Enqueue(new NoteData {
+                            channel = channel,
+                            id = id,
+                            noteType = NoteType.LongEnd,
+                        });
+                    } else
+                        UnityEngine.Debug.LogWarning($"Unknown long note end channel {channel} ({bmsEvent.data1})");
+                    break;
+                }
+                case BMSEventType.Unknown: {
+                    if(bmsEvent.data1 > 30 && bmsEvent.data1 < 50) {
+                        int id = NoteDisplayManager.Spawn(channel, bmsEvent.time, NoteType.Fake, bpmScale);
+                        noteQueues.GetOrConstruct(channel, true).Enqueue(new NoteData {
+                            channel = channel,
+                            id = id,
+                            noteType = NoteType.Fake,
+                        });
+                    }
+                    break;
+                }
+            }
             PreBMSEvent?.Invoke(bmsEvent, null);
         }
 
         public void HitNote(int channel, bool isDown) {
             if(!IsChannelPlayable(channel)) return;
             // TODO: Score Calculation & Play sound
+            HitNote(channel);
+        }
+
+        private void HitNote(int channel) {
+            channel = (channel - 10) % 20;
+            var noteData = noteQueues.GetOrConstruct(channel, true).Dequeue();
+            switch(noteData.noteType) {
+                case NoteType.Normal:
+                case NoteType.Fake:
+                    NoteDisplayManager.HitNote(noteData.id, false);
+                    NoteDisplayManager.Destroy(noteData.id);
+                    break;
+                case NoteType.LongStart:
+                    NoteDisplayManager.HitNote(noteData.id, false);
+                    break;
+                case NoteType.LongEnd:
+                    NoteDisplayManager.HitNote(noteData.id, true);
+                    NoteDisplayManager.Destroy(noteData.id);
+                    break;
+            }
             OnHitNote?.Invoke(channel);
         }
 
