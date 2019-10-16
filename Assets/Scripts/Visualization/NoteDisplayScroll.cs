@@ -5,6 +5,7 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
 using Unity.Collections;
+using E7.ECS.LineRenderer;
 
 namespace BananaBeats.Visualization {
     public class NoteDisplayScroll: JobComponentSystem {
@@ -27,7 +28,7 @@ namespace BananaBeats.Visualization {
         }
 
         [BurstCompile, ExcludeComponent(typeof(FadeOut))]
-        private struct ScrollLongNotes: IJobForEach<LongNoteDisplay, Translation, NonUniformScale, Rotation> {
+        private struct ScrollLongNotes: IJobForEach<LongNoteDisplay, LineSegment> {
             public float fixedEndtime;
             public float time;
             [NativeDisableParallelForRestriction, DeallocateOnJobCompletion]
@@ -35,17 +36,15 @@ namespace BananaBeats.Visualization {
             [NativeDisableParallelForRestriction, DeallocateOnJobCompletion]
             public NativeArray<float3> refEndPos;
 
-            public void Execute([ReadOnly] ref LongNoteDisplay data, ref Translation translation, ref NonUniformScale nonUniformScale, ref Rotation rotation) {
-                var scale = nonUniformScale.Value;
+            public void Execute([ReadOnly] ref LongNoteDisplay data, ref LineSegment line) {
+                // var scale = nonUniformScale.Value;
                 var scaledPos1 = (data.pos1 - time) * data.scale1;
-                var scaledPos2 = (data.pos2 >= data.pos1 ? data.pos2 - time : fixedEndtime) * data.scale2;
+                var scaledPos2 = data.pos2 >= data.pos1 ? (data.pos2 - time) * data.scale2 : fixedEndtime;
                 if(data.catched && scaledPos1 < 0) scaledPos1 = 0;
                 var startPos = refStartPos[data.channel];
                 var endPos = refEndPos[data.channel];
-                translation.Value = math.lerp(endPos, startPos, (scaledPos1 + scaledPos2) / 2F);
-                scale.z = math.abs(scaledPos1 - scaledPos2);
-                rotation.Value = quaternion.LookRotation(math.normalize(endPos - startPos), math.up());
-                nonUniformScale.Value = scale;
+                line.from = math.lerp(endPos, startPos, scaledPos1);
+                line.to = math.lerp(endPos, startPos, scaledPos2);
             }
         }
 

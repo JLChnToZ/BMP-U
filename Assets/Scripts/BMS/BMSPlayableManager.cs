@@ -40,8 +40,11 @@ namespace BananaBeats {
         }
 
         protected override async UniTask Update(TimeSpan delta) {
-            if(IsPlaying)
-                NoteDisplayScroll.time = timingHelper.CurrentPosition.ToAccurateSecondF();
+            if(IsPlaying) {
+                var pos1 = timingHelper.CurrentPosition;
+                var pos2 = timingHelper.StopResumePosition;
+                NoteDisplayScroll.time = (pos1 > pos2 ? pos1 : pos2).ToAccurateSecondF();
+            }
             var task = base.Update(delta);
             if(!task.IsCompleted)
                 await task;

@@ -6,6 +6,8 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
 using Unity.Collections;
+using Unity.Rendering;
+using E7.ECS.LineRenderer;
 
 namespace BananaBeats.Visualization {
     public struct NoteDisplay: IComponentData {
@@ -48,6 +50,18 @@ namespace BananaBeats.Visualization {
         private static readonly Dictionary<NoteType, Entity> prefabs = new Dictionary<NoteType, Entity>();
         private static readonly Dictionary<int, NoteEntiyInstance> instances = new Dictionary<int, NoteEntiyInstance>();
 
+        public static Material LongNoteMaterial { get; set; }
+
+        public static float LongNoteLineWidth { get; set; } = 1;
+
+        private static readonly Lazy<EntityArchetype> longNoteBodyArchetype = new Lazy<EntityArchetype>(
+            () => World.EntityManager.CreateArchetype(
+                typeof(LineSegment),
+                typeof(LineStyle),
+                typeof(LongNoteDisplay)
+            )
+        );
+
         private static int nextId;
 
         private static World world;
@@ -73,7 +87,7 @@ namespace BananaBeats.Visualization {
                     break;
                 case NoteType.LongStart:
                     entityInstance.noteStart = entityManager.Instantiate(prefabs[NoteType.LongStart]);
-                    entityInstance.longNoteBody = entityManager.Instantiate(prefabs[NoteType.LongBody]);
+                    entityInstance.longNoteBody = entityManager.CreateEntity(longNoteBodyArchetype.Value);
                     entityInstance.hasLongNoteBody = true;
                     break;
                 case NoteType.Fake:
@@ -88,14 +102,17 @@ namespace BananaBeats.Visualization {
                 scale = scale,
             });
             if(entityInstance.hasLongNoteBody) {
-                entityManager.AddComponentData(entityInstance.longNoteBody, new NonUniformScale {
-                    Value = new float3(1),
-                });
-                entityManager.AddComponentData(entityInstance.longNoteBody, new LongNoteDisplay {
+                entityManager.SetComponentData(entityInstance.longNoteBody, new LongNoteDisplay {
                     channel = channel,
                     pos1 = pos,
                     pos2 = pos - 1,
                     scale1 = scale,
+                });
+                entityManager.SetSharedComponentData(entityInstance.longNoteBody, new LineStyle {
+                    material = LongNoteMaterial,
+                });
+                entityManager.SetComponentData(entityInstance.longNoteBody, new LineSegment {
+                    lineWidth = LongNoteLineWidth,
                 });
             }
             int id = nextId++;
@@ -104,56 +121,56 @@ namespace BananaBeats.Visualization {
         }
 
         public static void SetEndNoteTime(int id, TimeSpan time, float scale = 1) {
-            if(!instances.TryGetValue(id, out var entiyInstance) || !entiyInstance.hasLongNoteBody || entiyInstance.hasNoteEnd)
+            if(!instances.TryGetValue(id, out var entityInstance) || !entityInstance.hasLongNoteBody || entityInstance.hasNoteEnd)
                 return;
             var entityManager = World.EntityManager;
-            var data = entityManager.GetComponentData<LongNoteDisplay>(entiyInstance.longNoteBody);
+            var data = entityManager.GetComponentData<LongNoteDisplay>(entityInstance.longNoteBody);
             var pos = (float)time.Ticks / TimeSpan.TicksPerSecond;
             data.pos2 = pos;
             data.scale2 = scale;
-            entityManager.SetComponentData(entiyInstance.longNoteBody, data);
-            entiyInstance.noteEnd = entityManager.Instantiate(prefabs[NoteType.LongEnd]);
-            entiyInstance.hasNoteEnd = true;
-            entityManager.AddComponentData(entiyInstance.noteEnd, new NoteDisplay {
+            entityManager.SetComponentData(entityInstance.longNoteBody, data);
+            entityInstance.noteEnd = entityManager.Instantiate(prefabs[NoteType.LongEnd]);
+            entityInstance.hasNoteEnd = true;
+            entityManager.AddComponentData(entityInstance.noteEnd, new NoteDisplay {
                 channel = data.channel,
                 pos = pos,
                 scale = scale,
             });
-            instances[id] = entiyInstance;
+            instances[id] = entityInstance;
         }
 
         public static void HitNote(int id, bool isEnd) {
-            if(!instances.TryGetValue(id, out var entiyInstance))
+            if(!instances.TryGetValue(id, out var entityInstance))
                 return;
             var entityManager = World.EntityManager;
             NoteDisplay noteDisplay;
             LongNoteDisplay longNoteDisplay;
             {
-                noteDisplay = entityManager.GetComponentData<NoteDisplay>(entiyInstance.noteStart);
+                noteDisplay = entityManager.GetComponentData<NoteDisplay>(entityInstance.noteStart);
                 noteDisplay.catched = true;
-                entityManager.SetComponentData(entiyInstance.noteStart, noteDisplay);
+                entityManager.SetComponentData(entityInstance.noteStart, noteDisplay);
             }
-            if(entiyInstance.hasLongNoteBody) {
-                longNoteDisplay = entityManager.GetComponentData<LongNoteDisplay>(entiyInstance.longNoteBody);
+            if(entityInstance.hasLongNoteBody) {
+                longNoteDisplay = entityManager.GetComponentData<LongNoteDisplay>(entityInstance.longNoteBody);
                 longNoteDisplay.catched = true;
-                entityManager.SetComponentData(entiyInstance.longNoteBody, longNoteDisplay);
+                entityManager.SetComponentData(entityInstance.longNoteBody, longNoteDisplay);
             }
-            if(isEnd && entiyInstance.hasNoteEnd) {
-                noteDisplay = entityManager.GetComponentData<NoteDisplay>(entiyInstance.noteEnd);
+            if(isEnd && entityInstance.hasNoteEnd) {
+                noteDisplay = entityManager.GetComponentData<NoteDisplay>(entityInstance.noteEnd);
                 noteDisplay.catched = true;
-                entityManager.SetComponentData(entiyInstance.noteEnd, noteDisplay);
+                entityManager.SetComponentData(entityInstance.noteEnd, noteDisplay);
             }
         }
 
         public static void Destroy(int id) {
-            if(!instances.TryGetValue(id, out var entiyInstance))
+            if(!instances.TryGetValue(id, out var entityInstance))
                 return;
             var entityManager = World.EntityManager;
-            SetFadeOut(ref entiyInstance.noteStart, entityManager);
-            if(entiyInstance.hasLongNoteBody)
-                SetFadeOut(ref entiyInstance.longNoteBody, entityManager);
-            if(entiyInstance.hasNoteEnd)
-                SetFadeOut(ref entiyInstance.noteEnd, entityManager);
+            SetFadeOut(ref entityInstance.noteStart, entityManager);
+            if(entityInstance.hasLongNoteBody)
+                entityManager.DestroyEntity(entityInstance.longNoteBody);
+            if(entityInstance.hasNoteEnd)
+                SetFadeOut(ref entityInstance.noteEnd, entityManager);
             instances.Remove(id);
         }
 

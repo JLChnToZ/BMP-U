@@ -16,7 +16,8 @@ namespace BananaBeats {
         private BMSLoader loader;
         private BMSPlayableManager player;
 
-        public GameObject notePrefab;
+        public GameObject[] notePrefabs;
+        public Material longNoteBodyMaterial;
 
         public BGAConfig[] bgaConfigs;
 
@@ -24,11 +25,10 @@ namespace BananaBeats {
 
         protected void Start() {
             TestLoadBMS().Forget();
-            NoteDisplayManager.ConvertPrefab(notePrefab, NoteType.Normal);
-            NoteDisplayManager.ConvertPrefab(notePrefab, NoteType.LongStart);
-            NoteDisplayManager.ConvertPrefab(notePrefab, NoteType.LongEnd);
-            NoteDisplayManager.ConvertPrefab(notePrefab, NoteType.LongBody);
-            NoteDisplayManager.ConvertPrefab(notePrefab, NoteType.Fake);
+            if(notePrefabs != null)
+                for(int i = 0; i < notePrefabs.Length; i++)
+                    NoteDisplayManager.ConvertPrefab(notePrefabs[i], (NoteType)i);
+            NoteDisplayManager.LongNoteMaterial = longNoteBodyMaterial;
             SetTestPositions();
         }
 
