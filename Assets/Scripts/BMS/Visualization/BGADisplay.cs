@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using BMS;
 using BananaBeats;
+
 namespace BananaBeats.Visualization {
     public class BGADisplay: IDisposable {
         private bool enabled = true;

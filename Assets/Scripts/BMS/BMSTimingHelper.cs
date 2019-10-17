@@ -77,7 +77,7 @@ namespace BananaBeats {
         }
 
         public void Reset() {
-            CurrentPosition = StartPosition;
+            currentPosition = StartPosition;
             StopResumePosition = StartPosition;
             BPMBasePosition = StartPosition;
             TimeSignature = 4;

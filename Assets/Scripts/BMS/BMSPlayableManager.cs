@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using BananaBeats.Utils;
 using BananaBeats.Visualization;
+using BananaBeats.Layouts;
 using BMS;
 using UniRx.Async;
 
@@ -13,6 +14,49 @@ namespace BananaBeats {
     }
 
     public class BMSPlayableManager: BMSPlayer {
+        private class DeferHitNote: IPlayerLoopItem, IDisposable {
+            private readonly Queue<NoteData> deferHitNoteBuffer = new Queue<NoteData>();
+            private bool disposed = false;
+
+            public DeferHitNote() {
+                PlayerLoopHelper.AddAction(PlayerLoopTiming.PreLateUpdate, this);
+            }
+
+            public void Enqueue(NoteData noteData) {
+                deferHitNoteBuffer.Enqueue(noteData);
+            }
+
+            public bool MoveNext() {
+                while(deferHitNoteBuffer.Count > 0) {
+                    try {
+                        var noteData = deferHitNoteBuffer.Dequeue();
+                        switch(noteData.noteType) {
+                            case NoteType.Normal:
+                            case NoteType.Fake:
+                                NoteDisplayManager.HitNote(noteData.id, false);
+                                NoteDisplayManager.Destroy(noteData.id);
+                                break;
+                            case NoteType.LongStart:
+                                NoteDisplayManager.HitNote(noteData.id, false);
+                                break;
+                            case NoteType.LongEnd:
+                                NoteDisplayManager.HitNote(noteData.id, true);
+                                NoteDisplayManager.Destroy(noteData.id);
+                                break;
+                        }
+                    } catch(Exception ex) {
+                        UnityEngine.Debug.LogException(ex);
+                    }
+                }
+                return !disposed;
+            }
+
+            public void Dispose() {
+                disposed = true;
+            }
+        }
+
+
         private struct NoteData {
             public int channel;
             public int id;
@@ -26,6 +70,8 @@ namespace BananaBeats {
         private readonly Dictionary<int, int> longNoteSound = new Dictionary<int, int>();
         private readonly Dictionary<int, int> longNoteIds = new Dictionary<int, int>();
         private readonly Dictionary<int, Queue<NoteData>> noteQueues = new Dictionary<int, Queue<NoteData>>();
+        private DeferHitNote deferHitNote;
+
 
         public BMSTimingHelper PreTimingHelper { get; }
 
@@ -37,6 +83,12 @@ namespace BananaBeats {
             PreTimingHelper = new BMSTimingHelper(timingHelper.Chart);
             PreTimingHelper.EventDispatcher.BMSEvent += OnPreBMSEvent;
             PlayableLayout = timingHelper.Chart.Layout;
+        }
+        public override void Play() {
+            NoteLayoutManager.SetLayout(BMSLoader.Chart.Layout);
+            if(deferHitNote == null)
+                deferHitNote = new DeferHitNote();
+            base.Play();
         }
 
         protected override async UniTask Update(TimeSpan delta) {
@@ -58,6 +110,10 @@ namespace BananaBeats {
             base.Reset();
             PreTimingHelper?.Reset();
             noteQueues.Clear();
+            if(deferHitNote != null) {
+                deferHitNote.Dispose();
+                deferHitNote = null;
+            }
             NoteDisplayManager.Clear();
         }
 
@@ -155,21 +211,7 @@ namespace BananaBeats {
 
         private void HitNote(int channel) {
             channel = (channel - 10) % 20;
-            var noteData = noteQueues.GetOrConstruct(channel, true).Dequeue();
-            switch(noteData.noteType) {
-                case NoteType.Normal:
-                case NoteType.Fake:
-                    NoteDisplayManager.HitNote(noteData.id, false);
-                    NoteDisplayManager.Destroy(noteData.id);
-                    break;
-                case NoteType.LongStart:
-                    NoteDisplayManager.HitNote(noteData.id, false);
-                    break;
-                case NoteType.LongEnd:
-                    NoteDisplayManager.HitNote(noteData.id, true);
-                    NoteDisplayManager.Destroy(noteData.id);
-                    break;
-            }
+            deferHitNote.Enqueue(noteQueues.GetOrConstruct(channel, true).Dequeue());
             OnHitNote?.Invoke(channel);
         }
 

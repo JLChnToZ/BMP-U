@@ -1,30 +1,27 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
-using Unity.Collections;
-using Unity.Rendering;
 using E7.ECS.LineRenderer;
 
 namespace BananaBeats.Visualization {
     public struct NoteDisplay: IComponentData {
         public int channel;
-        public bool catched;
         public float pos;
         public float scale;
     }
 
     public struct LongNoteDisplay: IComponentData {
         public int channel;
-        public bool catched;
         public float pos1;
         public float pos2;
         public float scale1;
         public float scale2;
     }
+
+    public struct Catched: IComponentData { }
 
     public struct FadeOut: IComponentData {
         public float life;
@@ -143,23 +140,11 @@ namespace BananaBeats.Visualization {
             if(!instances.TryGetValue(id, out var entityInstance))
                 return;
             var entityManager = World.EntityManager;
-            NoteDisplay noteDisplay;
-            LongNoteDisplay longNoteDisplay;
-            {
-                noteDisplay = entityManager.GetComponentData<NoteDisplay>(entityInstance.noteStart);
-                noteDisplay.catched = true;
-                entityManager.SetComponentData(entityInstance.noteStart, noteDisplay);
-            }
-            if(entityInstance.hasLongNoteBody) {
-                longNoteDisplay = entityManager.GetComponentData<LongNoteDisplay>(entityInstance.longNoteBody);
-                longNoteDisplay.catched = true;
-                entityManager.SetComponentData(entityInstance.longNoteBody, longNoteDisplay);
-            }
-            if(isEnd && entityInstance.hasNoteEnd) {
-                noteDisplay = entityManager.GetComponentData<NoteDisplay>(entityInstance.noteEnd);
-                noteDisplay.catched = true;
-                entityManager.SetComponentData(entityInstance.noteEnd, noteDisplay);
-            }
+            SetCatched(ref entityInstance.noteStart, entityManager);
+            if(entityInstance.hasLongNoteBody)
+                SetCatched(ref entityInstance.longNoteBody, entityManager);
+            if(isEnd && entityInstance.hasNoteEnd)
+                SetCatched(ref entityInstance.noteEnd, entityManager);
         }
 
         public static void Destroy(int id) {
@@ -177,8 +162,10 @@ namespace BananaBeats.Visualization {
         public static void Clear() {
             instances.Clear();
             var entityManager = World.EntityManager;
-            entityManager.DestroyEntity(entityManager.CreateEntityQuery(typeof(NoteDisplay)));
-            entityManager.DestroyEntity(entityManager.CreateEntityQuery(typeof(LongNoteDisplay)));
+            if(entityManager != null && entityManager.IsCreated) {
+                entityManager.DestroyEntity(entityManager.CreateEntityQuery(typeof(NoteDisplay)));
+                entityManager.DestroyEntity(entityManager.CreateEntityQuery(typeof(LongNoteDisplay)));
+            }
         }
 
         private static void SetFadeOut(ref Entity entity, EntityManager entityManager = null) {
@@ -188,6 +175,13 @@ namespace BananaBeats.Visualization {
                 entityManager.AddComponentData(entity, new NonUniformScale { Value = new float3(1) });
             if(!entityManager.HasComponent<FadeOut>(entity))
                 entityManager.AddComponent<FadeOut>(entity);
+        }
+
+        private static void SetCatched(ref Entity entity, EntityManager entityManager = null) {
+            if(entityManager == null)
+                entityManager = World.EntityManager;
+            if(!entityManager.HasComponent<Catched>(entity))
+                entityManager.AddComponent<Catched>(entity);
         }
 
         public static void RegisterPosition(Vector3[] refStartPos, Vector3[] refEndPos) {

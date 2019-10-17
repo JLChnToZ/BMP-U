@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3707b5adb94995749946bad96960aae1, type: 3}
+  m_Name: Default Appearance
+  m_EditorClassIdentifier: 
+  notePrefabs:
+  - noteType: 0
+    prefab: {fileID: 4106850488725643669, guid: 09e9436f3565d204384a0f3dee151901,
+      type: 3}
+  - noteType: 1
+    prefab: {fileID: 4106850488725643669, guid: 09e9436f3565d204384a0f3dee151901,
+      type: 3}
+  - noteType: 3
+    prefab: {fileID: 4106850488725643669, guid: 09e9436f3565d204384a0f3dee151901,
+      type: 3}
+  - noteType: 4
+    prefab: {fileID: 4106850488725643669, guid: d29752c337593464fb72c3ab98868a12,
+      type: 3}
+  longNoteBodyMaterial: {fileID: 2100000, guid: e1b2e110a53631b45836e54b24b9b30b,
+    type: 2}
+  longNoteBodyLineWidth: 0.8
+  laneMaterial: {fileID: 2100000, guid: 8c72d53a6c87fcc4d8ec3c74f5a60323, type: 2}
+  laneLineWidth: 0.05
