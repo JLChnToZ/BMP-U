@@ -16,6 +16,7 @@ namespace BananaBeats.Visualization {
         private Vector2 textureTransform;
         private bool isCropped;
         private readonly Transform rendererTransform;
+        private readonly MaterialPropertyBlock propertyBlock;
         private const float MAX_RESOLUTION = 256;
 
         public int Channel { get; }
@@ -37,6 +38,7 @@ namespace BananaBeats.Visualization {
             Player = player;
             Renderer = renderer;
             rendererTransform = renderer.transform;
+            propertyBlock = new MaterialPropertyBlock();
             player.BMSEvent += BMSEvent;
             renderer.enabled = false;
         }
@@ -96,13 +98,13 @@ namespace BananaBeats.Visualization {
             );
             if(textureOffset.y == 0 && textureTransform.y < 0)
                 textureOffset.y = 1;
-            var mat = Renderer.sharedMaterial;
-            mat.mainTexture = texture;
-            mat.mainTextureOffset = textureOffset;
-            mat.mainTextureScale = new Vector2(
+            propertyBlock.SetTexture("_MainTex", texture);
+            propertyBlock.SetVector("_MainTex_ST", new Vector4(
                 clipArea.width / textureSize.x * textureTransform.x,
-                clipArea.height / textureSize.y * textureTransform.y
-            );
+                clipArea.height / textureSize.y * textureTransform.y,
+                textureOffset.x, textureOffset.y
+            ));
+            Renderer.SetPropertyBlock(propertyBlock);
             if(isCropped) {
                 rendererTransform.localScale = new Vector3(textureSize.x / textureSize.y, 1, 1);
                 rendererTransform.localPosition = Vector3.forward * rendererTransform.localPosition.z;

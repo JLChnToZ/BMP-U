@@ -12,12 +12,8 @@ namespace BananaBeats.Visualization {
             if(player == this.player) return;
             if(bgaConfigs != null) {
                 Clear();
-                foreach(var bgaCfg in bgaConfigs) {
-                    var renderer = bgaCfg.renderer;
-                    var material = renderer.sharedMaterial;
-                    renderer.material = Instantiate(material);
-                    instaniatedBGADisplays.Add(new BGADisplay(player, renderer, bgaCfg.channel));
-                }
+                foreach(var bgaCfg in bgaConfigs)
+                    instaniatedBGADisplays.Add(new BGADisplay(player, bgaCfg.renderer, bgaCfg.channel));
                 this.player = player;
             }
         }

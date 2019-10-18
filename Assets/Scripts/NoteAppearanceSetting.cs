@@ -15,6 +15,8 @@ namespace BananaBeats.Configs {
         public float longNoteBodyLineWidth = 1;
         public Material laneMaterial;
         public float laneLineWidth = 0.1F;
+        public float dropFrom = 10F;
+        public float dropSpeed = 10F;
 
         protected void OnEnable() => Init();
 
@@ -23,6 +25,8 @@ namespace BananaBeats.Configs {
                 foreach(var m in notePrefabs)
                     NoteDisplayManager.ConvertPrefab(m.prefab, m.noteType);
             NoteDisplayManager.LongNoteMaterial = longNoteBodyMaterial;
+            NoteDisplayManager.DropFrom = dropFrom;
+            EntityDropSystem.scale = dropSpeed;
             NoteLaneManager.LaneMaterial = laneMaterial;
             NoteLaneManager.LaneLineWidth = laneLineWidth;
         }

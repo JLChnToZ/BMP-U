@@ -30,3 +30,5 @@ MonoBehaviour:
   longNoteBodyLineWidth: 0.8
   laneMaterial: {fileID: 2100000, guid: 8c72d53a6c87fcc4d8ec3c74f5a60323, type: 2}
   laneLineWidth: 0.05
+  dropFrom: 250
+  dropSpeed: 5

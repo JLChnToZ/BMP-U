@@ -8,105 +8,135 @@ using Unity.Collections;
 using E7.ECS.LineRenderer;
 
 namespace BananaBeats.Visualization {
+    [UpdateInGroup(typeof(SimulationSystemGroup)), UpdateBefore(typeof(EntityDropSystem))]
     public class NoteDisplayScroll: JobComponentSystem {
         public static float time;
+        public static float fixedEndTimePos = 10F;
         public static float3[] refStartPos, refEndPos;
 
         [BurstCompile, ExcludeComponent(typeof(Catched))]
-        private struct ScrollNormalNotes: IJobForEach<NoteDisplay, Translation> {
+        private struct ScrollNormalNotes: IJobForEach<Note, NoteDisplay, Translation> {
             public float time;
             [NativeDisableParallelForRestriction, DeallocateOnJobCompletion]
             public NativeArray<float3> refStartPos;
             [NativeDisableParallelForRestriction, DeallocateOnJobCompletion]
             public NativeArray<float3> refEndPos;
 
-            public void Execute([ReadOnly] ref NoteDisplay data, ref Translation translation) {
-                var scaledPos = (data.pos - time) * data.scale;
-                translation.Value = math.lerp(refEndPos[data.channel], refStartPos[data.channel], scaledPos);
-            }
+            public void Execute([ReadOnly] ref Note note, [ReadOnly] ref NoteDisplay pos, ref Translation translation) =>
+                translation.Value = math.lerp(refEndPos[note.channel], refStartPos[note.channel], (pos.pos - time) * pos.scale);
         }
 
         [BurstCompile, RequireComponentTag(typeof(Catched)), ExcludeComponent(typeof(FadeOut))]
-        private struct ScrollCatchedNormalNotes: IJobForEach<NoteDisplay, Translation> {
+        private struct ScrollCatchedNormalNotes: IJobForEach<Note, NoteDisplay, Translation> {
             public float time;
             [NativeDisableParallelForRestriction, DeallocateOnJobCompletion]
             public NativeArray<float3> refStartPos;
             [NativeDisableParallelForRestriction, DeallocateOnJobCompletion]
             public NativeArray<float3> refEndPos;
 
-            public void Execute([ReadOnly] ref NoteDisplay data, ref Translation translation) {
-                var scaledPos = (data.pos - time) * data.scale;
-                if(scaledPos < 0) scaledPos = 0;
-                translation.Value = math.lerp(refEndPos[data.channel], refStartPos[data.channel], scaledPos);
-            }
+            public void Execute([ReadOnly] ref Note note, [ReadOnly] ref NoteDisplay pos, ref Translation translation) =>
+                translation.Value = math.lerp(refEndPos[note.channel], refStartPos[note.channel], math.max(0, (pos.pos - time) * pos.scale));
         }
 
         [BurstCompile, ExcludeComponent(typeof(Catched))]
-        private struct ScrollLongNotes: IJobForEach<LongNoteDisplay, LineSegment> {
-            public float fixedEndtime;
+        private struct ScrollLongNoteStart: IJobForEach<Note, LongNoteStart, LineSegment> {
             public float time;
             [NativeDisableParallelForRestriction, DeallocateOnJobCompletion]
             public NativeArray<float3> refStartPos;
             [NativeDisableParallelForRestriction, DeallocateOnJobCompletion]
             public NativeArray<float3> refEndPos;
 
-            public void Execute([ReadOnly] ref LongNoteDisplay data, ref LineSegment line) {
-                var startPos = refStartPos[data.channel];
-                var endPos = refEndPos[data.channel];
-                line.from = math.lerp(endPos, startPos, (data.pos1 - time) * data.scale1);
-                line.to = math.lerp(endPos, startPos, data.pos2 >= data.pos1 ? (data.pos2 - time) * data.scale2 : fixedEndtime);
-            }
+            public void Execute([ReadOnly] ref Note note, [ReadOnly] ref LongNoteStart pos, ref LineSegment line) =>
+                line.from = math.lerp(refStartPos[note.channel], refEndPos[note.channel], (pos.pos - time) * pos.scale);
+        }
+
+        [BurstCompile, ExcludeComponent(typeof(LongNoteEnd))]
+        private struct ScrollLongNoteNoEnd: IJobForEach<Note, LineSegment> {
+            public float endPos;
+            [NativeDisableParallelForRestriction, DeallocateOnJobCompletion]
+            public NativeArray<float3> refStartPos;
+            [NativeDisableParallelForRestriction, DeallocateOnJobCompletion]
+            public NativeArray<float3> refEndPos;
+
+            public void Execute([ReadOnly] ref Note note, ref LineSegment line) =>
+                line.from = math.lerp(refStartPos[note.channel], refEndPos[note.channel], endPos);
+        }
+
+        [BurstCompile]
+        private struct ScrollLongNoteEnd: IJobForEach<Note, LongNoteEnd, LineSegment> {
+            public float time;
+            [NativeDisableParallelForRestriction, DeallocateOnJobCompletion]
+            public NativeArray<float3> refStartPos;
+            [NativeDisableParallelForRestriction, DeallocateOnJobCompletion]
+            public NativeArray<float3> refEndPos;
+
+            public void Execute([ReadOnly] ref Note note, [ReadOnly] ref LongNoteEnd pos, ref LineSegment line) =>
+                line.to = math.lerp(refStartPos[note.channel], refEndPos[note.channel], (pos.pos - time) * pos.scale);
         }
 
         [BurstCompile, RequireComponentTag(typeof(Catched)), ExcludeComponent(typeof(FadeOut))]
-        private struct ScrollCatchedLongNotes: IJobForEach<LongNoteDisplay, LineSegment> {
-            public float fixedEndtime;
+        private struct ScrollCatchedLongNoteStart: IJobForEach<Note, LongNoteStart, LineSegment> {
             public float time;
             [NativeDisableParallelForRestriction, DeallocateOnJobCompletion]
             public NativeArray<float3> refStartPos;
             [NativeDisableParallelForRestriction, DeallocateOnJobCompletion]
             public NativeArray<float3> refEndPos;
 
-            public void Execute([ReadOnly] ref LongNoteDisplay data, ref LineSegment line) {
-                var scaledPos1 = (data.pos1 - time) * data.scale1;
-                var scaledPos2 = data.pos2 >= data.pos1 ? (data.pos2 - time) * data.scale2 : fixedEndtime;
-                if(scaledPos1 < 0) scaledPos1 = 0;
-                var startPos = refStartPos[data.channel];
-                var endPos = refEndPos[data.channel];
-                line.from = math.lerp(endPos, startPos, scaledPos1);
-                line.to = math.lerp(endPos, startPos, scaledPos2);
-            }
+            public void Execute([ReadOnly] ref Note note, [ReadOnly] ref LongNoteStart pos, ref LineSegment line) =>
+                line.from = math.lerp(refStartPos[note.channel], refEndPos[note.channel], math.max(0, (pos.pos - time) * pos.scale));
         }
 
         protected override JobHandle OnUpdate(JobHandle inputDeps) {
-            if(refStartPos == null|| refEndPos == null)
+            if(refStartPos == null || refEndPos == null)
                 return inputDeps;
-            var scrollNormalNotes = new ScrollNormalNotes {
-                time = time,
-                refStartPos = new NativeArray<float3>(refStartPos, Allocator.TempJob),
-                refEndPos = new NativeArray<float3>(refEndPos, Allocator.TempJob),
-            };
-            inputDeps = scrollNormalNotes.Schedule(this, inputDeps);
-            var scrollCatchedNormalNotes = new ScrollCatchedNormalNotes {
-                time = time,
-                refStartPos = new NativeArray<float3>(refStartPos, Allocator.TempJob),
-                refEndPos = new NativeArray<float3>(refEndPos, Allocator.TempJob),
-            };
-            inputDeps = scrollCatchedNormalNotes.Schedule(this, inputDeps);
-            var scrollLongNotes = new ScrollLongNotes {
-                fixedEndtime = 3F,
-                time = time,
-                refStartPos = new NativeArray<float3>(refStartPos, Allocator.TempJob),
-                refEndPos = new NativeArray<float3>(refEndPos, Allocator.TempJob),
-            };
-            inputDeps = scrollLongNotes.Schedule(this, inputDeps);
-            var scrollCatchedLongNotes = new ScrollCatchedLongNotes {
-                fixedEndtime = 3F,
-                time = time,
-                refStartPos = new NativeArray<float3>(refStartPos, Allocator.TempJob),
-                refEndPos = new NativeArray<float3>(refEndPos, Allocator.TempJob),
-            };
-            inputDeps = scrollCatchedLongNotes.Schedule(this, inputDeps);
+            {
+                var job = new ScrollNormalNotes {
+                    time = time,
+                    refStartPos = new NativeArray<float3>(refStartPos, Allocator.TempJob),
+                    refEndPos = new NativeArray<float3>(refEndPos, Allocator.TempJob),
+                };
+                inputDeps = job.Schedule(this, inputDeps);
+            }
+            {
+                var job = new ScrollCatchedNormalNotes {
+                    time = time,
+                    refStartPos = new NativeArray<float3>(refStartPos, Allocator.TempJob),
+                    refEndPos = new NativeArray<float3>(refEndPos, Allocator.TempJob),
+                };
+                inputDeps = job.Schedule(this, inputDeps);
+            }
+            {
+                var job = new ScrollLongNoteStart {
+                    time = time,
+                    refStartPos = new NativeArray<float3>(refStartPos, Allocator.TempJob),
+                    refEndPos = new NativeArray<float3>(refEndPos, Allocator.TempJob),
+                };
+                inputDeps = job.Schedule(this, inputDeps);
+            }
+            {
+                var job = new ScrollLongNoteEnd {
+                    time = time,
+                    refStartPos = new NativeArray<float3>(refStartPos, Allocator.TempJob),
+                    refEndPos = new NativeArray<float3>(refEndPos, Allocator.TempJob),
+                };
+                inputDeps = job.Schedule(this, inputDeps);
+            }
+            {
+                var job = new ScrollLongNoteNoEnd {
+                    endPos = fixedEndTimePos,
+                    refStartPos = new NativeArray<float3>(refStartPos, Allocator.TempJob),
+                    refEndPos = new NativeArray<float3>(refEndPos, Allocator.TempJob),
+                };
+                inputDeps = job.Schedule(this, inputDeps);
+            }
+            {
+                var job = new ScrollCatchedLongNoteStart {
+                    time = time,
+                    refStartPos = new NativeArray<float3>(refStartPos, Allocator.TempJob),
+                    refEndPos = new NativeArray<float3>(refEndPos, Allocator.TempJob),
+                };
+                inputDeps = job.Schedule(this, inputDeps);
+            }
             time += Time.unscaledDeltaTime;
             return inputDeps;
         }

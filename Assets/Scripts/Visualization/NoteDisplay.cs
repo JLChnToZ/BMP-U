@@ -7,18 +7,24 @@ using Unity.Transforms;
 using E7.ECS.LineRenderer;
 
 namespace BananaBeats.Visualization {
-    public struct NoteDisplay: IComponentData {
+
+    public struct Note: IComponentData {
         public int channel;
+    }
+
+    public struct NoteDisplay: IComponentData {
         public float pos;
         public float scale;
     }
 
-    public struct LongNoteDisplay: IComponentData {
-        public int channel;
-        public float pos1;
-        public float pos2;
-        public float scale1;
-        public float scale2;
+    public struct LongNoteStart: IComponentData {
+        public float pos;
+        public float scale;
+    }
+
+    public struct LongNoteEnd: IComponentData {
+        public float pos;
+        public float scale;
     }
 
     public struct Catched: IComponentData { }
@@ -51,11 +57,14 @@ namespace BananaBeats.Visualization {
 
         public static float LongNoteLineWidth { get; set; } = 1;
 
+        public static float DropFrom { get; set; } = 10;
+
         private static readonly Lazy<EntityArchetype> longNoteBodyArchetype = new Lazy<EntityArchetype>(
             () => World.EntityManager.CreateArchetype(
                 typeof(LineSegment),
                 typeof(LineStyle),
-                typeof(LongNoteDisplay)
+                typeof(Note),
+                typeof(LongNoteStart)
             )
         );
 
@@ -93,17 +102,24 @@ namespace BananaBeats.Visualization {
                 default:
                     throw new ArgumentException("Invalid note type.", nameof(noteType));
             }
-            entityManager.AddComponentData(entityInstance.noteStart, new NoteDisplay {
+            entityManager.AddComponentData(entityInstance.noteStart, new Note {
                 channel = channel,
+            });
+            entityManager.AddComponentData(entityInstance.noteStart, new NoteDisplay {
                 pos = pos,
                 scale = scale,
             });
+            if(DropFrom > 0) 
+                entityManager.AddComponentData(entityInstance.noteStart, new Drop {
+                    from = DropFrom,
+                });
             if(entityInstance.hasLongNoteBody) {
-                entityManager.SetComponentData(entityInstance.longNoteBody, new LongNoteDisplay {
+                entityManager.SetComponentData(entityInstance.longNoteBody, new Note {
                     channel = channel,
-                    pos1 = pos,
-                    pos2 = pos - 1,
-                    scale1 = scale,
+                });
+                entityManager.SetComponentData(entityInstance.longNoteBody, new LongNoteStart {
+                    pos = pos,
+                    scale = scale,
                 });
                 entityManager.SetSharedComponentData(entityInstance.longNoteBody, new LineStyle {
                     material = LongNoteMaterial,
@@ -121,18 +137,25 @@ namespace BananaBeats.Visualization {
             if(!instances.TryGetValue(id, out var entityInstance) || !entityInstance.hasLongNoteBody || entityInstance.hasNoteEnd)
                 return;
             var entityManager = World.EntityManager;
-            var data = entityManager.GetComponentData<LongNoteDisplay>(entityInstance.longNoteBody);
+            var data = entityManager.GetComponentData<Note>(entityInstance.noteStart);
             var pos = (float)time.Ticks / TimeSpan.TicksPerSecond;
-            data.pos2 = pos;
-            data.scale2 = scale;
-            entityManager.SetComponentData(entityInstance.longNoteBody, data);
-            entityInstance.noteEnd = entityManager.Instantiate(prefabs[NoteType.LongEnd]);
-            entityInstance.hasNoteEnd = true;
-            entityManager.AddComponentData(entityInstance.noteEnd, new NoteDisplay {
-                channel = data.channel,
+            entityManager.AddComponentData(entityInstance.longNoteBody, new LongNoteEnd {
                 pos = pos,
                 scale = scale,
             });
+            entityInstance.noteEnd = entityManager.Instantiate(prefabs[NoteType.LongEnd]);
+            entityInstance.hasNoteEnd = true;
+            entityManager.AddComponentData(entityInstance.noteEnd, new Note {
+                channel = data.channel,
+            });
+            entityManager.AddComponentData(entityInstance.noteEnd, new NoteDisplay {
+                pos = pos,
+                scale = scale,
+            });
+            if(DropFrom > 0)
+                entityManager.AddComponentData(entityInstance.noteEnd, new Drop {
+                    from = DropFrom,
+                });
             instances[id] = entityInstance;
         }
 
@@ -164,7 +187,7 @@ namespace BananaBeats.Visualization {
             var entityManager = World.EntityManager;
             if(entityManager != null && entityManager.IsCreated) {
                 entityManager.DestroyEntity(entityManager.CreateEntityQuery(typeof(NoteDisplay)));
-                entityManager.DestroyEntity(entityManager.CreateEntityQuery(typeof(LongNoteDisplay)));
+                entityManager.DestroyEntity(entityManager.CreateEntityQuery(typeof(LongNoteStart)));
             }
         }
 

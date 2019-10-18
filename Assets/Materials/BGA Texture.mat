@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: BGA Texture
-  m_Shader: {fileID: 4800000, guid: 6e08eb3039a223d498f0bfb5774feb7f, type: 3}
+  m_Shader: {fileID: 4800000, guid: 4099f1ebb1d1ef74b93d5dc23d548337, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0

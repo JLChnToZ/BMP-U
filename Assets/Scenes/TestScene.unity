@@ -441,7 +441,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6bda858eac5f24c40a68f5857a4fd5fb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bmsPath: 
+  bmsPath: G:\Codes\BMP-U-New\_BMS\agp\agp10h.bms
   appearanceSetting: {fileID: 11400000, guid: 364f757da4ba6b847b4c9e445d7c3639, type: 2}
   bgaPrefab: {fileID: 4813033135927881274, guid: 3600279d055762d4190342a0fa39afa1,
     type: 3}
