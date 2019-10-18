@@ -47,7 +47,7 @@ namespace BananaBeats.Visualization {
             public NativeArray<float3> refEndPos;
 
             public void Execute([ReadOnly] ref Note note, [ReadOnly] ref LongNoteStart pos, ref LineSegment line) =>
-                line.from = math.lerp(refStartPos[note.channel], refEndPos[note.channel], (pos.pos - time) * pos.scale);
+                line.from = math.lerp(refEndPos[note.channel], refStartPos[note.channel], (pos.pos - time) * pos.scale);
         }
 
         [BurstCompile, ExcludeComponent(typeof(LongNoteEnd))]
@@ -59,7 +59,7 @@ namespace BananaBeats.Visualization {
             public NativeArray<float3> refEndPos;
 
             public void Execute([ReadOnly] ref Note note, ref LineSegment line) =>
-                line.from = math.lerp(refStartPos[note.channel], refEndPos[note.channel], endPos);
+                line.to = math.lerp(refEndPos[note.channel], refStartPos[note.channel], endPos);
         }
 
         [BurstCompile]
@@ -71,7 +71,7 @@ namespace BananaBeats.Visualization {
             public NativeArray<float3> refEndPos;
 
             public void Execute([ReadOnly] ref Note note, [ReadOnly] ref LongNoteEnd pos, ref LineSegment line) =>
-                line.to = math.lerp(refStartPos[note.channel], refEndPos[note.channel], (pos.pos - time) * pos.scale);
+                line.to = math.lerp(refEndPos[note.channel], refStartPos[note.channel], (pos.pos - time) * pos.scale);
         }
 
         [BurstCompile, RequireComponentTag(typeof(Catched)), ExcludeComponent(typeof(FadeOut))]
@@ -83,7 +83,7 @@ namespace BananaBeats.Visualization {
             public NativeArray<float3> refEndPos;
 
             public void Execute([ReadOnly] ref Note note, [ReadOnly] ref LongNoteStart pos, ref LineSegment line) =>
-                line.from = math.lerp(refStartPos[note.channel], refEndPos[note.channel], math.max(0, (pos.pos - time) * pos.scale));
+                line.from = math.lerp(refEndPos[note.channel], refStartPos[note.channel], math.max(0, (pos.pos - time) * pos.scale));
         }
 
         protected override JobHandle OnUpdate(JobHandle inputDeps) {
