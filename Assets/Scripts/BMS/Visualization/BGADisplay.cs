@@ -79,6 +79,7 @@ namespace BananaBeats.Visualization {
                 return;
             }
             Vector2 textureSize = GetTextureSize();
+            propertyBlock.Clear();
             if(texture != null) {
                 var filterMode = Channel == 0 ? FilterMode.Bilinear : FilterMode.Point;
                 var wrapMode =
@@ -91,6 +92,7 @@ namespace BananaBeats.Visualization {
                     texture.filterMode = filterMode;
                 if(texture.wrapMode != wrapMode)
                     texture.wrapMode = wrapMode;
+                propertyBlock.SetTexture("_MainTex", texture);
             }
             var textureOffset = new Vector2(
                 Mathf.Repeat(clipArea.xMin / textureSize.x, 1),
@@ -98,7 +100,6 @@ namespace BananaBeats.Visualization {
             );
             if(textureOffset.y == 0 && textureTransform.y < 0)
                 textureOffset.y = 1;
-            propertyBlock.SetTexture("_MainTex", texture);
             propertyBlock.SetVector("_MainTex_ST", new Vector4(
                 clipArea.width / textureSize.x * textureTransform.x,
                 clipArea.height / textureSize.y * textureTransform.y,
