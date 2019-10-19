@@ -70,6 +70,8 @@ namespace BananaBeats {
         public bool HitNote(TimeSpan timeDiff, bool checkMiss = false) {
             if(Combos >= maxNotes)
                 throw new InvalidOperationException("Combos already excess max value!");
+            if(checkMiss && timeDiff > TimeSpan.Zero)
+                return true;
             var ticksDiff = Math.Abs(timeDiff.Ticks);
             foreach(var timing in scoreConfig.timingConfigs) {
                 if(ticksDiff >= timing.secondsDiff * TimeSpan.TicksPerSecond)

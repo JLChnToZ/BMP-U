@@ -302,9 +302,8 @@ namespace BananaBeats {
                     if(scoreCalculator.HitNote(timeDiff, true)) {
                         if(AutoTriggerLongNoteEnd &&
                             noteData.noteType == NoteType.LongEnd &&
-                            timeDiff <= TimeSpan.Zero) {
+                            timeDiff <= TimeSpan.Zero)
                             InternalHitNote(noteData.channel, timeDiff);
-                        }
                         continue;
                     }
                 }
