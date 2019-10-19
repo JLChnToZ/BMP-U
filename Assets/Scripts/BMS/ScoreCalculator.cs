@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BananaBeats {
 
@@ -59,6 +55,7 @@ namespace BananaBeats {
             if(scoreConfig.timingConfigs == null)
                 throw new ArgumentException("Timing configs in score config is null.", nameof(scoreConfig));
             this.scoreConfig = scoreConfig;
+            Array.Sort(this.scoreConfig.timingConfigs);
             Init();
         }
 
@@ -75,7 +72,7 @@ namespace BananaBeats {
                 throw new InvalidOperationException("Combos already excess max value!");
             var ticksDiff = Math.Abs(timeDiff.Ticks);
             foreach(var timing in scoreConfig.timingConfigs) {
-                if(ticksDiff >= timing.diff.Ticks)
+                if(ticksDiff >= timing.secondsDiff * TimeSpan.TicksPerSecond)
                     continue;
                 if(!checkMiss) {
                     int scoreAdd = (int)Math.Floor(comboScores[++Combos] * timing.score);
@@ -126,15 +123,15 @@ namespace BananaBeats {
     public struct TimingConfig: IComparable<TimingConfig>, IEquatable<TimingConfig> {
         public int rankType;
         public float score;
-        public TimeSpan diff;
+        public float secondsDiff;
 
         int IComparable<TimingConfig>.CompareTo(TimingConfig other) =>
-            diff.CompareTo(other.diff);
+            secondsDiff.CompareTo(other.secondsDiff);
 
         public bool Equals(TimingConfig other) =>
             rankType == other.rankType &&
             score == other.score &&
-            diff == other.diff;
+            secondsDiff == other.secondsDiff;
 
         public override bool Equals(object obj) =>
             obj is TimingConfig other && Equals(other);
@@ -142,9 +139,9 @@ namespace BananaBeats {
         public override int GetHashCode() =>
             rankType ^
             score.GetHashCode() ^
-            diff.GetHashCode();
+            secondsDiff.GetHashCode();
 
         public override string ToString() =>
-            $"@{diff}: R{rankType} (score: {score:P})";
+            $"@{secondsDiff}: R{rankType} (score: {score:P})";
     }
 }

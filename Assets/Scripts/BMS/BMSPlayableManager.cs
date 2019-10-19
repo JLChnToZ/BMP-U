@@ -73,9 +73,7 @@ namespace BananaBeats {
             get { return scoreConfig; }
             set {
                 scoreConfig = value;
-                scoreCalculator = new ScoreCalculator(value, Chart.Events.Count);
-                if(onScoreEvent != null)
-                    scoreCalculator.OnScore += onScoreEvent;
+                InitScoreCalculator();
             }
         }
 
@@ -119,6 +117,16 @@ namespace BananaBeats {
             PlayableLayout = timingHelper.Chart.Layout;
         }
 
+        private void InitScoreCalculator() {
+            if(scoreConfig.timingConfigs == null) {
+                scoreCalculator = null;
+                return;
+            }
+            scoreCalculator = new ScoreCalculator(scoreConfig, Chart.MaxCombos);
+            if(onScoreEvent != null)
+                scoreCalculator.OnScore += onScoreEvent;
+        }
+
         public override void Play() {
             NoteLayoutManager.SetLayout(BMSLoader.Chart.Layout);
             if(deferHitNote == null)
@@ -146,11 +154,9 @@ namespace BananaBeats {
         public override void Reset() {
             base.Reset();
             PreTimingHelper?.Reset();
-            if(scoreCalculator == null) {
-                scoreCalculator = new ScoreCalculator(scoreConfig, Chart.MaxCombos);
-                if(onScoreEvent != null)
-                    scoreCalculator.OnScore += onScoreEvent;
-            } else if(scoreCalculator.MaxNotes != Chart.MaxCombos)
+            if(scoreCalculator == null)
+                InitScoreCalculator();
+            else if(scoreCalculator.MaxNotes != Chart.MaxCombos)
                 scoreCalculator.MaxNotes = Chart.MaxCombos;
             else
                 scoreCalculator.Reset();
@@ -261,26 +267,13 @@ namespace BananaBeats {
                 return;
             var noteData = queue.Peek();
             var timeDiff = timingHelper.CurrentPosition - noteData.time;
-            bool isHitted;
             switch(noteData.noteType) {
                 case NoteType.Normal:
-                    if(!isHolding) break;
-                    isHitted = scoreCalculator.HitNote(timeDiff);
-                    InternalHitNote(channel, isHitted);
-                    break;
                 case NoteType.LongStart:
-                    if(!isHolding) break;
-                    isHitted = scoreCalculator.HitNote(timeDiff);
-                    InternalHitNote(channel, isHitted);
-                    if(!isHitted) {
-                        missedLongNotes.Add(channel);
-                        queue.Dequeue();
-                    }
+                    if(isHolding) InternalHitNote(channel, timeDiff);
                     break;
                 case NoteType.LongEnd:
-                    if(isHolding) break;
-                    isHitted = scoreCalculator.HitNote(timeDiff);
-                    InternalHitNote(channel, isHitted);
+                    if(!isHolding) InternalHitNote(channel, timeDiff);
                     break;
             }
         }
@@ -290,10 +283,16 @@ namespace BananaBeats {
             var noteData = noteQueues.GetOrConstruct(channel, true).Dequeue();
             noteData.isMissed = !isHitted;
             deferHitNote.Enqueue(noteData);
+            if(!isHitted && noteData.noteType == NoteType.LongStart)
+                missedLongNotes.Add(channel);
             OnHitNote?.Invoke(channel);
         }
 
+        private void InternalHitNote(int channel, TimeSpan timeDiff) =>
+            InternalHitNote(channel, scoreCalculator.HitNote(timeDiff));
+
         private void CheckNoteStatus() {
+            if(scoreCalculator == null) return;
             foreach(var queue in noteQueues.Values) {
                 if(queue == null || queue.Count <= 0)
                     continue;
@@ -304,15 +303,12 @@ namespace BananaBeats {
                         if(AutoTriggerLongNoteEnd &&
                             noteData.noteType == NoteType.LongEnd &&
                             timeDiff <= TimeSpan.Zero) {
-                            scoreCalculator.HitNote(timeDiff);
-                            InternalHitNote(noteData.channel);
+                            InternalHitNote(noteData.channel, timeDiff);
                         }
                         continue;
                     }
-                    if(noteData.noteType == NoteType.LongStart)
-                        missedLongNotes.Add(noteData.channel);
                 }
-                queue.Dequeue();
+                InternalHitNote(noteData.channel, false);
             }
         }
 
