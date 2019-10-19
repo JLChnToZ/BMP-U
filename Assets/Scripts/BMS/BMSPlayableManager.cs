@@ -139,6 +139,7 @@ namespace BananaBeats {
                 var pos1 = timingHelper.CurrentPosition;
                 var pos2 = timingHelper.StopResumePosition;
                 NoteDisplayScroll.time = (pos1 > pos2 ? pos1 : pos2).ToAccurateSecondF();
+                ReportBeatFlow();
             }
             var task = base.Update(delta);
             if(!task.IsCompleted)
@@ -309,6 +310,12 @@ namespace BananaBeats {
                 }
                 InternalHitNote(noteData.channel, false);
             }
+        }
+
+        private void ReportBeatFlow() {
+            var beatFlow = timingHelper.BeatFlow;
+            var timeSignature = timingHelper.TimeSignature;
+            NoteLaneManager.SetBeatFlowEffect((1 - beatFlow % timeSignature / timeSignature) * (1 - beatFlow % 1F));
         }
 
         public bool IsChannelPlayable(int channelId) {

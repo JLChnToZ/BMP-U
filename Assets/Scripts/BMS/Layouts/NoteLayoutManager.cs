@@ -33,14 +33,14 @@ namespace BananaBeats.Layouts {
                 var line = GetLine(i, preset[i], preset.Length);
                 startPos[preset[i]] = line.start;
                 endPos[preset[i]] = line.end;
-                NoteLaneManager.Create(Vector3.LerpUnclamped(line.end, line.start, 10), line.end);
+                NoteLaneManager.CreateGauge(line.end, Vector3.LerpUnclamped(line.end, line.start, 10));
             }
 
             NoteDisplayManager.RegisterPosition(startPos, endPos);
 
             // Draw end line
             for(int i = 0; i < preset.Length - 1; i++)
-                NoteLaneManager.Create(endPos[preset[i]], endPos[preset[i + 1]]);
+                NoteLaneManager.CreateLane(endPos[preset[i]], endPos[preset[i + 1]]);
         }
 
         private static int[] GetPreset(BMSKeyLayout layout) {

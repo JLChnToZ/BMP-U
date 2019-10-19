@@ -14,9 +14,12 @@ namespace BananaBeats.Configs {
         public Material longNoteBodyMaterial;
         public float longNoteBodyLineWidth = 1;
         public Material laneMaterial;
+        public Material gaugeMaterial;
+        public Gradient laneBeatFlowGradiant;
         public float laneLineWidth = 0.1F;
         public float dropFrom = 10F;
         public float dropSpeed = 10F;
+        public float gaugeAnimationSpeed = 10F;
 
         protected void OnEnable() => Init();
 
@@ -29,6 +32,9 @@ namespace BananaBeats.Configs {
             EntityDropSystem.scale = dropSpeed;
             NoteLaneManager.LaneMaterial = laneMaterial;
             NoteLaneManager.LaneLineWidth = laneLineWidth;
+            NoteLaneManager.GaugeMaterial = gaugeMaterial;
+            NoteLaneManager.LaneBeatFlowGradient = laneBeatFlowGradiant;
+            NoteLaneManager.LaneGaugeAnimSpeed = gaugeAnimationSpeed;
         }
     }
 }
