@@ -8,18 +8,14 @@ using BananaBeats.Utils;
 using BMS;
 using Ude;
 using SharpFileSystem;
-using SharpFileSystem.FileSystems;
 using SharpFileSystem.SharpZipLib;
 
 namespace BananaBeats {
     public class BMSLoader: IDisposable {
-        private static bool isRootPathCreated;
-        private static FileSystemPath rootDataPath;
-        private static IFileSystem defaultFS;
-
         private readonly FileSystemPath path;
         private readonly Dictionary<int, ImageResource> bmp = new Dictionary<int, ImageResource>();
         private readonly Dictionary<int, AudioResource> wav = new Dictionary<int, AudioResource>();
+        private readonly bool customFileSystem;
         private bool bmpLoaded, wavLoaded;
         private UniTask bmpLoader, wavLoader;
 
@@ -28,13 +24,9 @@ namespace BananaBeats {
         public Chart Chart { get; private set; }
 
         public BMSLoader(string path, IFileSystem fileSystem = null) {
-            if(defaultFS == null) defaultFS = new PhysicalFileSystem(Path.GetPathRoot(Application.dataPath));
-            FileSystem = fileSystem ?? new SeamlessZipFileSystem(defaultFS);
-            if(!isRootPathCreated) {
-                rootDataPath = FileSystemPath.Root.Combine(HelperFunctions.FixPathRoot(Application.dataPath)).ParentPath;
-                isRootPathCreated = true;
-            }
-            var parsedPath = rootDataPath.Combine(HelperFunctions.FixPathRoot(path));
+            customFileSystem = fileSystem != null;
+            FileSystem = customFileSystem ? fileSystem : new SeamlessZipFileSystem(FilsSystemHelper.DefaultFileSystem);
+            var parsedPath = FilsSystemHelper.RootDataPath.Combine(HelperFunctions.FixPathRoot(path));
             this.path = parsedPath.ParentPath;
             using(var stream = FileSystem.OpenRandomAccessFile(parsedPath, FileAccess.Read)) {
                 var detector = new CharsetDetector();
@@ -183,6 +175,8 @@ namespace BananaBeats {
 
         public void Dispose() {
             UnloadAll();
+            if(!customFileSystem)
+                FileSystem.Dispose();
         }
     }
 }

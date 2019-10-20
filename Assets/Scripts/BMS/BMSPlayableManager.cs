@@ -284,7 +284,7 @@ namespace BananaBeats {
         private void InternalHitNote(int channel, int hittedState = 0) {
             channel = (channel - 10) % 20;
             var noteData = noteQueues.GetOrConstruct(channel, true).Dequeue();
-            noteData.isMissed = hittedState >= 0;
+            noteData.isMissed = hittedState < 0;
             deferHitNote.Enqueue(noteData);
             if(noteData.isMissed && noteData.noteType == NoteType.LongStart)
                 missedLongNotes.Add(channel);
