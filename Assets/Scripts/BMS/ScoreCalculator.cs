@@ -67,11 +67,11 @@ namespace BananaBeats {
             Init();
         }
 
-        public bool HitNote(TimeSpan timeDiff, bool checkMiss = false) {
+        public int HitNote(TimeSpan timeDiff, bool checkMiss = false) {
             if(Combos >= maxNotes)
                 throw new InvalidOperationException("Combos already excess max value!");
             if(checkMiss && timeDiff > TimeSpan.Zero)
-                return true;
+                return 0;
             var ticksDiff = Math.Abs(timeDiff.Ticks);
             foreach(var timing in scoreConfig.timingConfigs) {
                 if(ticksDiff >= timing.secondsDiff * TimeSpan.TicksPerSecond)
@@ -81,10 +81,10 @@ namespace BananaBeats {
                     Score += scoreAdd;
                     OnScore?.Invoke(this, new ScoreEventArgs(timing.rankType, timeDiff, scoreAdd, Score, Combos));
                 }
-                return true;
+                return timing.rankType;
             }
             MissNote();
-            return false;
+            return -1;
         }
 
         public void MissNote() {

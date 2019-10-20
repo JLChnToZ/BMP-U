@@ -200,23 +200,23 @@ namespace BananaBeats {
         }
 
         protected virtual object OnNoteEvent(BMSEvent bmsEvent) =>
-            DefaultWAVEvent(bmsEvent);
+            WavEvent(bmsEvent);
 
         protected virtual object OnLongNoteStartEvent(BMSEvent bmsEvent) =>
-            DefaultWAVEvent(bmsEvent);
+            WavEvent(bmsEvent);
 
         protected virtual object OnLongNoteEndEvent(BMSEvent bmsEvent) =>
-            DefaultWAVEvent(bmsEvent);
+            WavEvent(bmsEvent);
 
         protected virtual object OnWAVEvent(BMSEvent bmsEvent) =>
-            DefaultWAVEvent(bmsEvent);
+            WavEvent(bmsEvent);
 
-        private object DefaultWAVEvent(BMSEvent bmsEvent) {
+        protected object WavEvent(BMSEvent bmsEvent, float pitch = 1) {
             object resource = null;
             if(BMSLoader.TryGetWAV((int)bmsEvent.data2, out var wav)) {
                 resource = wav;
                 if(bmsEvent.type == BMSEventType.WAV && PlaySound)
-                    StartHandle(bmsEvent, wav);
+                    StartHandle(bmsEvent, wav, pitch);
             }
             return resource;
         }
@@ -232,9 +232,11 @@ namespace BananaBeats {
         public bool IsHandling(BMSResource resource) =>
             resource != null && playingResources.Contains(resource) && !endedResources.Contains(resource);
 
-        public virtual void StartHandle(BMSEvent bmsEvent, BMSResource resource) {
+        public virtual void StartHandle(BMSEvent bmsEvent, BMSResource resource, float pitch = 1) {
             if(resource == null) return;
             try {
+                if(resource is AudioResource audioRes)
+                    audioRes.Pitch = pitch;
                 resource.Play(bmsEvent);
             } catch(Exception ex) {
 #if UNITY_EDITOR || DEBUG

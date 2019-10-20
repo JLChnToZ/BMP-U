@@ -10,6 +10,8 @@ namespace BananaBeats {
         int handle;
         long sliceEnd;
 
+        public float Pitch { get; set; } = 1;
+
         public static void InitEngine() {
             if(!Bass.Init())
                 UnityEngine.Debug.LogWarning($"BASS init error: {Bass.LastError}");
@@ -44,6 +46,8 @@ namespace BananaBeats {
                 case PlaybackState.Stopped:
                 case PlaybackState.Paused:
                     if(!Bass.ChannelPlay(handle))
+                        throw new BassException(Bass.LastError);
+                    if(!Bass.ChannelSetAttribute(handle, ChannelAttribute.Frequency, Pitch == 1 ? 0 : (Pitch * Bass.ChannelGetInfo(handle).Frequency)))
                         throw new BassException(Bass.LastError);
                     break;
             }
