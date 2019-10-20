@@ -35,6 +35,16 @@ namespace BananaBeats.Utils {
                 return await ReadAllBytesAsync(stream);
         }
 
+        public static IDictionary<FileSystemPath, FileSystemPath> GetCacheDictForMatchingNames(
+            IFileSystem fileSystem,
+            FileSystemPath basePath,
+            IDictionary<FileSystemPath, FileSystemPath> dictionary = null) {
+            if(dictionary == null) dictionary = new Dictionary<FileSystemPath, FileSystemPath>();
+            foreach(var entry in fileSystem.GetEntities(basePath))
+                dictionary[basePath.AppendFile(entry.GetFileNameWithoutExtension())] = entry;
+            return dictionary;
+        }
+
         public static async UniTask<string> GetRealPathAsync(this IFileSystem fileSystem, FileSystemPath srcPath) {
             if(tempFileMap.TryGetValue(srcPath, out var destPath))
                 return destPath;

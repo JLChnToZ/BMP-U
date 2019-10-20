@@ -21,7 +21,13 @@ namespace BananaBeats.Configs {
         public float dropSpeed = 10F;
         public float gaugeAnimationSpeed = 10F;
 
-        protected void OnEnable() => Init();
+        protected void OnEnable() {
+#if UNITY_EDITOR
+            if(!UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode)
+                return;
+#endif
+            Init();
+        }
 
         public void Init() {
             if(notePrefabs != null)

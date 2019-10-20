@@ -129,20 +129,19 @@ namespace BananaBeats {
         }
 
         private async UniTask LoadAudioAsync() {
+            HashSet<FileSystemPath> checkedPaths = null;
+            IDictionary<FileSystemPath, FileSystemPath> cache = null;
             foreach(var resData in Chart.IterateResourceData(ResourceType.wav)) {
                 if(!wav.TryGetValue((int)resData.resourceId, out var res)) {
                     var path = this.path.Combine(resData.dataPath);
                     if(!FileSystem.Exists(path)) {
-                        bool hasPath = false;
-                        var name = path.GetFileNameWithoutExtension();
-                        foreach(var entry in FileSystem.GetEntities(path.ParentPath))
-                            if(entry.IsFile && name.Equals(entry.GetFileNameWithoutExtension(), StringComparison.Ordinal)) {
-                                hasPath = true;
-                                path = entry;
-                                break;
-                            }
-                        if(!hasPath)
-                            continue;
+                        var parent = path.ParentPath;
+                        if(checkedPaths == null)
+                            checkedPaths = new HashSet<FileSystemPath>();
+                        if(checkedPaths.Add(parent))
+                            cache = HelperFunctions.GetCacheDictForMatchingNames(FileSystem, parent, cache);
+                        if(cache.TryGetValue(parent.AppendFile(path.GetFileNameWithoutExtension()), out var matchedPath))
+                            path = matchedPath;
                     }
                     wav[(int)resData.resourceId] = res = new AudioResource(resData, FileSystem, path);
                 }
