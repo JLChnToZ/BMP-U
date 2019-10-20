@@ -41,7 +41,8 @@ namespace BananaBeats.Utils {
             IDictionary<FileSystemPath, FileSystemPath> dictionary = null) {
             if(dictionary == null) dictionary = new Dictionary<FileSystemPath, FileSystemPath>();
             foreach(var entry in fileSystem.GetEntities(basePath))
-                dictionary[basePath.AppendFile(entry.GetFileNameWithoutExtension())] = entry;
+                if(entry.IsFile)
+                    dictionary[basePath.AppendFile(entry.GetFileNameWithoutExtension())] = entry;
             return dictionary;
         }
 
