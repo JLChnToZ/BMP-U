@@ -119,6 +119,7 @@ namespace BananaBeats {
                 Debug.LogError($"Error while loading {resData.resourceId} {resData.dataPath}");
                 Debug.LogException(ex);
             }
+            await UniTask.SwitchToMainThread();
             return res;
         }
 
@@ -152,6 +153,7 @@ namespace BananaBeats {
                     Debug.LogException(ex);
                 }
             }
+            await UniTask.SwitchToMainThread();
         }
 
         public UniTask<ImageResource> GetStageImage() =>

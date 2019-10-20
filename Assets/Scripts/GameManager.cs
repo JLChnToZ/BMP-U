@@ -46,7 +46,6 @@ namespace BananaBeats {
             player = new BMSPlayableManager(loader) {
                 PlayableLayout = BMSKeyLayout.None, // Full auto
             };
-            await UniTask.SwitchToMainThread();
             Debug.Log("Load BGA layers");
             instaniatedBGA = Instantiate(bgaPrefab);
             instaniatedBGA.Load(player);
