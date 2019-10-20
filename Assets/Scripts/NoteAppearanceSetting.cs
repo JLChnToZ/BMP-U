@@ -33,12 +33,24 @@ namespace BananaBeats.Configs {
             if(notePrefabs != null)
                 foreach(var m in notePrefabs)
                     NoteDisplayManager.ConvertPrefab(m.prefab, m.noteType);
+#if UNITY_EDITOR
+            NoteDisplayManager.LongNoteMaterial = Instantiate(longNoteBodyMaterial);
+#else
             NoteDisplayManager.LongNoteMaterial = longNoteBodyMaterial;
+#endif
             NoteDisplayManager.DropFrom = dropFrom;
             EntityDropSystem.scale = dropSpeed;
+#if UNITY_EDITOR
+            NoteLaneManager.LaneMaterial = Instantiate(laneMaterial);
+#else
             NoteLaneManager.LaneMaterial = laneMaterial;
+#endif
             NoteLaneManager.LaneLineWidth = laneLineWidth;
+#if UNITY_EDITOR
+            NoteLaneManager.GaugeMaterial = Instantiate(gaugeMaterial);
+#else
             NoteLaneManager.GaugeMaterial = gaugeMaterial;
+#endif
             NoteLaneManager.LaneBeatFlowGradient = laneBeatFlowGradiant;
             NoteLaneManager.LaneGaugeAnimSpeed = gaugeAnimationSpeed;
         }

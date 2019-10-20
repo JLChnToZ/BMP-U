@@ -67,6 +67,8 @@ namespace BananaBeats {
 
         public TimeSpan PreOffset { get; set; } = TimeSpan.FromSeconds(3);
 
+        public bool EnableNoteSpeedAdjustment { get; set; } = true;
+
         public bool AutoTriggerLongNoteEnd { get; set; } = true;
 
         public ScoreConfig ScoreConfig {
@@ -138,7 +140,7 @@ namespace BananaBeats {
             if(IsPlaying) {
                 var pos1 = timingHelper.CurrentPosition;
                 var pos2 = timingHelper.StopResumePosition;
-                NoteDisplayScroll.time = (pos1 > pos2 ? pos1 : pos2).ToAccurateSecondF();
+                NoteDisplayScroll.time = (!EnableNoteSpeedAdjustment || pos1 > pos2 ? pos1 : pos2).ToAccurateSecondF();
                 ReportBeatFlow();
             }
             var task = base.Update(delta);
@@ -208,7 +210,7 @@ namespace BananaBeats {
 
         private void OnPreBMSEvent(BMSEvent bmsEvent) {
             int channel = (bmsEvent.data1 - 10) % 20;
-            var bpmScale = PreTimingHelper.BPM / 135F;
+            var bpmScale = EnableNoteSpeedAdjustment ? PreTimingHelper.BPM / 135F : 1;
             switch(bmsEvent.type) {
                 case BMSEventType.Note: {
                     int id = NoteDisplayManager.Spawn(channel, bmsEvent.time, NoteType.Normal, bpmScale);
