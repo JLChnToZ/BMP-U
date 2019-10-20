@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UniRx.Async;
 using SharpFileSystem;
 using SharpFileSystem.FileSystems;
-using SystemFile = System.IO.File;
+using File = System.IO.File;
 
 namespace BananaBeats.Utils {
     public static class HelperFunctions {
@@ -40,7 +40,7 @@ namespace BananaBeats.Utils {
                 return destPath;
             while(fileSystem is SeamlessArchiveFileSystem seamlessArchiveFS)
                 fileSystem = seamlessArchiveFS.FileSystem;
-            if(fileSystem is PhysicalFileSystem physicalFS)
+            if(fileSystem is PhysicalFileSystem physicalFS && physicalFS.Exists(srcPath))
                 return physicalFS.GetPhysicalPath(srcPath);
             var tempFile = Path.GetTempFileName();
             using(var source = fileSystem.OpenFile(srcPath, FileAccess.Read))
@@ -55,7 +55,7 @@ namespace BananaBeats.Utils {
                 fileSystem = seamlessArchiveFS.FileSystem;
             if(fileSystem is PhysicalFileSystem physicalFS)
                 return physicalFS.Exists(srcPath);
-            return SystemFile.Exists(srcPath.ToString());
+            return File.Exists(srcPath.ToString());
         }
 
         public static Stream OpenRandomAccessFile(this IFileSystem fileSystem, FileSystemPath path, FileAccess fileAccess) {
