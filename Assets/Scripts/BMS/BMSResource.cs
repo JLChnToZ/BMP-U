@@ -1,11 +1,12 @@
 ﻿using System;
 using BMS;
-using BananaBeats.Utils;
 using UniRx.Async;
+using SharpFileSystem;
 
 namespace BananaBeats {
     public abstract class BMSResource: IDisposable {
-        protected readonly IVirtualFSEntry fileEntry;
+        protected readonly IFileSystem fileSystem;
+        protected readonly FileSystemPath filePath;
         protected bool wasPlaying;
         protected BMSEvent currentEvent;
 
@@ -13,9 +14,10 @@ namespace BananaBeats {
 
         public event EventHandler OnEnd;
 
-        protected BMSResource(BMSResourceData resourceData, IVirtualFSEntry fileEntry) {
+        protected BMSResource(BMSResourceData resourceData, IFileSystem fileSystem, FileSystemPath filePath) {
             ResourceData = resourceData;
-            this.fileEntry = fileEntry;
+            this.fileSystem = fileSystem;
+            this.filePath = filePath;
         }
 
         public abstract UniTask Load();

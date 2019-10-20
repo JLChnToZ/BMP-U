@@ -4,37 +4,54 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UniRx.Async;
-using BMS;
 using BananaBeats.Utils;
+using BMS;
 using Ude;
+using SharpFileSystem;
+using SharpFileSystem.FileSystems;
+using SharpFileSystem.SharpZipLib;
 
 namespace BananaBeats {
     public class BMSLoader: IDisposable {
-        private static string rootDataPath;
+        private static bool isRootPathCreated;
+        private static FileSystemPath rootDataPath;
+        private static IFileSystem defaultFS;
 
-        private readonly string path;
+        private readonly FileSystemPath path;
         private readonly Dictionary<int, ImageResource> bmp = new Dictionary<int, ImageResource>();
         private readonly Dictionary<int, AudioResource> wav = new Dictionary<int, AudioResource>();
         private bool bmpLoaded, wavLoaded;
         private UniTask bmpLoader, wavLoader;
 
-        public VirtualFS VirtualFS { get; private set; }
+        public IFileSystem FileSystem { get; private set; }
 
         public Chart Chart { get; private set; }
 
-        public BMSLoader(string path, VirtualFS virtualFS = null) {
-            VirtualFS = virtualFS ?? new VirtualFS();
-            if(string.IsNullOrEmpty(rootDataPath))
-                rootDataPath = Path.Combine(Application.dataPath, "..");
-            path = Path.Combine(rootDataPath, path);
-            this.path = Path.GetDirectoryName(path);
-            using(var stream = VirtualFS[path].Stream) {
+        public BMSLoader(string path, IFileSystem fileSystem = null) {
+            if(defaultFS == null) defaultFS = new PhysicalFileSystem(Path.GetPathRoot(Application.dataPath));
+            FileSystem = fileSystem ?? new SeamlessZipFileSystem(defaultFS);
+            if(!isRootPathCreated) {
+                rootDataPath = FileSystemPath.Root.Combine(HelperFunctions.FixPathRoot(Application.dataPath)).ParentPath;
+                isRootPathCreated = true;
+            }
+            var parsedPath = rootDataPath.Combine(HelperFunctions.FixPathRoot(path));
+            this.path = parsedPath.ParentPath;
+            using(var stream = FileSystem.OpenRandomAccessFile(parsedPath, FileAccess.Read)) {
                 var detector = new CharsetDetector();
                 detector.Feed(stream);
                 detector.DataEnd();
                 stream.Seek(0, SeekOrigin.Begin);
-                using(var reader = new StreamReader(stream, string.IsNullOrEmpty(detector.Charset) ? Encoding.Default : Encoding.GetEncoding(detector.Charset))) {
-                    var ext = Path.GetExtension(path).ToLower();
+                Encoding encoding;
+                try {
+                    if(string.IsNullOrEmpty(detector.Charset))
+                        encoding = Encoding.GetEncoding(932);
+                    else
+                        encoding = Encoding.GetEncoding(detector.Charset);
+                } catch {
+                    encoding = Encoding.Default;
+                }
+                using(var reader = new StreamReader(stream, encoding)) {
+                    var ext = parsedPath.GetExtension();
                     switch(ext) {
                         case ".bms":
                         case ".bme":
@@ -78,21 +95,20 @@ namespace BananaBeats {
 
         private async UniTask<ImageResource> LoadSingleImage(BMSResourceData resData) {
             if(!bmp.TryGetValue((int)resData.resourceId, out var res)) {
-                var path = Path.Combine(this.path, resData.dataPath);
-                var entry = VirtualFS[path];
-                if(entry == null) return null;
+                var path = this.path.Combine(resData.dataPath);
+                if(!FileSystem.Exists(path)) return null;
                 switch(Path.GetExtension(resData.dataPath).ToLower()) {
                     case ".jpg":
                     case ".jpe":
                     case ".jpeg":
                     case ".png":
-                        res = new ImageResource(resData, entry);
+                        res = new ImageResource(resData, FileSystem, path);
                         break;
                     case ".bmp":
-                        res = new BMPImageSource(resData, entry);
+                        res = new BMPImageSource(resData, FileSystem, path);
                         break;
                     default:
-                        res = new VideoImageResource(resData, entry);
+                        res = new VideoImageResource(resData, FileSystem, path);
                         break;
                 }
                 bmp[(int)resData.resourceId] = res;
@@ -115,20 +131,20 @@ namespace BananaBeats {
         private async UniTask LoadAudioAsync() {
             foreach(var resData in Chart.IterateResourceData(ResourceType.wav)) {
                 if(!wav.TryGetValue((int)resData.resourceId, out var res)) {
-                    var path = Path.Combine(this.path, resData.dataPath);
-                    var entry = VirtualFS[path];
-                    if(entry == null) {
-                        var extLan = Path.GetExtension(path).Length;
-                        var glob = path.Substring(0, path.Length - extLan) + ".*";
-                        Debug.LogWarning($"Resource not found, try use pattern {glob}");
-                        entry = VirtualFS.Find(glob);
-                        if(entry == null) {
-                            Debug.LogWarning($"Resource not found: {path}");
+                    var path = this.path.Combine(resData.dataPath);
+                    if(!FileSystem.Exists(path)) {
+                        bool hasPath = false;
+                        var name = path.GetFileNameWithoutExtension();
+                        foreach(var entry in FileSystem.GetEntities(path.ParentPath))
+                            if(entry.IsFile && name.Equals(entry.GetFileNameWithoutExtension(), StringComparison.Ordinal)) {
+                                hasPath = true;
+                                path = entry;
+                                break;
+                            }
+                        if(!hasPath)
                             continue;
-                        }
-                        Debug.LogWarning($"Matched file: {entry.FullPath}");
                     }
-                    wav[(int)resData.resourceId] = res = new AudioResource(resData, entry);
+                    wav[(int)resData.resourceId] = res = new AudioResource(resData, FileSystem, path);
                 }
                 try {
                     await res.Load();

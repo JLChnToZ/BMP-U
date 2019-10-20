@@ -4,6 +4,7 @@ using VideoStreamer;
 using BMS;
 using BananaBeats.Utils;
 using UniRx.Async;
+using SharpFileSystem;
 
 namespace BananaBeats {
     public class VideoImageResource: ImageResource {
@@ -11,15 +12,15 @@ namespace BananaBeats {
 
         public override Vector2 Transform => new Vector2(1, -1);
 
-        public VideoImageResource(BMSResourceData resourceData, IVirtualFSEntry fileEntry) :
-            base(resourceData, fileEntry) {
+        public VideoImageResource(BMSResourceData resourceData, IFileSystem fileSystem, FileSystemPath path) :
+            base(resourceData, fileSystem, path) {
         }
 
         public override async UniTask Load() {
             if(videoStream != null) return;
             await UniTask.SwitchToTaskPool();
             try {
-                videoStream = new VideoStream(await fileEntry.GetRealPathAsync()) {
+                videoStream = new VideoStream((await fileSystem.GetRealPathAsync(filePath)).ToString()) {
                     Preload = true,
                 };
                 videoStream.FrameChanged += FrameChanged;

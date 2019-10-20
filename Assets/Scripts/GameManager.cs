@@ -57,7 +57,7 @@ namespace BananaBeats {
         protected void OnDestroy() {
             if(loader != null) {
                 loader.Dispose();
-                loader.VirtualFS?.Dispose();
+                loader.FileSystem?.Dispose();
                 loader = null;
             }
             if(player != null) {

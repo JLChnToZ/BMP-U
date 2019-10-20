@@ -3,6 +3,7 @@ using System.IO;
 using BananaBeats.Utils;
 using UnityEngine;
 using UniRx.Async;
+using SharpFileSystem;
 
 using UnityObject = UnityEngine.Object;
 
@@ -12,13 +13,13 @@ namespace BananaBeats {
 
         public virtual Vector2 Transform => Vector2.one;
 
-        public ImageResource(BMSResourceData resourceData, IVirtualFSEntry fileEntry) :
-            base(resourceData, fileEntry) {
+        public ImageResource(BMSResourceData resourceData, IFileSystem fileSystem, FileSystemPath path) :
+            base(resourceData, fileSystem, path) {
         }
 
         public override async UniTask Load() {
             await UniTask.SwitchToTaskPool();
-            byte[] fileData = await fileEntry.ReadAllBytesAsync();
+            byte[] fileData = await fileSystem.ReadAllBytesAsync(filePath);
             await UniTask.SwitchToMainThread();
             Texture = new Texture2D(2, 2);
             Texture.LoadImage(fileData);

@@ -3,6 +3,7 @@ using BMS;
 using ManagedBass;
 using BananaBeats.Utils;
 using UniRx.Async;
+using SharpFileSystem;
 
 namespace BananaBeats {
     public class AudioResource: BMSResource {
@@ -14,17 +15,17 @@ namespace BananaBeats {
                 UnityEngine.Debug.LogWarning($"BASS init error: {Bass.LastError}");
         }
 
-        public AudioResource(BMSResourceData resourceData, IVirtualFSEntry fileEntry) :
-            base(resourceData, fileEntry) {
+        public AudioResource(BMSResourceData resourceData, IFileSystem fileSystem, FileSystemPath path) :
+            base(resourceData, fileSystem, path) {
         }
 
         public override async UniTask Load() {
             if(handle != 0) return;
             await UniTask.SwitchToTaskPool();
-            if(fileEntry.IsReal)
-                handle = Bass.CreateStream(fileEntry.FullPath);
+            if(filePath.IsReal(fileSystem))
+                handle = Bass.CreateStream(filePath.ToString());
             else {
-                var fileData = await fileEntry.ReadAllBytesAsync();
+                var fileData = await fileSystem.ReadAllBytesAsync(filePath);
                 handle = Bass.CreateStream(fileData, 0, fileData.Length, BassFlags.Default);
             }
             if(handle == 0)
