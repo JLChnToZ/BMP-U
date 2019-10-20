@@ -8,7 +8,7 @@ using SystemFile = System.IO.File;
 
 namespace BananaBeats.Utils {
     public static class HelperFunctions {
-        private static readonly Dictionary<FileSystemPath, FileSystemPath> tempFileMap = new Dictionary<FileSystemPath, FileSystemPath>();
+        private static readonly Dictionary<FileSystemPath, string> tempFileMap = new Dictionary<FileSystemPath, string>();
 
         public static async UniTask<byte[]> ReadAllBytesAsync(this Stream source) {
             if(source == null)
@@ -35,16 +35,18 @@ namespace BananaBeats.Utils {
                 return await ReadAllBytesAsync(stream);
         }
 
-        public static async UniTask<FileSystemPath> GetRealPathAsync(this IFileSystem fileSystem, FileSystemPath srcPath) {
+        public static async UniTask<string> GetRealPathAsync(this IFileSystem fileSystem, FileSystemPath srcPath) {
             if(tempFileMap.TryGetValue(srcPath, out var destPath))
                 return destPath;
-            if(SystemFile.Exists(srcPath.ToString()))
-                return srcPath;
+            while(fileSystem is SeamlessArchiveFileSystem seamlessArchiveFS)
+                fileSystem = seamlessArchiveFS.FileSystem;
+            if(fileSystem is PhysicalFileSystem physicalFS)
+                return physicalFS.GetPhysicalPath(srcPath);
             var tempFile = Path.GetTempFileName();
             using(var source = fileSystem.OpenFile(srcPath, FileAccess.Read))
             using(var dest = new FileStream(tempFile, FileMode.OpenOrCreate, FileAccess.Write))
                 await source.CopyToAsync(dest);
-            tempFileMap[srcPath] = destPath = FileSystemPath.Parse(tempFile);
+            tempFileMap[srcPath] = destPath = tempFile;
             return destPath;
         }
 

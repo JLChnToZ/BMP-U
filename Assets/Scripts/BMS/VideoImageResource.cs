@@ -20,7 +20,7 @@ namespace BananaBeats {
             if(videoStream != null) return;
             await UniTask.SwitchToTaskPool();
             try {
-                videoStream = new VideoStream((await fileSystem.GetRealPathAsync(filePath)).ToString()) {
+                videoStream = new VideoStream(await fileSystem.GetRealPathAsync(filePath)) {
                     Preload = true,
                 };
                 videoStream.FrameChanged += FrameChanged;
