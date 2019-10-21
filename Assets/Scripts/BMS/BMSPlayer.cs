@@ -142,15 +142,16 @@ namespace BananaBeats {
 
         protected virtual UniTask Update(TimeSpan delta) {
             try {
-                foreach(var resource in playingResources)
-                    try {
-                        if(!endedResources.Contains(resource))
-                            resource.Update(delta);
-                    } catch(Exception ex) {
+                if(PlaybackState == PlaybackState.Playing)
+                    foreach(var resource in playingResources)
+                        try {
+                            if(!endedResources.Contains(resource))
+                                resource.Update(delta);
+                        } catch(Exception ex) {
 #if UNITY_EDITOR || DEBUG
-                        Debug.LogException(ex);
+                            Debug.LogException(ex);
 #endif
-                    }
+                        }
                 if(endedResources.Count > 0) {
                     playingResources.ExceptWith(endedResources);
                     endedResources.Clear();

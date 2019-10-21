@@ -88,6 +88,7 @@ namespace BananaBeats {
         private async UniTask<ImageResource> LoadSingleImage(BMSResourceData resData) {
             if(!bmp.TryGetValue((int)resData.resourceId, out var res) || res.ResourceData.dataPath != resData.dataPath) {
                 if(res != null) res.Dispose();
+                if(string.IsNullOrEmpty(resData.dataPath)) return null;
                 var path = this.path.Combine(resData.dataPath);
                 if(!FileSystem.Exists(path)) return null;
                 switch(Path.GetExtension(resData.dataPath).ToLower()) {
@@ -98,6 +99,9 @@ namespace BananaBeats {
                         res = new ImageResource(resData, FileSystem, path);
                         break;
                     case ".bmp":
+                    case ".gif":
+                    case ".tga":
+                    case ".psd":
                         res = new BMPImageSource(resData, FileSystem, path);
                         break;
                     default:
@@ -128,6 +132,7 @@ namespace BananaBeats {
             foreach(var resData in Chart.IterateResourceData(ResourceType.wav)) {
                 if(!wav.TryGetValue((int)resData.resourceId, out var res) || res.ResourceData.dataPath != resData.dataPath) {
                     if(res != null) res.Dispose();
+                    if(string.IsNullOrEmpty(resData.dataPath)) continue;
                     var path = this.path.Combine(resData.dataPath);
                     if(!FileSystem.Exists(path)) {
                         var parent = path.ParentPath;

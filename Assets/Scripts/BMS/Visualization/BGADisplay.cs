@@ -105,7 +105,8 @@ namespace BananaBeats.Visualization {
                 clipArea.height / textureSize.y * textureTransform.y,
                 textureOffset.x, textureOffset.y
             ));
-            Renderer.SetPropertyBlock(propertyBlock);
+            if(texture != null)
+                Renderer.SetPropertyBlock(propertyBlock);
             if(isCropped) {
                 rendererTransform.localScale = new Vector3(textureSize.x / textureSize.y, 1, 1);
                 rendererTransform.localPosition = Vector3.forward * rendererTransform.localPosition.z;
