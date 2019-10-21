@@ -7,13 +7,28 @@ using BMS;
 namespace BananaBeats {
     public delegate void BMSEventDelegate(BMSEvent bmsEvent, object resource);
 
+    public enum PlaybackState: byte {
+        Stopped = 0,
+        Playing = 1,
+        Paused = 2,
+    }
+
     public class BMSPlayer: IDisposable, IPlayerLoopItem {
 
         public BMSLoader BMSLoader { get; }
 
         public Chart Chart => timingHelper.Chart;
 
-        public bool IsPlaying { get; private set; }
+        private PlaybackState playbackState;
+        public PlaybackState PlaybackState {
+            get { return playbackState; }
+            private set {
+                if(playbackState == value)
+                    return;
+                playbackState = value;
+                PlaybackStateChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
 
         public TimeSpan CurrentPosition => timingHelper.CurrentPosition;
 
@@ -34,6 +49,8 @@ namespace BananaBeats {
         public bool PlaySound { get; set; } = true;
 
         public event BMSEventDelegate BMSEvent;
+
+        public event EventHandler PlaybackStateChanged;
 
         protected readonly BMSTimingHelper timingHelper;
 
@@ -61,7 +78,7 @@ namespace BananaBeats {
 
         public virtual void Play() {
             if(disposed) return;
-            IsPlaying = true;
+            PlaybackState = PlaybackState.Playing;
             RegisterToPlayerLoop();
             foreach(var resource in playingResources)
                 try {
@@ -75,7 +92,7 @@ namespace BananaBeats {
 
         public virtual void Pause() {
             if(disposed) return;
-            IsPlaying = false;
+            PlaybackState = PlaybackState.Paused;
             foreach(var resource in playingResources)
                 try {
                     resource.Pause();
@@ -87,7 +104,7 @@ namespace BananaBeats {
         }
 
         public virtual void Reset() {
-            IsPlaying = false;
+            PlaybackState = PlaybackState.Stopped;
             loopRegistered = false;
             timingHelper.Reset();
             timingHelper.EventDispatcher.Seek(TimeSpan.MinValue, false);
@@ -138,11 +155,12 @@ namespace BananaBeats {
                     playingResources.ExceptWith(endedResources);
                     endedResources.Clear();
                 }
-                if(IsPlaying) {
+                if(PlaybackState == PlaybackState.Playing) {
                     timingHelper.CurrentPosition += delta;
                     if(timingHelper.EventDispatcher.IsEnd && playingResources.Count == 0) {
-                        IsPlaying = false;
+                        PlaybackState = PlaybackState.Stopped;
                         loopRegistered = false;
+                        PlaybackStateChanged?.Invoke(this, EventArgs.Empty);
                     }
                 } else if(playingResources.Count == 0)
                     loopRegistered = false;

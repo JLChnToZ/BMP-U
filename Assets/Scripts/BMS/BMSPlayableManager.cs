@@ -141,7 +141,7 @@ namespace BananaBeats {
         }
 
         protected override async UniTask Update(TimeSpan delta) {
-            if(IsPlaying) {
+            if(PlaybackState == PlaybackState.Playing) {
                 var pos1 = timingHelper.CurrentPosition;
                 var pos2 = timingHelper.StopResumePosition;
                 NoteDisplayScroll.time = (!EnableNoteSpeedAdjustment || pos1 > pos2 ? pos1 : pos2).ToAccurateSecondF();
@@ -152,7 +152,7 @@ namespace BananaBeats {
                 await task;
             else
                 task.GetResult();
-            if(IsPlaying) {
+            if(PlaybackState == PlaybackState.Playing) {
                 PreTimingHelper.CurrentPosition = timingHelper.CurrentPosition + PreOffset;
                 CheckNoteStatus();
             }

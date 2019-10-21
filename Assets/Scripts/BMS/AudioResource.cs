@@ -4,6 +4,7 @@ using ManagedBass;
 using BananaBeats.Utils;
 using UniRx.Async;
 using SharpFileSystem;
+using BassPlaybackState = ManagedBass.PlaybackState;
 
 namespace BananaBeats {
     public class AudioResource: BMSResource {
@@ -43,8 +44,8 @@ namespace BananaBeats {
             if(!Bass.ChannelSetPosition(handle, sliceStart))
                 throw new BassException(Bass.LastError);
             switch(Bass.ChannelIsActive(handle)) {
-                case PlaybackState.Stopped:
-                case PlaybackState.Paused:
+                case BassPlaybackState.Stopped:
+                case BassPlaybackState.Paused:
                     if(!Bass.ChannelPlay(handle))
                         throw new BassException(Bass.LastError);
                     if(!Bass.ChannelSetAttribute(handle, ChannelAttribute.Frequency, Pitch == 1 ? 0 : (Pitch * Bass.ChannelGetInfo(handle).Frequency)))
@@ -65,8 +66,8 @@ namespace BananaBeats {
             if(handle == 0) return;
             base.Resume();
             switch(Bass.ChannelIsActive(handle)) {
-                case PlaybackState.Stopped:
-                case PlaybackState.Paused:
+                case BassPlaybackState.Stopped:
+                case BassPlaybackState.Paused:
                     if(!Bass.ChannelPlay(handle))
                         throw new BassException(Bass.LastError);
                     break;
@@ -81,7 +82,7 @@ namespace BananaBeats {
         }
 
         public override void Update(TimeSpan diff) {
-            if(handle != 0 && Bass.ChannelIsActive(handle) == PlaybackState.Playing) {
+            if(handle != 0 && Bass.ChannelIsActive(handle) == BassPlaybackState.Playing) {
                 if(Bass.ChannelGetPosition(handle) >= sliceEnd && !Bass.ChannelStop(handle))
                     throw new BassException(Bass.LastError);
             } else if(wasPlaying) {
