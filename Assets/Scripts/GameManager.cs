@@ -16,17 +16,27 @@ namespace BananaBeats {
         public BGADisplayManager bgaPrefab;
         private BGADisplayManager instaniatedBGA;
 
+#if UNITY_EDITOR
+        protected void Awake() {
+            UnityEditor.EditorApplication.pauseStateChanged += OnPause;
+        }
+#endif
+
         protected void Start() {
             appearanceSetting?.Init();
             TestLoadBMS().Forget();
         }
 
-        private async UniTaskVoid TestLoadBMS() {
+        private UniTaskVoid TestLoadBMS() {
             Debug.Log("Start load BMS test");
             Debug.Log("Init BASS sound engine");
             AudioResource.InitEngine();
             Debug.Log("Load file");
             loader = new BMSLoader(bmsPath);
+            return ReloadBMS();
+        }
+
+        private async UniTaskVoid ReloadBMS() {
             Debug.Log("Parse file");
             await UniTask.SwitchToTaskPool();
             loader.Chart.Parse(ParseType.Header | ParseType.Content | ParseType.ContentSummary | ParseType.Resources);
@@ -51,6 +61,38 @@ namespace BananaBeats {
             instaniatedBGA.Load(player);
             Debug.Log("Start play BMS (sound only)");
             player.Play();
+            player.PlaybackStateChanged += PlaybackStateChanged;
+        }
+
+        private void PlaybackStateChanged(object sender, System.EventArgs e) {
+            if(player.PlaybackState == PlaybackState.Stopped) {
+                player.PlaybackStateChanged -= PlaybackStateChanged;
+                ReloadBMS().Forget();
+            }
+        }
+
+#if UNITY_EDITOR
+        private void OnPause(UnityEditor.PauseState pauseState) {
+            if(player == null || player.PlaybackState == PlaybackState.Stopped)
+                return;
+            switch(pauseState) {
+                case UnityEditor.PauseState.Paused:
+                    player.Pause();
+                    break;
+                case UnityEditor.PauseState.Unpaused:
+                    player.Play();
+                    break;
+            }
+        }
+#endif
+
+        private void OnApplicationPause(bool pause) {
+            if(player == null || player.PlaybackState == PlaybackState.Stopped)
+                return;
+            if(pause)
+                player.Pause();
+            else
+                player.Play();
         }
 
         protected void OnDestroy() {
@@ -66,6 +108,9 @@ namespace BananaBeats {
             if(instaniatedBGA != null) {
                 Destroy(instaniatedBGA);
             }
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.pauseStateChanged -= OnPause;
+#endif
         }
     }
 }
