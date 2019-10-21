@@ -56,8 +56,11 @@ namespace BananaBeats {
         }
 
         private UniTaskVoid TestLoadBMS(string path) {
-            if(loader != null)
-                loader.Dispose();
+            if(player != null) {
+                player.PlaybackStateChanged -= PlaybackStateChanged;
+                player.Dispose();
+            }
+            loader?.Dispose();
             loader = new BMSLoader(path);
             return ReloadBMS();
         }
