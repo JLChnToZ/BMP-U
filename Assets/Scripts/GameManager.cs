@@ -4,10 +4,10 @@ using BMS;
 using BananaBeats.Visualization;
 using BananaBeats.Configs;
 
+using UnityEngine.UI;
+
 namespace BananaBeats {
     public class GameManager: MonoBehaviour {
-
-        public string bmsPath;
 
         private BMSLoader loader;
         private BMSPlayableManager player;
@@ -16,6 +16,10 @@ namespace BananaBeats {
         public BGADisplayManager bgaPrefab;
         private BGADisplayManager instaniatedBGA;
 
+        public Button loadButton, pauseButton, loadPanelLoadButton, loadPanelCancelButton;
+        public RectTransform loadPanel;
+        public InputField bmsInput;
+
 #if UNITY_EDITOR
         protected void Awake() {
             UnityEditor.EditorApplication.pauseStateChanged += OnPause;
@@ -23,16 +27,38 @@ namespace BananaBeats {
 #endif
 
         protected void Start() {
+            AudioResource.InitEngine();
+
+            instaniatedBGA = Instantiate(bgaPrefab);
+
             appearanceSetting?.Init();
-            TestLoadBMS().Forget();
+
+            loadButton.onClick.AddListener(() => {
+                loadPanel.gameObject.SetActive(true);
+            });
+
+            pauseButton.onClick.AddListener(() => {
+                if(player == null) return;
+                switch(player.PlaybackState) {
+                    case PlaybackState.Paused: player.Play(); break;
+                    case PlaybackState.Playing: player.Pause(); break;
+                }
+            });
+
+            loadPanelLoadButton.onClick.AddListener(() => {
+                TestLoadBMS(bmsInput.text);
+                loadPanel.gameObject.SetActive(false);
+            });
+
+            loadPanelCancelButton.onClick.AddListener(() => {
+                loadPanel.gameObject.SetActive(false);
+            });
         }
 
-        private UniTaskVoid TestLoadBMS() {
-            Debug.Log("Start load BMS test");
-            Debug.Log("Init BASS sound engine");
-            AudioResource.InitEngine();
-            Debug.Log("Load file");
-            loader = new BMSLoader(bmsPath);
+        private UniTaskVoid TestLoadBMS(string path) {
+            if(loader != null)
+                loader.Dispose();
+            loader = new BMSLoader(path);
             return ReloadBMS();
         }
 
@@ -57,7 +83,6 @@ namespace BananaBeats {
                 PlayableLayout = BMSKeyLayout.None, // Full auto
             };
             Debug.Log("Load BGA layers");
-            instaniatedBGA = Instantiate(bgaPrefab);
             instaniatedBGA.Load(player);
             Debug.Log("Start play BMS (sound only)");
             player.Play();

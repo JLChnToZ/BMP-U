@@ -142,7 +142,7 @@ namespace BananaBeats {
 
         protected virtual UniTask Update(TimeSpan delta) {
             try {
-                if(PlaybackState == PlaybackState.Playing)
+                if(PlaybackState == PlaybackState.Playing) {
                     foreach(var resource in playingResources)
                         try {
                             if(!endedResources.Contains(resource))
@@ -152,11 +152,10 @@ namespace BananaBeats {
                             Debug.LogException(ex);
 #endif
                         }
-                if(endedResources.Count > 0) {
-                    playingResources.ExceptWith(endedResources);
-                    endedResources.Clear();
-                }
-                if(PlaybackState == PlaybackState.Playing) {
+                    if(endedResources.Count > 0) {
+                        playingResources.ExceptWith(endedResources);
+                        endedResources.Clear();
+                    }
                     timingHelper.CurrentPosition += delta;
                     if(timingHelper.EventDispatcher.IsEnd && playingResources.Count == 0) {
                         PlaybackState = PlaybackState.Stopped;

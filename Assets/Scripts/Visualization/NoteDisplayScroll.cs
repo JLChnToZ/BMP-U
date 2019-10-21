@@ -137,7 +137,6 @@ namespace BananaBeats.Visualization {
                 };
                 inputDeps = job.Schedule(this, inputDeps);
             }
-            time += Time.unscaledDeltaTime;
             return inputDeps;
         }
     }
