@@ -26,7 +26,6 @@ namespace BananaBeats.Inputs {
             var player = BMSPlayableManager.Instance;
             if(player == null || !idMap.TryGetValue(ctx.action.id, out int channel))
                 return;
-            UnityEngine.Debug.Log($"Event {ctx.action.name} {ctx.phase} => {channel}");
             switch(ctx.phase) {
                 case InputActionPhase.Started: player.HitNote(channel, true); break;
                 case InputActionPhase.Canceled: player.HitNote(channel, false); break;

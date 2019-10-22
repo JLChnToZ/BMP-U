@@ -287,7 +287,7 @@ namespace BananaBeats {
         public void HitNote(int channel, bool isHolding) {
             if(Disposed || !IsChannelPlayable(channel) ||
                 scoreCalculator == null ||
-                !noteQueues.TryGetValue(channel, out var queue) ||
+                !noteQueues.TryGetValue(channel - 10, out var queue) ||
                 queue.Count <= 0)
                 return;
             var noteData = queue.Peek();
@@ -325,21 +325,22 @@ namespace BananaBeats {
         private void CheckNoteStatus() {
             if(scoreCalculator == null) return;
             foreach(var queue in noteQueues.Values) {
-                if(queue == null || queue.Count <= 0)
-                    continue;
-                var noteData = queue.Peek();
-                var channel = noteData.Channel;
-                if(noteData.noteType != NoteType.LongEnd || !missedLongNotes.Remove(channel)) {
-                    var timeDiff = noteData.bmsEvent.time - timingHelper.CurrentPosition;
-                    if(scoreCalculator.HitNote(timeDiff, true) >= 0) {
-                        if(AutoTriggerLongNoteEnd &&
-                            noteData.noteType == NoteType.LongEnd &&
-                            timeDiff <= TimeSpan.Zero)
-                            InternalHitNote(channel, timeDiff);
-                        continue;
+                if(queue == null) continue;
+                while(queue.Count > 0) {
+                    var noteData = queue.Peek();
+                    var channel = noteData.Channel;
+                    if(noteData.noteType != NoteType.LongEnd || !missedLongNotes.Remove(channel)) {
+                        var timeDiff = noteData.bmsEvent.time - timingHelper.CurrentPosition;
+                        if(scoreCalculator.HitNote(timeDiff, true) >= 0) {
+                            if(AutoTriggerLongNoteEnd &&
+                                noteData.noteType == NoteType.LongEnd &&
+                                timeDiff <= TimeSpan.Zero)
+                                InternalHitNote(channel + 10, timeDiff);
+                            break;
+                        }
                     }
+                    InternalHitNote(channel + 10, -1);
                 }
-                InternalHitNote(channel, -1);
             }
         }
 
