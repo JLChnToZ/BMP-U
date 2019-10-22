@@ -63,6 +63,28 @@ namespace BananaBeats {
             public bool isMissed;
         }
 
+        public static BMSPlayableManager Instance { get; private set; }
+
+        public static BMSPlayableManager Load(BMSLoader loader) {
+            if(Instance != null) {
+                if(Instance.BMSLoader == loader) {
+                    Instance.Reload();
+                    return Instance;
+                }
+                Instance.Dispose();
+            }
+            return Instance = new BMSPlayableManager(loader);
+        }
+
+        private static ScoreConfig scoreConfig;
+        public static ScoreConfig ScoreConfig {
+            get { return scoreConfig; }
+            set {
+                scoreConfig = value;
+                Instance?.InitScoreCalculator();
+            }
+        }
+
         public BMSKeyLayout PlayableLayout { get; set; }
 
         public TimeSpan PreOffset { get; set; } = TimeSpan.FromSeconds(3);
@@ -74,14 +96,6 @@ namespace BananaBeats {
         public bool AutoTriggerLongNoteEnd { get; set; } = true;
 
         public int DetuneRank { get; set; } = 2;
-
-        public ScoreConfig ScoreConfig {
-            get { return scoreConfig; }
-            set {
-                scoreConfig = value;
-                InitScoreCalculator();
-            }
-        }
 
         public int Score => scoreCalculator != null ?
             scoreCalculator.Score : 0;
@@ -95,7 +109,6 @@ namespace BananaBeats {
         private readonly HashSet<int> missedLongNotes = new HashSet<int>();
         private DeferHitNote deferHitNote;
         private ScoreCalculator scoreCalculator;
-        private ScoreConfig scoreConfig;
         private EventHandler<ScoreEventArgs> onScoreEvent;
 
         public event EventHandler<ScoreEventArgs> OnScore {
@@ -117,14 +130,22 @@ namespace BananaBeats {
 
         public event Action<int> OnHitNote;
 
-        public BMSPlayableManager(BMSLoader bmsLoader) : base(bmsLoader) {
+        protected BMSPlayableManager(BMSLoader bmsLoader) : base(bmsLoader) {
             PreTimingHelper = new BMSTimingHelper(timingHelper.Chart);
             PreTimingHelper.EventDispatcher.BMSEvent += OnPreBMSEvent;
             PlayableLayout = timingHelper.Chart.Layout;
         }
 
+        public void Reload() {
+            if(Disposed) return;
+            if(scoreCalculator == null)
+                InitScoreCalculator();
+            else
+                scoreCalculator.Reload();
+        }
+
         private void InitScoreCalculator() {
-            if(scoreConfig.timingConfigs == null) {
+            if(Disposed || scoreConfig.timingConfigs == null) {
                 scoreCalculator = null;
                 return;
             }
@@ -134,6 +155,7 @@ namespace BananaBeats {
         }
 
         public override void Play() {
+            if(Disposed) return;
             NoteLayoutManager.SetLayout(BMSLoader.Chart.Layout);
             if(deferHitNote == null)
                 deferHitNote = new DeferHitNote();
@@ -263,20 +285,20 @@ namespace BananaBeats {
         }
 
         public void HitNote(int channel, bool isHolding) {
-            if(!IsChannelPlayable(channel) ||
+            if(Disposed || !IsChannelPlayable(channel) ||
                 scoreCalculator == null ||
                 !noteQueues.TryGetValue(channel, out var queue) ||
                 queue.Count <= 0)
                 return;
             var noteData = queue.Peek();
-            var timeDiff = timingHelper.CurrentPosition - noteData.bmsEvent.time;
+            var timeDiff = noteData.bmsEvent.time - timingHelper.CurrentPosition;
             switch(noteData.noteType) {
                 case NoteType.Normal:
                 case NoteType.LongStart:
                     if(isHolding) InternalHitNote(channel, timeDiff);
                     break;
                 case NoteType.LongEnd:
-                    if(!isHolding) InternalHitNote(channel, timeDiff);
+                    if(!isHolding) InternalHitNote(channel, timeDiff, false);
                     break;
             }
         }
@@ -289,15 +311,16 @@ namespace BananaBeats {
             if(noteData.isMissed && noteData.noteType == NoteType.LongStart)
                 missedLongNotes.Add(channel);
             OnHitNote?.Invoke(channel);
-            WavEvent(
-                noteData.bmsEvent,
-                DetunePerSeconds != 0 || hittedState < DetuneRank ? 1 :
-                (timingHelper.CurrentPosition - noteData.bmsEvent.time).ToAccurateSecondF() * DetunePerSeconds + 1
-            );
+            if(!noteData.isMissed)
+                WavEvent(
+                    noteData.bmsEvent,
+                    DetunePerSeconds != 0 || hittedState < DetuneRank ? 1 :
+                    (timingHelper.CurrentPosition - noteData.bmsEvent.time).ToAccurateSecondF() * DetunePerSeconds + 1
+                );
         }
 
-        private void InternalHitNote(int channel, TimeSpan timeDiff) =>
-            InternalHitNote(channel, scoreCalculator.HitNote(timeDiff));
+        private void InternalHitNote(int channel, TimeSpan timeDiff, bool safeRange = true) =>
+            InternalHitNote(channel, scoreCalculator.HitNote(timeDiff, safeRange: safeRange));
 
         private void CheckNoteStatus() {
             if(scoreCalculator == null) return;
@@ -307,7 +330,7 @@ namespace BananaBeats {
                 var noteData = queue.Peek();
                 var channel = noteData.Channel;
                 if(noteData.noteType != NoteType.LongEnd || !missedLongNotes.Remove(channel)) {
-                    var timeDiff = timingHelper.CurrentPosition - noteData.bmsEvent.time;
+                    var timeDiff = noteData.bmsEvent.time - timingHelper.CurrentPosition;
                     if(scoreCalculator.HitNote(timeDiff, true) >= 0) {
                         if(AutoTriggerLongNoteEnd &&
                             noteData.noteType == NoteType.LongEnd &&
@@ -348,6 +371,12 @@ namespace BananaBeats {
                 case 29: case 69: return (PlayableLayout & BMSKeyLayout.P29) == BMSKeyLayout.P29;
                 default: return false;
             }
+        }
+
+        public override void Dispose() {
+            base.Dispose();
+            if(Instance == this)
+                Instance = null;
         }
     }
 }

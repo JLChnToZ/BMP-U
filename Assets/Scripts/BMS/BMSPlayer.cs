@@ -26,7 +26,8 @@ namespace BananaBeats {
                 if(playbackState == value)
                     return;
                 playbackState = value;
-                PlaybackStateChanged?.Invoke(this, EventArgs.Empty);
+                if(!Disposed)
+                    PlaybackStateChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 
@@ -48,6 +49,8 @@ namespace BananaBeats {
 
         public bool PlaySound { get; set; } = true;
 
+        protected bool Disposed { get; private set; }
+
         public event BMSEventDelegate BMSEvent;
 
         public event EventHandler PlaybackStateChanged;
@@ -58,7 +61,6 @@ namespace BananaBeats {
         private readonly HashSet<BMSResource> endedResources = new HashSet<BMSResource>();
         private DateTime lastUpdate;
         private UniTask updateTask;
-        private bool disposed;
         private bool loopRegistered;
 
         public BMSPlayer(BMSLoader bmsLoader) {
@@ -69,7 +71,7 @@ namespace BananaBeats {
         }
 
         private void RegisterToPlayerLoop() {
-            if(disposed || loopRegistered) return;
+            if(Disposed || loopRegistered) return;
             loopRegistered = true;
             updateTask = UniTask.CompletedTask;
             lastUpdate = DateTime.UtcNow;
@@ -77,7 +79,7 @@ namespace BananaBeats {
         }
 
         public virtual void Play() {
-            if(disposed) return;
+            if(Disposed) return;
             PlaybackState = PlaybackState.Playing;
             RegisterToPlayerLoop();
             foreach(var resource in playingResources)
@@ -91,7 +93,7 @@ namespace BananaBeats {
         }
 
         public virtual void Pause() {
-            if(disposed) return;
+            if(Disposed) return;
             PlaybackState = PlaybackState.Paused;
             foreach(var resource in playingResources)
                 try {
@@ -121,7 +123,7 @@ namespace BananaBeats {
 
         bool IPlayerLoopItem.MoveNext() {
             if(!updateTask.IsCompleted)
-                return loopRegistered && !disposed;
+                return loopRegistered && !Disposed;
             try {
                 updateTask.GetResult();
             } catch(Exception ex) {
@@ -137,7 +139,7 @@ namespace BananaBeats {
             } catch(Exception ex) {
                 updateTask = UniTask.FromException(ex);
             }
-            return loopRegistered && !disposed;
+            return loopRegistered && !Disposed;
         }
 
         protected virtual UniTask Update(TimeSpan delta) {
@@ -267,7 +269,7 @@ namespace BananaBeats {
         }
 
         public virtual void Dispose() {
-            disposed = true;
+            Disposed = true;
             Reset();
         }
 

@@ -1,6 +1,7 @@
 {
     "name": "BananaBeats",
     "references": [
+        "Unity.InputSystem",
         "UniRx.Async",
         "BananaBeats.Visualization"
     ],

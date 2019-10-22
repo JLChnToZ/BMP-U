@@ -3,14 +3,14 @@ using UniRx.Async;
 using BMS;
 using BananaBeats.Visualization;
 using BananaBeats.Configs;
+using BananaBeats.Inputs;
 
 using UnityEngine.UI;
 
 namespace BananaBeats {
-    public class GameManager: MonoBehaviour {
+    public class LoaderTestManager: MonoBehaviour {
 
         private BMSLoader loader;
-        private BMSPlayableManager player;
 
         public NoteAppearanceSetting appearanceSetting;
         public BGADisplayManager bgaPrefab;
@@ -19,6 +19,11 @@ namespace BananaBeats {
         public Button loadButton, pauseButton, loadPanelLoadButton, loadPanelCancelButton;
         public RectTransform loadPanel;
         public InputField bmsInput;
+
+        public Text scoreText;
+        public Text comboText;
+
+        public bool auto;
 
 #if UNITY_EDITOR
         protected void Awake() {
@@ -29,6 +34,19 @@ namespace BananaBeats {
         protected void Start() {
             AudioResource.InitEngine();
 
+            InputSystem.GetActionMap();
+
+            BMSPlayableManager.ScoreConfig = new ScoreConfig {
+                comboBonusRatio = 0.4F,
+                maxScore = 10000000,
+                timingConfigs = new[] {
+                    new TimingConfig { rankType = 0, score = 1F, secondsDiff = 0.07F, },
+                    new TimingConfig { rankType = 1, score = 0.8F, secondsDiff = 0.2F, },
+                    new TimingConfig { rankType = 2, score = 0.5F, secondsDiff = 0.4F, },
+                    new TimingConfig { rankType = -1, score = 0F, secondsDiff = 1F, },
+                },
+            };
+
             instaniatedBGA = Instantiate(bgaPrefab);
 
             appearanceSetting?.Init();
@@ -38,6 +56,7 @@ namespace BananaBeats {
             });
 
             pauseButton.onClick.AddListener(() => {
+                var player = BMSPlayableManager.Instance;
                 if(player == null) return;
                 switch(player.PlaybackState) {
                     case PlaybackState.Paused: player.Play(); break;
@@ -56,10 +75,6 @@ namespace BananaBeats {
         }
 
         private UniTaskVoid TestLoadBMS(string path) {
-            if(player != null) {
-                player.PlaybackStateChanged -= PlaybackStateChanged;
-                player.Dispose();
-            }
             loader?.Dispose();
             loader = new BMSLoader(path);
             return ReloadBMS();
@@ -82,9 +97,9 @@ namespace BananaBeats {
             Debug.Log("Load images");
             await loader.LoadImages();
             Debug.Log("Init player");
-            player = new BMSPlayableManager(loader) {
-                PlayableLayout = BMSKeyLayout.None, // Full auto
-            };
+            var player = BMSPlayableManager.Load(loader);
+            if(auto)
+                player.PlayableLayout = BMSKeyLayout.None;
             Debug.Log("Load BGA layers");
             instaniatedBGA.Load(player);
             Debug.Log("Start play BMS (sound only)");
@@ -93,6 +108,7 @@ namespace BananaBeats {
         }
 
         private void PlaybackStateChanged(object sender, System.EventArgs e) {
+            var player = BMSPlayableManager.Instance;
             if(player.PlaybackState == PlaybackState.Stopped) {
                 player.PlaybackStateChanged -= PlaybackStateChanged;
                 ReloadBMS().Forget();
@@ -101,6 +117,7 @@ namespace BananaBeats {
 
 #if UNITY_EDITOR
         private void OnPause(UnityEditor.PauseState pauseState) {
+            var player = BMSPlayableManager.Instance;
             if(player == null || player.PlaybackState == PlaybackState.Stopped)
                 return;
             switch(pauseState) {
@@ -115,6 +132,7 @@ namespace BananaBeats {
 #endif
 
         private void OnApplicationPause(bool pause) {
+            var player = BMSPlayableManager.Instance;
             if(player == null || player.PlaybackState == PlaybackState.Stopped)
                 return;
             if(pause)
@@ -123,16 +141,22 @@ namespace BananaBeats {
                 player.Play();
         }
 
+        protected void Update() {
+            var player = BMSPlayableManager.Instance;
+            if(player == null) return;
+            if(scoreText != null)
+                scoreText.text = player.Score.ToString();
+            if(comboText != null)
+                comboText.text = player.Combos.ToString();
+        }
+
         protected void OnDestroy() {
             if(loader != null) {
                 loader.Dispose();
                 loader.FileSystem?.Dispose();
                 loader = null;
             }
-            if(player != null) {
-                player.Dispose();
-                player = null;
-            }
+            BMSPlayableManager.Instance?.Dispose();
             if(instaniatedBGA != null) {
                 Destroy(instaniatedBGA);
             }

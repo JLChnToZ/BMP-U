@@ -40,7 +40,7 @@ namespace BananaBeats {
             set {
                 if(maxNotes == value) return;
                 maxNotes = value;
-                Init();
+                Reload();
             }
         }
         private int maxNotes;
@@ -56,7 +56,7 @@ namespace BananaBeats {
                 throw new ArgumentException("Timing configs in score config is null.", nameof(scoreConfig));
             this.scoreConfig = scoreConfig;
             Array.Sort(this.scoreConfig.timingConfigs);
-            Init();
+            Reload();
         }
 
         public ScoreCalculator(ScoreConfig scoreConfig, int maxNotes) {
@@ -64,10 +64,10 @@ namespace BananaBeats {
                 throw new ArgumentException("Timing configs in score config is null.", nameof(scoreConfig));
             this.scoreConfig = scoreConfig;
             this.maxNotes = maxNotes;
-            Init();
+            Reload();
         }
 
-        public int HitNote(TimeSpan timeDiff, bool checkMiss = false) {
+        public int HitNote(TimeSpan timeDiff, bool checkMiss = false, bool safeRange = true) {
             if(Combos >= maxNotes)
                 throw new InvalidOperationException("Combos already excess max value!");
             if(checkMiss && timeDiff > TimeSpan.Zero)
@@ -76,20 +76,21 @@ namespace BananaBeats {
             foreach(var timing in scoreConfig.timingConfigs) {
                 if(ticksDiff >= timing.secondsDiff * TimeSpan.TicksPerSecond)
                     continue;
-                if(!checkMiss) {
+                if(timing.rankType < 0) {
+                    Combos = 0;
+                    OnScore?.Invoke(this, new ScoreEventArgs(-1, TimeSpan.Zero, 0, Score, 0));
+                } else if(!checkMiss) {
                     int scoreAdd = (int)Math.Floor(comboScores[++Combos] * timing.score);
                     Score += scoreAdd;
                     OnScore?.Invoke(this, new ScoreEventArgs(timing.rankType, timeDiff, scoreAdd, Score, Combos));
                 }
                 return timing.rankType;
             }
-            MissNote();
-            return -1;
-        }
-
-        public void MissNote() {
-            Combos = 0;
-            OnScore?.Invoke(this, new ScoreEventArgs(-1, TimeSpan.Zero, 0, Score, 0));
+            if(!safeRange) {
+                Combos = 0;
+                OnScore?.Invoke(this, new ScoreEventArgs(-1, TimeSpan.Zero, 0, Score, 0));
+            }
+            return -2;
         }
 
         public void Reset() {
@@ -97,7 +98,7 @@ namespace BananaBeats {
             Combos = 0;
         }
 
-        private void Init() {
+        public void Reload() {
             comboScores = new int[maxNotes];
             if(maxNotes > 0) {
                 double totalBaseScore = scoreConfig.maxScore * (1 - scoreConfig.comboBonusRatio);
