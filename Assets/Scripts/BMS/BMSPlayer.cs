@@ -231,11 +231,11 @@ namespace BananaBeats {
         protected virtual object OnWAVEvent(BMSEvent bmsEvent) =>
             WavEvent(bmsEvent);
 
-        protected object WavEvent(BMSEvent bmsEvent, float pitch = 1) {
+        protected object WavEvent(BMSEvent bmsEvent, float pitch = 1, bool ignoreType = false) {
             object resource = null;
             if(BMSLoader.TryGetWAV((int)bmsEvent.data2, out var wav)) {
                 resource = wav;
-                if(bmsEvent.type == BMSEventType.WAV && PlaySound)
+                if((ignoreType || bmsEvent.type == BMSEventType.WAV) && PlaySound)
                     StartHandle(bmsEvent, wav, pitch);
             }
             return resource;

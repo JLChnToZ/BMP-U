@@ -201,37 +201,33 @@ namespace BananaBeats {
         protected override object OnNoteEvent(BMSEvent bmsEvent) {
             if(!IsChannelPlayable(bmsEvent.data1)) {
                 InternalHitNote(bmsEvent.data1);
-                bmsEvent.type = BMSEventType.WAV;
-                return base.OnWAVEvent(bmsEvent);
+                return WavEvent(bmsEvent, ignoreType: true);
             }
-            return base.OnNoteEvent(bmsEvent);
+            return null;
         }
 
         protected override object OnLongNoteStartEvent(BMSEvent bmsEvent) {
             if(!IsChannelPlayable(bmsEvent.data1)) {
                 longNoteSound[bmsEvent.data1] = (int)bmsEvent.data2;
                 InternalHitNote(bmsEvent.data1);
-                bmsEvent.type = BMSEventType.WAV;
-                return base.OnWAVEvent(bmsEvent);
+                return WavEvent(bmsEvent, ignoreType: true);
             }
-            return WavEvent(bmsEvent);
+            return null;
         }
 
         protected override object OnLongNoteEndEvent(BMSEvent bmsEvent) {
             if(!IsChannelPlayable(bmsEvent.data1)) {
                 InternalHitNote(bmsEvent.data1);
-                if(!longNoteSound.TryGetValue(bmsEvent.data1, out int lnStartId) || lnStartId != (int)bmsEvent.data2) {
-                    bmsEvent.type = BMSEventType.WAV;
-                    return base.OnWAVEvent(bmsEvent);
-                }
+                if(!longNoteSound.TryGetValue(bmsEvent.data1, out int lnStartId) || lnStartId != (int)bmsEvent.data2)
+                    return WavEvent(bmsEvent, ignoreType: true);
             }
-            return WavEvent(bmsEvent);
+            return null;
         }
 
         protected override object OnUnknownEvent(BMSEvent bmsEvent) {
             if(bmsEvent.data1 > 30 && bmsEvent.data1 < 50)
                 InternalHitNote(bmsEvent.data1);
-            return WavEvent(bmsEvent);
+            return null;
         }
 
         private void OnPreBMSEvent(BMSEvent bmsEvent) {
@@ -315,7 +311,8 @@ namespace BananaBeats {
                 WavEvent(
                     noteData.bmsEvent,
                     DetunePerSeconds != 0 || hittedState < DetuneRank ? 1 :
-                    (timingHelper.CurrentPosition - noteData.bmsEvent.time).ToAccurateSecondF() * DetunePerSeconds + 1
+                    (timingHelper.CurrentPosition - noteData.bmsEvent.time).ToAccurateSecondF() * DetunePerSeconds + 1,
+                    true
                 );
         }
 

@@ -147,7 +147,7 @@ namespace BananaBeats {
             if(scoreText != null)
                 scoreText.text = player.Score.ToString();
             if(comboText != null)
-                comboText.text = player.Combos.ToString();
+                comboText.text = player.Combos > 1 ? player.Combos.ToString() : string.Empty;
         }
 
         protected void OnDestroy() {
