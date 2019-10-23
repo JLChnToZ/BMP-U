@@ -10,7 +10,7 @@ namespace BananaBeats.Inputs {
         public static InputActionMap GetActionMap() {
             if(actionMap == null) {
                 actionMap = new InputActionMap("Gameplay");
-                string binding = "zawsedqrfxtgyhujolik";
+                string binding = "q234561078tgyhujolik";//"zawsedqrfxtgyhujolik";
                 for(int i = 0; i < 20; i++) {
                     var act = actionMap.AddAction($"Channel{i + 10}", binding: $"<keyboard>/{binding[i]}");
                     act.started += InputUpdated;

@@ -144,6 +144,7 @@ namespace BananaBeats {
 
         public void Reload() {
             if(Disposed) return;
+            Reset();
             if(scoreCalculator == null)
                 InitScoreCalculator();
             else
