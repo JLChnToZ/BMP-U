@@ -307,13 +307,17 @@ namespace BananaBeats {
             if(noteData.isMissed && noteData.noteType == NoteType.LongStart)
                 missedLongNotes.Add(channel);
             OnHitNote?.Invoke(channel);
-            if(!noteData.isMissed)
-                WavEvent(
-                    noteData.bmsEvent,
-                    DetunePerSeconds != 0 || hittedState < DetuneRank ? 1 :
-                    (timingHelper.CurrentPosition - noteData.bmsEvent.time).ToAccurateSecondF() * DetunePerSeconds + 1,
-                    true
-                );
+            if(noteData.isMissed || (
+                noteData.noteType == NoteType.LongEnd &&
+                longNoteSound.TryGetValue(noteData.bmsEvent.data1, out int lnStartId) &&
+                lnStartId == (int)noteData.bmsEvent.data2))
+                return;
+            WavEvent(
+                noteData.bmsEvent,
+                DetunePerSeconds != 0 || hittedState < DetuneRank ? 1 :
+                (timingHelper.CurrentPosition - noteData.bmsEvent.time).ToAccurateSecondF() * DetunePerSeconds + 1,
+                true
+            );
         }
 
         private void InternalHitNote(int channel, TimeSpan timeDiff, bool safeRange = true) =>
