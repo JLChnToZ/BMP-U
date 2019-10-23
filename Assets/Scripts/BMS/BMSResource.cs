@@ -9,6 +9,8 @@ namespace BananaBeats {
         protected readonly FileSystemPath filePath;
         protected bool wasPlaying;
         protected BMSEvent currentEvent;
+        private bool loaded;
+        private UniTask loadTask;
 
         public BMSResourceData ResourceData { get; }
 
@@ -20,7 +22,15 @@ namespace BananaBeats {
             this.filePath = filePath;
         }
 
-        public abstract UniTask Load();
+        protected abstract UniTask LoadImpl();
+
+        public UniTask Load() {
+            if(!loaded) {
+                loaded = true;
+                loadTask = LoadImpl();
+            }
+            return loadTask;
+        }
 
         public virtual void Update(TimeSpan diff) {
             if(wasPlaying) {
@@ -48,6 +58,7 @@ namespace BananaBeats {
         }
 
         public virtual void Dispose() {
+            loaded = false;
             wasPlaying = false;
             currentEvent = default;
         }

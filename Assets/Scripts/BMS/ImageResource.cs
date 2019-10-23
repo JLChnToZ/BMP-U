@@ -17,7 +17,7 @@ namespace BananaBeats {
             base(resourceData, fileSystem, path) {
         }
 
-        public override async UniTask Load() {
+        protected override async UniTask LoadImpl() {
             await UniTask.SwitchToTaskPool();
             byte[] fileData = await fileSystem.ReadAllBytesAsync(filePath);
             await UniTask.SwitchToMainThread();

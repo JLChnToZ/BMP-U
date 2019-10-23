@@ -16,7 +16,7 @@ namespace BananaBeats {
             base(resourceData, fileSystem, path) {
         }
 
-        public override async UniTask Load() {
+        protected override async UniTask LoadImpl() {
             if(videoStream != null) return;
             await UniTask.SwitchToTaskPool();
             try {

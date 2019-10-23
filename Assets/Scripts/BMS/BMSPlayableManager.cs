@@ -85,6 +85,28 @@ namespace BananaBeats {
             }
         }
 
+        private static EventHandler<ScoreEventArgs> onScoreEvent;
+        public static event EventHandler<ScoreEventArgs> OnScore {
+            add {
+                onScoreEvent += value;
+                if(Instance?.scoreCalculator != null)
+                    Instance.scoreCalculator.OnScore += value;
+            }
+            remove {
+                onScoreEvent -= value;
+                if(Instance?.scoreCalculator != null)
+                    Instance.scoreCalculator.OnScore -= value;
+            }
+        }
+
+        public static event EventHandler GlobalPlayStateChanged;
+
+        public static event BMSEventDelegate GlobalBMSEvent;
+
+        public static event BMSEventDelegate GlobalPreBMSEvent;
+
+        public static event Action<int> OnHitNote;
+
         public BMSKeyLayout PlayableLayout { get; set; }
 
         public TimeSpan PreOffset { get; set; } = TimeSpan.FromSeconds(3);
@@ -109,31 +131,15 @@ namespace BananaBeats {
         private readonly HashSet<int> missedLongNotes = new HashSet<int>();
         private DeferHitNote deferHitNote;
         private ScoreCalculator scoreCalculator;
-        private EventHandler<ScoreEventArgs> onScoreEvent;
-
-        public event EventHandler<ScoreEventArgs> OnScore {
-            add {
-                onScoreEvent += value;
-                if(scoreCalculator != null)
-                    scoreCalculator.OnScore += value;
-            }
-            remove {
-                onScoreEvent -= value;
-                if(scoreCalculator != null)
-                    scoreCalculator.OnScore -= value;
-            }
-        }
 
         public BMSTimingHelper PreTimingHelper { get; }
-
-        public event BMSEventDelegate PreBMSEvent;
-
-        public event Action<int> OnHitNote;
 
         protected BMSPlayableManager(BMSLoader bmsLoader) : base(bmsLoader) {
             PreTimingHelper = new BMSTimingHelper(timingHelper.Chart);
             PreTimingHelper.EventDispatcher.BMSEvent += OnPreBMSEvent;
             PlayableLayout = timingHelper.Chart.Layout;
+            BMSEvent += BroadcastStaticBMSEvent;
+            PlaybackStateChanged += BroadcastPlayStateChanged;
         }
 
         public void Reload() {
@@ -224,12 +230,6 @@ namespace BananaBeats {
             return null;
         }
 
-        protected override object OnUnknownEvent(BMSEvent bmsEvent) {
-            if(bmsEvent.data1 > 30 && bmsEvent.data1 < 50)
-                InternalHitNote(bmsEvent.data1);
-            return null;
-        }
-
         private void OnPreBMSEvent(BMSEvent bmsEvent) {
             int channel = (bmsEvent.data1 - 10) % 20;
             var bpmScale = EnableNoteSpeedAdjustment ? PreTimingHelper.BPM / 135F : 1;
@@ -277,7 +277,7 @@ namespace BananaBeats {
                     break;
                 }
             }
-            PreBMSEvent?.Invoke(bmsEvent, null);
+            GlobalPreBMSEvent?.Invoke(bmsEvent, null);
         }
 
         public void HitNote(int channel, bool isHolding) {
@@ -340,6 +340,12 @@ namespace BananaBeats {
                 }
             }
         }
+
+        private static void BroadcastStaticBMSEvent(BMSEvent bmsEvent, object res) =>
+            GlobalBMSEvent?.Invoke(bmsEvent, res);
+
+        private static void BroadcastPlayStateChanged(object sender, EventArgs e) =>
+            GlobalPlayStateChanged?.Invoke(sender, e);
 
         private void ReportBeatFlow() {
             var beatFlow = timingHelper.BeatFlow;

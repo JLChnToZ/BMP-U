@@ -15,7 +15,7 @@ namespace BananaBeats {
 
         public override Vector2 Transform => new Vector2(1, -1);
 
-        public override async UniTask Load() {
+        protected override async UniTask LoadImpl() {
             ImageResult bmp;
             await UniTask.SwitchToTaskPool();
             using(var stream = fileSystem.OpenFile(filePath, System.IO.FileAccess.Read))

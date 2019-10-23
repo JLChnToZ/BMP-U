@@ -22,7 +22,7 @@ namespace BananaBeats {
             base(resourceData, fileSystem, path) {
         }
 
-        public override async UniTask Load() {
+        protected override async UniTask LoadImpl() {
             if(handle != 0) return;
             await UniTask.SwitchToTaskPool();
             if(filePath.IsReal(fileSystem))

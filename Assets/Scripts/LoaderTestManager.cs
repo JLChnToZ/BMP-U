@@ -19,11 +19,9 @@ namespace BananaBeats {
         public Button loadButton, pauseButton, loadPanelLoadButton, loadPanelCancelButton;
         public RectTransform loadPanel;
         public InputField bmsInput;
+        public Toggle autoMode;
 
-        public Text scoreText;
-        public Text comboText;
-
-        public bool auto;
+        private bool auto;
 
 #if UNITY_EDITOR
         protected void Awake() {
@@ -72,6 +70,10 @@ namespace BananaBeats {
             loadPanelCancelButton.onClick.AddListener(() => {
                 loadPanel.gameObject.SetActive(false);
             });
+
+            autoMode.onValueChanged.AddListener(value => {
+                auto = value;
+            });
         }
 
         private UniTaskVoid TestLoadBMS(string path) {
@@ -81,28 +83,15 @@ namespace BananaBeats {
         }
 
         private async UniTaskVoid ReloadBMS() {
-            Debug.Log("Parse file");
             await UniTask.SwitchToTaskPool();
             loader.Chart.Parse(ParseType.Header | ParseType.Content | ParseType.ContentSummary | ParseType.Resources);
             await UniTask.SwitchToMainThread();
-            Debug.Log("Debug Info:");
-            Debug.Log($"Title: {loader.Chart.Title}");
-            Debug.Log($"Sub Title: {loader.Chart.SubTitle}");
-            Debug.Log($"Artist: {loader.Chart.Artist}");
-            Debug.Log($"Sub Artist: {loader.Chart.SubArtist}");
-            Debug.Log($"Genre: {loader.Chart.Genre}");
-            Debug.Log($"Layout: {loader.Chart.Layout}");
-            Debug.Log("Load audio");
+            HUD.GameHUDManager.UpdateHUD(loader);
             await loader.LoadAudio();
-            Debug.Log("Load images");
             await loader.LoadImages();
-            Debug.Log("Init player");
             var player = BMSPlayableManager.Load(loader);
-            if(auto)
-                player.PlayableLayout = BMSKeyLayout.None;
-            Debug.Log("Load BGA layers");
+            if(auto) player.PlayableLayout = BMSKeyLayout.None;
             instaniatedBGA.Load(player);
-            Debug.Log("Start play BMS (sound only)");
             player.Play();
             player.PlaybackStateChanged += PlaybackStateChanged;
         }
@@ -139,15 +128,6 @@ namespace BananaBeats {
                 player.Pause();
             else
                 player.Play();
-        }
-
-        protected void Update() {
-            var player = BMSPlayableManager.Instance;
-            if(player == null) return;
-            if(scoreText != null)
-                scoreText.text = player.Score.ToString();
-            if(comboText != null)
-                comboText.text = player.Combos > 1 ? player.Combos.ToString() : string.Empty;
         }
 
         protected void OnDestroy() {

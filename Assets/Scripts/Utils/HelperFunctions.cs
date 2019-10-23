@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
 using UniRx.Async;
 using SharpFileSystem;
 using SharpFileSystem.FileSystems;
@@ -113,6 +115,29 @@ namespace BananaBeats.Utils {
                 return path;
             var pathRoot = Path.GetPathRoot(path);
             return $"/{path.Substring(pathRoot.Length).Replace(Path.DirectorySeparatorChar, FileSystemPath.DirectorySeparator)}";
+        }
+
+        public static Vector2 SizeToParent(this RawImage image, float padding = 0) {
+            float w = 0, h = 0;
+            var parent = image.GetComponentInParent<RectTransform>();
+            var imageTransform = image.GetComponent<RectTransform>();
+            if(image.texture != null) {
+                if(!parent) return imageTransform.sizeDelta;
+                padding = 1 - padding;
+                float ratio = image.texture.width / (float)image.texture.height;
+                var bounds = new Rect(0, 0, parent.rect.width, parent.rect.height);
+                if(Mathf.RoundToInt(imageTransform.eulerAngles.z) % 180 == 90)
+                    bounds.size = new Vector2(bounds.height, bounds.width);
+                h = bounds.height * padding;
+                w = h * ratio;
+                if(w > bounds.width * padding) {
+                    w = bounds.width * padding;
+                    h = w / ratio;
+                }
+            }
+            imageTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, w);
+            imageTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, h);
+            return imageTransform.sizeDelta;
         }
     }
 }
