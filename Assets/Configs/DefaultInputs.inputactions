@@ -1,0 +1,356 @@
+{
+    "name": "DefaultInputs",
+    "maps": [
+        {
+            "name": "Gameplay",
+            "id": "667a5c1d-944a-442c-903b-5761322a77a5",
+            "actions": [
+                {
+                    "name": "Channel11",
+                    "type": "Value",
+                    "id": "f3aaaf14-0666-4c6f-b030-390a6682291b",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Channel12",
+                    "type": "Value",
+                    "id": "9eb19797-de36-483b-8326-e8d609284883",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Channel13",
+                    "type": "Value",
+                    "id": "6676f0c0-c1dd-48bc-9924-3fcc7d9a0539",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Channel14",
+                    "type": "Value",
+                    "id": "9ba2459c-1f3a-48f4-8688-a5e2a507ecc8",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Channel15",
+                    "type": "Value",
+                    "id": "ffe894ea-4a64-41c6-b84e-31a77a413f1a",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Channel16",
+                    "type": "Value",
+                    "id": "a0ac7735-e844-4d3d-8839-f63fe9dbe0e7",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Channel17",
+                    "type": "Value",
+                    "id": "076bb19a-4f29-4f9d-a4f6-b35f5eb31012",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Channel18",
+                    "type": "Value",
+                    "id": "a6669408-9e63-44f7-9527-cdbef6f7ff1b",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Channel19",
+                    "type": "Value",
+                    "id": "26ec3526-c555-424a-b4cf-ee314d210928",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Channel21",
+                    "type": "Value",
+                    "id": "58810705-035b-48e0-88b2-69d748e39406",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Channel22",
+                    "type": "Value",
+                    "id": "0e23d4da-e89e-4cf6-b75b-db35524a3709",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Channel23",
+                    "type": "Value",
+                    "id": "6f68ea96-ab99-449d-8996-54f20be2e467",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Channel24",
+                    "type": "Value",
+                    "id": "c555387f-02cb-4db1-ac91-179ed466ea8d",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Channel25",
+                    "type": "Value",
+                    "id": "4119fe89-62c0-4049-bd4c-8f43a2e8ea85",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Channel26",
+                    "type": "Value",
+                    "id": "db22c553-a638-4d58-aaec-eebece4908af",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Channel27",
+                    "type": "Value",
+                    "id": "40d11c5c-d996-4408-86d1-fcdb6b67c088",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Channel28",
+                    "type": "Value",
+                    "id": "be00d866-be97-4752-813f-d6741e79b689",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Channel29",
+                    "type": "Value",
+                    "id": "caf62990-7ef5-470f-b921-eafd6b363910",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": ""
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "96b295ce-cc21-48fc-8351-3bc1da21937f",
+                    "path": "<keyboard>/a",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Channel11",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "389c0b7b-8db2-4eea-883b-798caa842016",
+                    "path": "<keyboard>/s",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Channel12",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "6548f006-1160-4821-85ff-f1d042bcc465",
+                    "path": "<keyboard>/d",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Channel13",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "52e8b438-7a3f-45a7-a99e-79b0fc71f6a9",
+                    "path": "<keyboard>/f",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Channel14",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "aa32fdca-f963-4568-af2a-00114a5b7b6a",
+                    "path": "<keyboard>/g",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Channel15",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e42bce99-28fe-4bf9-a1ba-29d914e64f1c",
+                    "path": "<keyboard>/q",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Channel16",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "a3e89a22-3e8c-4dac-bec9-ab1b7a76265f",
+                    "path": "<keyboard>/w",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Channel17",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "32dc302c-51e9-4f44-93e9-41924a15f6fc",
+                    "path": "<keyboard>/h",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Channel18",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "5c4d16c9-6dd4-4fbd-8586-895c597dfacf",
+                    "path": "<keyboard>/j",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Channel19",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "728edd53-d1d3-4ab4-9462-7030d9f4439d",
+                    "path": "<keyboard>/z",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Channel21",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "1f263c49-5252-41a9-a88c-d125bddb7a88",
+                    "path": "<keyboard>/x",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Channel22",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "0274eb0d-245d-43cb-bb8f-beebcb5a11bc",
+                    "path": "<keyboard>/c",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Channel23",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "7c22e9b9-9027-4ffa-85c3-6336b7ce4aab",
+                    "path": "<keyboard>/v",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Channel24",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "50de6d97-e7b9-4175-b58a-878c65cf20ce",
+                    "path": "<keyboard>/b",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Channel25",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "36396aec-c3cd-4c4a-8287-f3ed69f8f66d",
+                    "path": "<keyboard>/p",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Channel26",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e6319503-691d-45a1-990b-39798704cee1",
+                    "path": "<keyboard>/o",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Channel27",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "de381f67-b106-4c9a-9dcf-d259f28a88b2",
+                    "path": "<keyboard>/n",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Channel28",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "0482b24f-a78b-447c-89ed-7f5344883c03",
+                    "path": "<keyboard>/m",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Channel29",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}

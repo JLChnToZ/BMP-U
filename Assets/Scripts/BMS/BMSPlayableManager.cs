@@ -3,58 +3,12 @@ using System.Collections.Generic;
 using BananaBeats.Utils;
 using BananaBeats.Visualization;
 using BananaBeats.Layouts;
+using BananaBeats.Inputs;
 using BMS;
 using UniRx.Async;
 
 namespace BananaBeats {
-
     public class BMSPlayableManager: BMSPlayer {
-        private class DeferHitNote: IPlayerLoopItem, IDisposable {
-            private readonly Queue<NoteData> deferHitNoteBuffer = new Queue<NoteData>();
-            private bool disposed = false;
-
-            public DeferHitNote() {
-                PlayerLoopHelper.AddAction(PlayerLoopTiming.PreLateUpdate, this);
-            }
-
-            public void Enqueue(NoteData noteData) {
-                deferHitNoteBuffer.Enqueue(noteData);
-            }
-
-            public bool MoveNext() {
-                while(deferHitNoteBuffer.Count > 0) {
-                    try {
-                        var noteData = deferHitNoteBuffer.Dequeue();
-                        switch(noteData.noteType) {
-                            case NoteType.Normal:
-                            case NoteType.Fake:
-                                NoteDisplayManager.HitNote(noteData.id, false);
-                                NoteDisplayManager.Destroy(noteData.id);
-                                break;
-                            case NoteType.LongStart:
-                                NoteDisplayManager.HitNote(noteData.id, false);
-                                if(noteData.isMissed)
-                                    NoteDisplayManager.Destroy(noteData.id);
-                                break;
-                            case NoteType.LongEnd:
-                                NoteDisplayManager.HitNote(noteData.id, true);
-                                NoteDisplayManager.Destroy(noteData.id);
-                                break;
-                        }
-                        // TODO: Missed Note Handling
-                    } catch(Exception ex) {
-                        UnityEngine.Debug.LogException(ex);
-                    }
-                }
-                return !disposed;
-            }
-
-            public void Dispose() {
-                disposed = true;
-            }
-        }
-
-
         private struct NoteData {
             public BMSEvent bmsEvent;
             public int Channel => (bmsEvent.data1 - 10) % 20;
@@ -129,7 +83,8 @@ namespace BananaBeats {
         private readonly Dictionary<int, int> longNoteIds = new Dictionary<int, int>();
         private readonly Dictionary<int, Queue<NoteData>> noteQueues = new Dictionary<int, Queue<NoteData>>();
         private readonly HashSet<int> missedLongNotes = new HashSet<int>();
-        private DeferHitNote deferHitNote;
+        private readonly Queue<NoteData> deferHitNoteBuffer = new Queue<NoteData>();
+        private IDisposable deferHitNote;
         private ScoreCalculator scoreCalculator;
 
         public BMSTimingHelper PreTimingHelper { get; }
@@ -165,8 +120,14 @@ namespace BananaBeats {
             if(Disposed) return;
             NoteLayoutManager.SetLayout(BMSLoader.Chart.Layout);
             if(deferHitNote == null)
-                deferHitNote = new DeferHitNote();
+                deferHitNote = GameLoop.RunAsUpdate(DeferHitNote, PlayerLoopTiming.PreLateUpdate);
+            InputSystem.Inputs.Enable();
             base.Play();
+        }
+
+        public override void Pause() {
+            InputSystem.Inputs.Disable();
+            base.Pause();
         }
 
         protected override async UniTask Update(TimeSpan delta) {
@@ -187,7 +148,35 @@ namespace BananaBeats {
             }
         }
 
+        private void DeferHitNote() {
+            while(deferHitNoteBuffer.Count > 0) {
+                try {
+                    var noteData = deferHitNoteBuffer.Dequeue();
+                    switch(noteData.noteType) {
+                        case NoteType.Normal:
+                        case NoteType.Fake:
+                            NoteDisplayManager.HitNote(noteData.id, false);
+                            NoteDisplayManager.Destroy(noteData.id);
+                            break;
+                        case NoteType.LongStart:
+                            NoteDisplayManager.HitNote(noteData.id, false);
+                            if(noteData.isMissed)
+                                NoteDisplayManager.Destroy(noteData.id);
+                            break;
+                        case NoteType.LongEnd:
+                            NoteDisplayManager.HitNote(noteData.id, true);
+                            NoteDisplayManager.Destroy(noteData.id);
+                            break;
+                    }
+                    // TODO: Missed Note Handling
+                } catch(Exception ex) {
+                    UnityEngine.Debug.LogException(ex);
+                }
+            }
+        }
+
         public override void Reset() {
+            InputSystem.Inputs.Disable();
             base.Reset();
             PreTimingHelper?.Reset();
             if(scoreCalculator == null)
@@ -304,7 +293,7 @@ namespace BananaBeats {
             channel = (channel - 10) % 20;
             var noteData = noteQueues.GetOrConstruct(channel, true).Dequeue();
             noteData.isMissed = hittedState < 0;
-            deferHitNote.Enqueue(noteData);
+            deferHitNoteBuffer.Enqueue(noteData);
             if(noteData.isMissed && noteData.noteType == NoteType.LongStart)
                 missedLongNotes.Add(channel);
             OnHitNote?.Invoke(channel);
@@ -384,6 +373,7 @@ namespace BananaBeats {
 
         public override void Dispose() {
             base.Dispose();
+            deferHitNote?.Dispose();
             if(Instance == this)
                 Instance = null;
         }

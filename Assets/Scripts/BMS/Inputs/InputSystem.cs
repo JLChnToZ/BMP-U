@@ -4,22 +4,42 @@ using UnityEngine.InputSystem;
 
 namespace BananaBeats.Inputs {
     public static class InputSystem {
-        private static InputActionMap actionMap;
+        private static GamePlayInputs inputs;
         private static readonly Dictionary<Guid, int> idMap = new Dictionary<Guid, int>();
 
-        public static InputActionMap GetActionMap() {
-            if(actionMap == null) {
-                actionMap = new InputActionMap("Gameplay");
-                string binding = "q234561078tgyhujolik";//"zawsedqrfxtgyhujolik";
-                for(int i = 0; i < 20; i++) {
-                    var act = actionMap.AddAction($"Channel{i + 10}", binding: $"<keyboard>/{binding[i]}");
-                    act.started += InputUpdated;
-                    act.canceled += InputUpdated;
-                    idMap[act.id] = i + 10;
+        public static GamePlayInputs Inputs {
+            get {
+                if(inputs == null) {
+                    inputs = new GamePlayInputs();
+                    idMap.Clear();
+                    var gameplay = inputs.Gameplay;
+                    SetInputCallback(gameplay.Channel11, 11);
+                    SetInputCallback(gameplay.Channel12, 12);
+                    SetInputCallback(gameplay.Channel13, 13);
+                    SetInputCallback(gameplay.Channel14, 14);
+                    SetInputCallback(gameplay.Channel15, 15);
+                    SetInputCallback(gameplay.Channel16, 16);
+                    SetInputCallback(gameplay.Channel17, 17);
+                    SetInputCallback(gameplay.Channel18, 18);
+                    SetInputCallback(gameplay.Channel19, 19);
+                    SetInputCallback(gameplay.Channel21, 21);
+                    SetInputCallback(gameplay.Channel22, 22);
+                    SetInputCallback(gameplay.Channel23, 23);
+                    SetInputCallback(gameplay.Channel24, 24);
+                    SetInputCallback(gameplay.Channel25, 25);
+                    SetInputCallback(gameplay.Channel26, 26);
+                    SetInputCallback(gameplay.Channel27, 27);
+                    SetInputCallback(gameplay.Channel28, 28);
+                    SetInputCallback(gameplay.Channel29, 29);
                 }
-                actionMap.Enable();
+                return inputs;
             }
-            return actionMap;
+        }
+
+        private static void SetInputCallback(InputAction inputAction, int channel) {
+            idMap[inputAction.id] = channel;
+            inputAction.started += InputUpdated;
+            inputAction.canceled += InputUpdated;
         }
 
         private static void InputUpdated(InputAction.CallbackContext ctx) {

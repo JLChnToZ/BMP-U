@@ -16,8 +16,8 @@ namespace BananaBeats {
         public BGADisplayManager bgaPrefab;
         private BGADisplayManager instaniatedBGA;
 
-        public Button loadButton, pauseButton, loadPanelLoadButton, loadPanelCancelButton;
-        public RectTransform loadPanel;
+        public Button pauseButton, loadPanelLoadButton, loadPanelCancelButton, keyBindingsButton;
+        public RectTransform loadPanel, bindingsPanel;
         public InputField bmsInput;
         public Toggle autoMode;
 
@@ -30,9 +30,7 @@ namespace BananaBeats {
 #endif
 
         protected void Start() {
-            AudioResource.InitEngine();
-
-            InputSystem.GetActionMap();
+            BMSPlayableManager.GlobalPlayStateChanged += PlaybackStateChanged;
 
             BMSPlayableManager.ScoreConfig = new ScoreConfig {
                 comboBonusRatio = 0.4F,
@@ -49,17 +47,11 @@ namespace BananaBeats {
 
             appearanceSetting?.Init();
 
-            loadButton.onClick.AddListener(() => {
-                loadPanel.gameObject.SetActive(true);
-            });
-
             pauseButton.onClick.AddListener(() => {
                 var player = BMSPlayableManager.Instance;
-                if(player == null) return;
-                switch(player.PlaybackState) {
-                    case PlaybackState.Paused: player.Play(); break;
-                    case PlaybackState.Playing: player.Pause(); break;
-                }
+                if(player != null && player.PlaybackState == PlaybackState.Playing)
+                    player.Pause();
+                loadPanel.gameObject.SetActive(true);
             });
 
             loadPanelLoadButton.onClick.AddListener(() => {
@@ -69,10 +61,17 @@ namespace BananaBeats {
 
             loadPanelCancelButton.onClick.AddListener(() => {
                 loadPanel.gameObject.SetActive(false);
+                var player = BMSPlayableManager.Instance;
+                if(player != null && player.PlaybackState == PlaybackState.Paused)
+                    player.Play();
             });
 
             autoMode.onValueChanged.AddListener(value => {
                 auto = value;
+            });
+
+            keyBindingsButton.onClick.AddListener(() => {
+                bindingsPanel.gameObject.SetActive(true);
             });
         }
 
@@ -89,19 +88,17 @@ namespace BananaBeats {
             HUD.GameHUDManager.UpdateHUD(loader);
             await loader.LoadAudio();
             await loader.LoadImages();
+            await UniTask.Yield();
             var player = BMSPlayableManager.Load(loader);
             if(auto) player.PlayableLayout = BMSKeyLayout.None;
             instaniatedBGA.Load(player);
             player.Play();
-            player.PlaybackStateChanged += PlaybackStateChanged;
         }
 
         private void PlaybackStateChanged(object sender, System.EventArgs e) {
             var player = BMSPlayableManager.Instance;
-            if(player.PlaybackState == PlaybackState.Stopped) {
-                player.PlaybackStateChanged -= PlaybackStateChanged;
+            if(player.PlaybackState == PlaybackState.Stopped)
                 ReloadBMS().Forget();
-            }
         }
 
 #if UNITY_EDITOR
@@ -140,6 +137,7 @@ namespace BananaBeats {
             if(instaniatedBGA != null) {
                 Destroy(instaniatedBGA);
             }
+            BMSPlayableManager.GlobalPlayStateChanged -= PlaybackStateChanged;
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.pauseStateChanged -= OnPause;
 #endif

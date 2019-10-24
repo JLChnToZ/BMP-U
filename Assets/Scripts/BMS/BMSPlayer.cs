@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UniRx.Async;
+using BananaBeats.Utils;
 using BMS;
 
 namespace BananaBeats {
@@ -13,7 +14,7 @@ namespace BananaBeats {
         Paused = 2,
     }
 
-    public class BMSPlayer: IDisposable, IPlayerLoopItem {
+    public class BMSPlayer: IDisposable {
 
         public BMSLoader BMSLoader { get; }
 
@@ -61,7 +62,7 @@ namespace BananaBeats {
         private readonly HashSet<BMSResource> endedResources = new HashSet<BMSResource>();
         private DateTime lastUpdate;
         private UniTask updateTask;
-        private bool loopRegistered;
+        private IDisposable mainUpdateLoop;
 
         public BMSPlayer(BMSLoader bmsLoader) {
             BMSLoader = bmsLoader;
@@ -70,18 +71,23 @@ namespace BananaBeats {
             Reset();
         }
 
-        private void RegisterToPlayerLoop() {
-            if(Disposed || loopRegistered) return;
-            loopRegistered = true;
+        private void RegisterUpdateLoop() {
+            if(Disposed || mainUpdateLoop != null) return;
             updateTask = UniTask.CompletedTask;
             lastUpdate = DateTime.UtcNow;
-            PlayerLoopHelper.AddAction(PlayerLoopTiming.Update, this);
+            mainUpdateLoop = GameLoop.RunAsUpdate(DoUpdateLoop);
+        }
+
+        private void UnregisterUpdateLoop() {
+            if(mainUpdateLoop == null) return;
+            mainUpdateLoop.Dispose();
+            mainUpdateLoop = null;
         }
 
         public virtual void Play() {
             if(Disposed) return;
             PlaybackState = PlaybackState.Playing;
-            RegisterToPlayerLoop();
+            RegisterUpdateLoop();
             foreach(var resource in playingResources)
                 try {
                     resource.Resume();
@@ -107,7 +113,7 @@ namespace BananaBeats {
 
         public virtual void Reset() {
             PlaybackState = PlaybackState.Stopped;
-            loopRegistered = false;
+            UnregisterUpdateLoop();
             timingHelper.Reset();
             timingHelper.EventDispatcher.Seek(TimeSpan.MinValue, false);
             foreach(var resource in playingResources)
@@ -121,9 +127,9 @@ namespace BananaBeats {
             playingResources.Clear();
         }
 
-        bool IPlayerLoopItem.MoveNext() {
+        private void DoUpdateLoop() {
             if(!updateTask.IsCompleted)
-                return loopRegistered && !Disposed;
+                return;
             try {
                 updateTask.GetResult();
             } catch(Exception ex) {
@@ -139,7 +145,6 @@ namespace BananaBeats {
             } catch(Exception ex) {
                 updateTask = UniTask.FromException(ex);
             }
-            return loopRegistered && !Disposed;
         }
 
         protected virtual UniTask Update(TimeSpan delta) {
@@ -161,11 +166,11 @@ namespace BananaBeats {
                     timingHelper.CurrentPosition += delta;
                     if(timingHelper.EventDispatcher.IsEnd && playingResources.Count == 0) {
                         PlaybackState = PlaybackState.Stopped;
-                        loopRegistered = false;
+                        UnregisterUpdateLoop();
                         PlaybackStateChanged?.Invoke(this, EventArgs.Empty);
                     }
                 } else if(playingResources.Count == 0)
-                    loopRegistered = false;
+                    UnregisterUpdateLoop();
                 return UniTask.CompletedTask;
             } catch(Exception ex) {
                 return UniTask.FromException(ex);
@@ -270,6 +275,7 @@ namespace BananaBeats {
 
         public virtual void Dispose() {
             Disposed = true;
+            UnregisterUpdateLoop();
             Reset();
         }
 
