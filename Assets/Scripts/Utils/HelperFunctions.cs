@@ -92,23 +92,22 @@ namespace BananaBeats.Utils {
             return path.IsFile ? name.Substring(0, name.Length - path.GetExtension().Length) : name;
         }
 
-        public static V GetOrDefault<K, V>(this IDictionary<K, V> dictionary, K key, V defaultValue = default, bool autoAdd = false) {
+        public static V GetOrDefault<K, V>(this IDictionary<K, V> dictionary, K key, V defaultValue = default, bool autoAdd = false) =>
+            GetOrCreate(dictionary, key, _ => defaultValue, autoAdd);
+
+        public static V GetOrConstruct<K, V>(this IDictionary<K, V> dictionary, K key, bool autoAdd = true) where V : new() =>
+            GetOrCreate(dictionary, key, Construct<K, V>, autoAdd);
+
+        public static V GetOrCreate<K, V>(this IDictionary<K, V> dictionary, K key, Func<K, V> crafter, bool autoAdd = true) {
             if(!dictionary.TryGetValue(key, out V value)) {
-                value = defaultValue;
+                value = crafter(key);
                 if(autoAdd && !dictionary.IsReadOnly)
                     dictionary.Add(key, value);
             }
             return value;
         }
 
-        public static V GetOrConstruct<K, V>(this IDictionary<K, V> dictionary, K key, bool autoAdd = false) where V : new() {
-            if(!dictionary.TryGetValue(key, out V value)) {
-                value = new V();
-                if(autoAdd && !dictionary.IsReadOnly)
-                    dictionary.Add(key, value);
-            }
-            return value;
-        }
+        private static V Construct<K, V>(K _) where V : new() => new V();
 
         public static string FixPathRoot(string path) {
             if(!Path.IsPathRooted(path))

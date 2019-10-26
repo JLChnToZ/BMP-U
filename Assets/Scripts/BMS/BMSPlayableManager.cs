@@ -118,15 +118,17 @@ namespace BananaBeats {
 
         public override void Play() {
             if(Disposed) return;
-            NoteLayoutManager.SetLayout(BMSLoader.Chart.Layout);
+            var layout = BMSLoader.Chart.Layout;
+            NoteLayoutManager.SwitchLayout(layout);
+            InputManager.SwitchBindingLayout(layout);
             if(deferHitNote == null)
                 deferHitNote = GameLoop.RunAsUpdate(DeferHitNote, PlayerLoopTiming.PreLateUpdate);
-            InputSystem.Inputs.Enable();
+            InputManager.Inputs.Enable();
             base.Play();
         }
 
         public override void Pause() {
-            InputSystem.Inputs.Disable();
+            InputManager.Inputs.Disable();
             base.Pause();
         }
 
@@ -176,7 +178,7 @@ namespace BananaBeats {
         }
 
         public override void Reset() {
-            InputSystem.Inputs.Disable();
+            InputManager.Inputs.Disable();
             base.Reset();
             PreTimingHelper?.Reset();
             if(scoreCalculator == null)
@@ -226,7 +228,7 @@ namespace BananaBeats {
             switch(bmsEvent.type) {
                 case BMSEventType.Note: {
                     int id = NoteDisplayManager.Spawn(channel, bmsEvent.time, NoteType.Normal, bpmScale);
-                    noteQueues.GetOrConstruct(channel, true).Enqueue(new NoteData {
+                    noteQueues.GetOrConstruct(channel).Enqueue(new NoteData {
                         id = id,
                         bmsEvent = bmsEvent,
                         noteType = NoteType.Normal,
@@ -236,7 +238,7 @@ namespace BananaBeats {
                 case BMSEventType.LongNoteStart: {
                     int id = NoteDisplayManager.Spawn(channel, bmsEvent.time, NoteType.LongStart, bpmScale);
                     longNoteIds[channel] = id;
-                    noteQueues.GetOrConstruct(channel, true).Enqueue(new NoteData {
+                    noteQueues.GetOrConstruct(channel).Enqueue(new NoteData {
                         id = id,
                         bmsEvent = bmsEvent,
                         noteType = NoteType.LongStart,
@@ -246,7 +248,7 @@ namespace BananaBeats {
                 case BMSEventType.LongNoteEnd: {
                     if(longNoteIds.TryGetValue(channel, out int id)) {
                         NoteDisplayManager.SetEndNoteTime(id, bmsEvent.time, bpmScale);
-                        noteQueues.GetOrConstruct(channel, true).Enqueue(new NoteData {
+                        noteQueues.GetOrConstruct(channel).Enqueue(new NoteData {
                             id = id,
                             bmsEvent = bmsEvent,
                             noteType = NoteType.LongEnd,
@@ -258,7 +260,7 @@ namespace BananaBeats {
                 case BMSEventType.Unknown: {
                     if(bmsEvent.data1 > 30 && bmsEvent.data1 < 50) {
                         int id = NoteDisplayManager.Spawn(channel, bmsEvent.time, NoteType.Fake, bpmScale);
-                        noteQueues.GetOrConstruct(channel, true).Enqueue(new NoteData {
+                        noteQueues.GetOrConstruct(channel).Enqueue(new NoteData {
                             id = id,
                             bmsEvent = bmsEvent,
                             noteType = NoteType.Fake,
@@ -291,7 +293,7 @@ namespace BananaBeats {
 
         private void InternalHitNote(int channel, int hittedState = 0) {
             channel = (channel - 10) % 20;
-            var noteData = noteQueues.GetOrConstruct(channel, true).Dequeue();
+            var noteData = noteQueues.GetOrConstruct(channel).Dequeue();
             noteData.isMissed = hittedState < 0;
             deferHitNoteBuffer.Enqueue(noteData);
             if(noteData.isMissed && noteData.noteType == NoteType.LongStart)
@@ -347,29 +349,8 @@ namespace BananaBeats {
             NoteLaneManager.SetBeatFlowEffect((1 - beatFlow % timeSignature / timeSignature) * (1 - beatFlow % 1F));
         }
 
-        public bool IsChannelPlayable(int channelId) {
-            switch(channelId) {
-                case 11: case 51: return (PlayableLayout & BMSKeyLayout.P11) == BMSKeyLayout.P11;
-                case 12: case 52: return (PlayableLayout & BMSKeyLayout.P12) == BMSKeyLayout.P12;
-                case 13: case 53: return (PlayableLayout & BMSKeyLayout.P13) == BMSKeyLayout.P13;
-                case 14: case 54: return (PlayableLayout & BMSKeyLayout.P14) == BMSKeyLayout.P14;
-                case 15: case 55: return (PlayableLayout & BMSKeyLayout.P15) == BMSKeyLayout.P15;
-                case 16: case 56: return (PlayableLayout & BMSKeyLayout.P16) == BMSKeyLayout.P16;
-                case 17: case 57: return (PlayableLayout & BMSKeyLayout.P17) == BMSKeyLayout.P17;
-                case 18: case 58: return (PlayableLayout & BMSKeyLayout.P18) == BMSKeyLayout.P18;
-                case 19: case 59: return (PlayableLayout & BMSKeyLayout.P19) == BMSKeyLayout.P19;
-                case 21: case 61: return (PlayableLayout & BMSKeyLayout.P21) == BMSKeyLayout.P21;
-                case 22: case 62: return (PlayableLayout & BMSKeyLayout.P22) == BMSKeyLayout.P22;
-                case 23: case 63: return (PlayableLayout & BMSKeyLayout.P23) == BMSKeyLayout.P23;
-                case 24: case 64: return (PlayableLayout & BMSKeyLayout.P24) == BMSKeyLayout.P24;
-                case 25: case 65: return (PlayableLayout & BMSKeyLayout.P25) == BMSKeyLayout.P25;
-                case 26: case 66: return (PlayableLayout & BMSKeyLayout.P26) == BMSKeyLayout.P26;
-                case 27: case 67: return (PlayableLayout & BMSKeyLayout.P27) == BMSKeyLayout.P27;
-                case 28: case 68: return (PlayableLayout & BMSKeyLayout.P28) == BMSKeyLayout.P28;
-                case 29: case 69: return (PlayableLayout & BMSKeyLayout.P29) == BMSKeyLayout.P29;
-                default: return false;
-            }
-        }
+        public bool IsChannelPlayable(int channelId) =>
+            PlayableLayout.HasChannel(channelId);
 
         public override void Dispose() {
             base.Dispose();

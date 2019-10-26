@@ -1,9 +1,11 @@
 {
     "name": "BananaBeats",
     "references": [
-        "Unity.InputSystem",
-        "UniRx.Async",
-        "BananaBeats.Visualization"
+        "GUID:75469ad4d38634e559750d17036d5f7c",
+        "GUID:560b04d1a97f54a4e82edc0cbbb69285",
+        "GUID:f51ebe6a0ceec4240a699833d6309b23",
+        "GUID:58c3646438a845740abb1e88de963148",
+        "GUID:0bd81774ae17eba4293f046d63546f38"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -12,5 +14,6 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": []
+    "versionDefines": [],
+    "noEngineReferences": false
 }

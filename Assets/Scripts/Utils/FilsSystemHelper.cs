@@ -5,14 +5,40 @@ using SharpFileSystem.FileSystems;
 
 namespace BananaBeats.Utils {
     public static class FilsSystemHelper {
-        public static FileSystemPath RootDataPath { get; private set; }
-        public static IFileSystem DefaultFileSystem { get; private set; }
+        private static bool inited;
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static string appPath;
+        public static string AppPath {
+            get {
+                Init();
+                return appPath;
+            }
+        }
+
+        private static FileSystemPath rootDataPath;
+        public static FileSystemPath RootDataPath {
+            get {
+                Init();
+                return rootDataPath;
+            }
+        }
+
+        private static IFileSystem defaultFileSystem;
+        public static IFileSystem DefaultFileSystem {
+            get {
+                Init();
+                return defaultFileSystem;
+            }
+        }
+
         private static void Init() {
+            if(inited) return;
+            inited = true;
             var dataPath = Application.dataPath;
-            RootDataPath = FileSystemPath.Root.Combine(HelperFunctions.FixPathRoot(dataPath)).ParentPath;
-            DefaultFileSystem = new PhysicalFileSystem(Path.GetPathRoot(dataPath));
+            rootDataPath = FileSystemPath.Root.Combine(HelperFunctions.FixPathRoot(dataPath)).ParentPath;
+            var fileSystem = new PhysicalFileSystem(Path.GetPathRoot(dataPath));
+            defaultFileSystem = fileSystem;
+            appPath = fileSystem.GetPhysicalPath(rootDataPath);
         }
     }
 }
