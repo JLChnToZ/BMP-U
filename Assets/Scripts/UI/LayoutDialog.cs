@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using UnityEngine.UI.Extensions;
 using UnityEngine.InputSystem;
 using UniRx;
+using UniRx.Async;
 using BananaBeats.Inputs;
 using BananaBeats.Layouts;
 using BananaBeats.PlayerData;
@@ -201,10 +202,17 @@ namespace BananaBeats.UI {
         }
 
         private void FinishClicked() {
+            Save().Forget();
+            gameObject.SetActive(false);
+        }
+
+        private async UniTaskVoid Save() {
+            await UniTask.SwitchToTaskPool();
             using(var playerData = new PlayerDataManager()) {
                 InputManager.Save(playerData);
                 NoteLayoutManager.Save(playerData);
             }
+            await UniTask.SwitchToMainThread();
         }
     }
 }

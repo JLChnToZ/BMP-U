@@ -23,8 +23,8 @@ This is the to-do list of this branch:
   - [ ] Song Selection UI - By Folders
   - [ ] Options UI
 	- [ ] Language Selection
-    - [ ] Layout Presets
-	- [ ] Input Configuration By Layout
+    - [x] Layout Presets
+	- [x] Input Configuration By Layout
 	- [ ] Timing Adjustment
 	- [ ] Feature Toggles
 	- [ ] Speed Adjust
@@ -33,13 +33,13 @@ This is the to-do list of this branch:
 - [ ] Game Scene
   - [ ] BananaBeats Original Mode
   - [x] "Classic" Mode
-  - [ ] HUD Displaying Song Info, Progress, Score, Combos, Accuracy And Hitted Note Ranks
+  - [x] HUD Displaying Song Info, Progress, Score, Combos, Accuracy And Hitted Note Ranks
   - [x] Auto Mode
   - [x] Toggleable Auto Trigger Long Note Ends
-  - [ ] Toggleable BPM Driven Note Speed And Pausing
+  - [x] Toggleable BPM Driven Note Speed And Pausing
   - [ ] Timing Adjustment
-  - [ ] Keyboard Input
-  - [ ] Joystick Input (For controllers like IIDX etc.)
+  - [x] Keyboard Input
+  - [x] Joystick Input (For controllers like IIDX etc.)
   - [ ] Touch Screen Input
   - [ ] Speed Adjustment
   - [ ] Score Result Screen

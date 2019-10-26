@@ -2500,7 +2500,7 @@ MonoBehaviour:
   loadPanelCancelButton: {fileID: 123204120}
   keyBindingsButton: {fileID: 1643143203}
   loadPanel: {fileID: 53189925}
-  bindingsPanel: {fileID: 0}
+  bindingsPanel: {fileID: 53189925}
   bmsInput: {fileID: 1250710278}
   autoMode: {fileID: 210673712}
 --- !u!1 &1514012077
@@ -3523,7 +3523,7 @@ PrefabInstance:
     - target: {fileID: 791600765793598209, guid: deef964ae637982479ff2730be91596e,
         type: 3}
       propertyPath: m_RootOrder
-      value: 7
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 791600765793598209, guid: deef964ae637982479ff2730be91596e,
         type: 3}
