@@ -23,7 +23,7 @@ namespace BananaBeats.UI {
         [SerializeField]
         private Text controlName;
         [SerializeField]
-        private Button changeButton;
+        private Toggle changeButton;
         [SerializeField]
         private Button resetButton;
         [SerializeField]
@@ -32,7 +32,7 @@ namespace BananaBeats.UI {
         private void Awake() {
             dialogs.Add(this);
             if(changeButton != null)
-                changeButton.onClick.AddListener(ChangeClicked);
+                changeButton.onValueChanged.AddListener(ChangeClicked);
             if(resetButton != null)
                 resetButton.onClick.AddListener(ResetClicked);
         }
@@ -42,8 +42,9 @@ namespace BananaBeats.UI {
             UpdateDisplay(inputAction);
         }
 
-        private void ChangeClicked() {
-            if(!StopRebinding()) StartRebinding();
+        private void ChangeClicked(bool enabled) {
+            if(enabled) StartRebinding();
+            else StopRebinding();
             UpdateDisplay();
         }
 
@@ -113,6 +114,12 @@ namespace BananaBeats.UI {
                     bindingText.text = string.Join(", ", pathDisplay);
                     break;
                 }
+            }
+            if(changeButton != null) {
+                bool enabled = false;
+                if(rebindingOperation != null)
+                    enabled = rebindingOperation.started && !rebindingOperation.completed;
+                changeButton.SetIsOnWithoutNotify(enabled);
             }
         }
 

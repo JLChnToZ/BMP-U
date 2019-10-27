@@ -7,6 +7,7 @@ using BananaBeats.Utils;
 using BananaBeats.Layouts;
 using BananaBeats.Inputs;
 using UnityEngine;
+using UniRx.Async;
 
 namespace BananaBeats.PlayerData {
     public class PlayerDataManager: IDisposable {
@@ -27,11 +28,12 @@ namespace BananaBeats.PlayerData {
         public void SaveLayout(BMSKeyLayout layoutType, int[] layout) =>
             db.InsertOrReplace(new KeyLayouts(layoutType, layout));
 
-        public void SetKeyBinding(Guid guid, BMSKeyLayout layout, string path) {
+        public void ClearAllBindings() {
             var mapping = db.GetMapping<KeyBinding>();
-            db.Execute(
-                $"DELETE FROM {mapping.TableName} WHERE {mapping.FindColumnWithPropertyName("Guid").Name} = ? AND {mapping.FindColumnWithPropertyName("LayoutType").Name} = ?",
-                guid, layout);
+            db.Execute($"DELETE FROM {mapping.TableName}");
+        }
+
+        public void SetKeyBinding(Guid guid, BMSKeyLayout layout, string path) {
             db.Insert(new KeyBinding {
                 Guid = guid,
                 LayoutType = layout,
@@ -55,11 +57,26 @@ namespace BananaBeats.PlayerData {
 
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        private static void Init() {
+        public static void Load() => LoadAsync().Forget();
+
+        private static async UniTaskVoid LoadAsync() {
+            await UniTask.SwitchToTaskPool();
             using(var playerData = new PlayerDataManager()) {
                 InputManager.Load(playerData);
                 NoteLayoutManager.Load(playerData);
             }
+            await UniTask.SwitchToMainThread();
+        }
+
+        public static void Save() => SaveAsync().Forget();
+
+        private static async UniTaskVoid SaveAsync() {
+            await UniTask.SwitchToTaskPool();
+            using(var playerData = new PlayerDataManager()) {
+                InputManager.Save(playerData);
+                NoteLayoutManager.Save(playerData);
+            }
+            await UniTask.SwitchToMainThread();
         }
     }
 

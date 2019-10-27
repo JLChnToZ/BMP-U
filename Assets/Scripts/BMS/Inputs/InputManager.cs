@@ -69,6 +69,8 @@ namespace BananaBeats.Inputs {
                 action.ApplyBindingOverride(path);
             else if(bindings.TryGetValue(layout.GetFallbackLayout(), out mapping) && mapping.TryGetValue(action.id, out path))
                 action.ApplyBindingOverride(path);
+            else if(bindings.TryGetValue(BMSKeyLayout.None, out mapping) && mapping.TryGetValue(action.id, out path))
+                action.ApplyBindingOverride(path);
         }
 
         public static void ApplyBinding(Guid id, bool all = false) =>
@@ -77,14 +79,13 @@ namespace BananaBeats.Inputs {
         public static void ApplyBinding(InputAction action, bool all = false) {
             if(action == null) return;
             var bindingPath = GetBindingPath(action.bindings[0]);
-            {
-                if(bindings.TryGetValue(currentLayout, out var mapping))
-                    mapping[action.id] = bindingPath;
-            }
             if(all) {
                 foreach(var mapping in bindings.Values)
-                    if(mapping.ContainsKey(action.id))
-                        mapping[action.id] = bindingPath;
+                    mapping.Remove(action.id);
+                bindings.GetOrConstruct(BMSKeyLayout.None)[action.id] = bindingPath;
+            } else {
+                if(bindings.TryGetValue(currentLayout, out var mapping))
+                    mapping[action.id] = bindingPath;
             }
         }
 

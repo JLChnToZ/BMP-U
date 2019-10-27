@@ -30,21 +30,27 @@ namespace BananaBeats.UI {
 
         private readonly List<BMSKeyLayout> layoutSelectValues = new List<BMSKeyLayout>();
         private readonly Dictionary<BMSKeyLayout, ChannelToggle> channelToggles = new Dictionary<BMSKeyLayout, ChannelToggle>();
-        private readonly HashSet<RebindKeyControl> rebindDialogs = new HashSet<RebindKeyControl>();
+        private readonly HashSet<RebindKeyControl> rebindControls = new HashSet<RebindKeyControl>();
         private int[] layoutArrangement;
 
+        private bool firstRun = true;
         private bool isUpdatingToggles = false;
         private bool isUpdatingArrangements = false;
         private int userDefinedCount = 0;
 
         protected void Awake() {
-            PrepareChannelToggles();
-            PrepareBinders();
-            PrepareLayoutSelect();
+            firstRun = true;
             removeLayoutButton.onClick.AddListener(RemoveLayoutClicked);
             toggleApplyBindingToAll.onValueChanged.AddListener(ApplyBindingToAllChanged);
             layoutEditor.OnElementDropped.AddListener(LayoutElementDropped);
             finishButton.onClick.AddListener(FinishClicked);
+        }
+
+        protected void OnEnable() {
+            PrepareChannelToggles();
+            PrepareBinders();
+            PrepareLayoutSelect();
+            firstRun = false;
         }
 
         private void PrepareLayoutSelect() {
@@ -83,29 +89,29 @@ namespace BananaBeats.UI {
         }
 
         private void PrepareChannelToggles() {
-            var instances = new List<IObservable<(BMSKeyLayout, BMSKeyLayout)>>(20);
-            for(int i = 11; i < 30; i++)
-                if(i % 10 != 0) {
-                    var channelToggle = Instantiate(channelTogglePrefab, channelToggleContainer)
-                        .Init(i);
-                    channelToggles[NoteLayoutManager.ChannelToLayout(i)] = channelToggle;
-                    instances.Add(
-                        channelToggle.ToggleChanged
-                        .Scan((BMSKeyLayout.None, BMSKeyLayout.None), ((BMSKeyLayout, BMSKeyLayout) o, BMSKeyLayout v) => (o.Item2, v))
-                    );
-                }
-            instances.Merge()
-                .TakeUntilDestroy(this)
+            if(firstRun)
+                for(int i = 11; i < 30; i++)
+                    if(i % 10 != 0)
+                        channelToggles[NoteLayoutManager.ChannelToLayout(i)] = Instantiate(channelTogglePrefab, channelToggleContainer).Init(i);
+            channelToggles.Values
+                .Select(channelToggle => channelToggle.ToggleChanged
+                .Scan((BMSKeyLayout.None, BMSKeyLayout.None), ((BMSKeyLayout, BMSKeyLayout) o, BMSKeyLayout v) => (o.Item2, v)))
+                .Merge()
+                .TakeUntilDisable(this)
                 .Scan(BMSKeyLayout.None, (BMSKeyLayout o, (BMSKeyLayout, BMSKeyLayout) v) => (o & ~v.Item1) | v.Item2)
                 .Subscribe(ChannelToggleChanged);
         }
 
         private void PrepareBinders() {
-            foreach(var channel in InputManager.Inputs) {
-                var component = Instantiate(rebindPrefab, rebindContainer);
-                component.SetInputActionForBinding(channel);
-                rebindDialogs.Add(component);
-            }
+            if(firstRun)
+                foreach(var channel in InputManager.Inputs) {
+                    var component = Instantiate(rebindPrefab, rebindContainer);
+                    component.SetInputActionForBinding(channel);
+                    rebindControls.Add(component);
+                }
+            else
+                foreach(var ctrl in rebindControls)
+                    ctrl.UpdateDisplay();
         }
 
         private void OnLayoutSelectChanged(int index) {
@@ -115,6 +121,8 @@ namespace BananaBeats.UI {
                 layoutArrangement = NoteLayoutManager.GetDefaultPreset(layout);
                 NoteLayoutManager.layoutPresets[layout] = layoutArrangement;
             }
+            InputManager.bindings.GetOrConstruct(layout);
+            InputManager.SwitchBindingLayout(layout);
             UpdateLayout();
         }
 
@@ -152,7 +160,7 @@ namespace BananaBeats.UI {
         }
 
         private void ApplyBindingToAllChanged(bool enabled) {
-            foreach(var dlg in rebindDialogs)
+            foreach(var dlg in rebindControls)
                 dlg.applyToAllLayouts = enabled;
         }
 
@@ -171,6 +179,8 @@ namespace BananaBeats.UI {
                 Destroy(child.gameObject);
             }
             layoutEditor.Refresh();
+            foreach(var ctrl in rebindControls)
+                ctrl.UpdateDisplay();
             isUpdatingArrangements = false;
         }
 
@@ -202,17 +212,8 @@ namespace BananaBeats.UI {
         }
 
         private void FinishClicked() {
-            Save().Forget();
+            PlayerDataManager.Save();
             gameObject.SetActive(false);
-        }
-
-        private async UniTaskVoid Save() {
-            await UniTask.SwitchToTaskPool();
-            using(var playerData = new PlayerDataManager()) {
-                InputManager.Save(playerData);
-                NoteLayoutManager.Save(playerData);
-            }
-            await UniTask.SwitchToMainThread();
         }
     }
 }
