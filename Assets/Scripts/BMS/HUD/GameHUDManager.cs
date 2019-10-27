@@ -27,7 +27,12 @@ namespace BananaBeats.HUD {
         public Image scoreRankDisplay;
         public Sprite[] rankSprites;
         public Image songProgressDisplay;
+        public Graphic[] bpmFlashing;
+        public Color bpmFlashColor = Color.white;
+        public Color bpmDimColor = Color.white;
+
         private IDisposable updateSongProgress;
+        private IDisposable updateBPMFlashing;
 
         private Animation scoreRankDisplayAnim;
 
@@ -40,6 +45,8 @@ namespace BananaBeats.HUD {
                 scoreRankDisplayAnim = scoreRankDisplay.GetComponent<Animation>();
             if(songProgressDisplay != null)
                 updateSongProgress = GameLoop.RunAsUpdate(UpdateProgress);
+            if(bpmFlashing != null && bpmFlashing.Length > 0)
+                updateBPMFlashing = GameLoop.RunAsUpdate(UpdateFlashingBPM);
         }
 
         protected void OnDestroy() {
@@ -48,6 +55,7 @@ namespace BananaBeats.HUD {
             BMSPlayableManager.GlobalBMSEvent -= OnBMSEvent;
             updateHUD -= UpdateHUDHandler;
             updateSongProgress?.Dispose();
+            updateBPMFlashing?.Dispose();
         }
 
         protected void OnScoreUpdate(object sender, ScoreEventArgs e) {
@@ -129,6 +137,24 @@ namespace BananaBeats.HUD {
             if(instance != null)
                 songProgressDisplay.fillAmount = 
                     (float)instance.CurrentPosition.Ticks / instance.Duration.Ticks;
+        }
+
+        private void UpdateFlashingBPM() {
+            if(bpmFlashing == null || bpmFlashing.Length == 0) {
+                updateBPMFlashing.Dispose();
+                updateBPMFlashing = null;
+                return;
+            }
+            var instance = BMSPlayableManager.Instance;
+            if(instance == null) return;
+            var beatFlow = instance.BeatFlow % instance.TimeSignature;
+            var currentBeat = (int)beatFlow;
+            var lerpValue = beatFlow % 1;
+            for(int i = 0; i < bpmFlashing.Length; i++)
+                bpmFlashing[i].color = (i == 0 ? currentBeat == 0 :
+                    i % (bpmFlashing.Length - 1) == currentBeat % (bpmFlashing.Length - 1)) ?
+                    Color.Lerp(bpmFlashColor, bpmDimColor, lerpValue) :
+                    bpmDimColor;
         }
     }
 }

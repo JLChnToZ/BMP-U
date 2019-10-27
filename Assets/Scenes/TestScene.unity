@@ -1229,6 +1229,9 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 33de7a94839c89845b7f24fe353d09a3, type: 3}
   - {fileID: 21300000, guid: e9d87a7b1c625e6469276a22a7690d8b, type: 3}
   songProgressDisplay: {fileID: 0}
+  bpmFlashing: []
+  bpmFlashColor: {r: 1, g: 1, b: 1, a: 1}
+  bpmDimColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!1 &761402760
 GameObject:
   m_ObjectHideFlags: 0
@@ -4334,6 +4337,96 @@ PrefabInstance:
     - target: {fileID: 4150691519114356040, guid: dae7d7cc9a1050d47833f8f36b78848e,
         type: 3}
       propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2809185716794466132, guid: dae7d7cc9a1050d47833f8f36b78848e,
+        type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2809185716794466132, guid: dae7d7cc9a1050d47833f8f36b78848e,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2809185716794466132, guid: dae7d7cc9a1050d47833f8f36b78848e,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2809185716794466132, guid: dae7d7cc9a1050d47833f8f36b78848e,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2809185716794466132, guid: dae7d7cc9a1050d47833f8f36b78848e,
+        type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2809185716794466132, guid: dae7d7cc9a1050d47833f8f36b78848e,
+        type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6664816033908807848, guid: dae7d7cc9a1050d47833f8f36b78848e,
+        type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6664816033908807848, guid: dae7d7cc9a1050d47833f8f36b78848e,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6664816033908807848, guid: dae7d7cc9a1050d47833f8f36b78848e,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6664816033908807848, guid: dae7d7cc9a1050d47833f8f36b78848e,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6664816033908807848, guid: dae7d7cc9a1050d47833f8f36b78848e,
+        type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6664816033908807848, guid: dae7d7cc9a1050d47833f8f36b78848e,
+        type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4680060166455214231, guid: dae7d7cc9a1050d47833f8f36b78848e,
+        type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4680060166455214231, guid: dae7d7cc9a1050d47833f8f36b78848e,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4680060166455214231, guid: dae7d7cc9a1050d47833f8f36b78848e,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4680060166455214231, guid: dae7d7cc9a1050d47833f8f36b78848e,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4680060166455214231, guid: dae7d7cc9a1050d47833f8f36b78848e,
+        type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4680060166455214231, guid: dae7d7cc9a1050d47833f8f36b78848e,
+        type: 3}
+      propertyPath: m_SizeDelta.x
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
