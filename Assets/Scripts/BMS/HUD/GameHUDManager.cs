@@ -152,7 +152,7 @@ namespace BananaBeats.HUD {
             var lerpValue = beatFlow % 1;
             for(int i = 0; i < bpmFlashing.Length; i++)
                 bpmFlashing[i].color = (i == 0 ? currentBeat == 0 :
-                    i % (bpmFlashing.Length - 1) == currentBeat % (bpmFlashing.Length - 1)) ?
+                    currentBeat > 0 && i % (bpmFlashing.Length - 1) == currentBeat % (bpmFlashing.Length - 1)) ?
                     Color.Lerp(bpmFlashColor, bpmDimColor, lerpValue) :
                     bpmDimColor;
         }

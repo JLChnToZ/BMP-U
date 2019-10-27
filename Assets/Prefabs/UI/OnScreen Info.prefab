@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 4150691519114356040}
   - component: {fileID: 4150691519114356038}
   - component: {fileID: 4150691519114356041}
+  - component: {fileID: 6134294302849816958}
   m_Layer: 5
   m_Name: B
   m_TagString: Untagged
@@ -77,6 +78,21 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: B
+--- !u!114 &6134294302849816958
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4150691519114356043}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_EffectColor: {r: 0, g: 0, b: 0, a: 1}
+  m_EffectDistance: {x: 0.5, y: 0.5}
+  m_UseGraphicAlpha: 1
 --- !u!1 &4150691519661690253
 GameObject:
   m_ObjectHideFlags: 0
@@ -542,6 +558,7 @@ GameObject:
   - component: {fileID: 4150691520321774429}
   - component: {fileID: 4150691520321774427}
   - component: {fileID: 4150691520321774426}
+  - component: {fileID: 4154805810878704678}
   m_Layer: 5
   m_Name: BPM
   m_TagString: Untagged
@@ -608,6 +625,21 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: 130
+--- !u!114 &4154805810878704678
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4150691520321774428}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_EffectColor: {r: 0, g: 0, b: 0, a: 1}
+  m_EffectDistance: {x: 0.5, y: 0.5}
+  m_UseGraphicAlpha: 1
 --- !u!1 &4150691520624045530
 GameObject:
   m_ObjectHideFlags: 0
@@ -903,6 +935,7 @@ GameObject:
   - component: {fileID: 2809185716794466132}
   - component: {fileID: 7875753347555274427}
   - component: {fileID: 7802205164749617825}
+  - component: {fileID: 1939342996258486025}
   m_Layer: 5
   m_Name: P
   m_TagString: Untagged
@@ -969,6 +1002,21 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: P
+--- !u!114 &1939342996258486025
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6508924398609619633}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_EffectColor: {r: 0, g: 0, b: 0, a: 1}
+  m_EffectDistance: {x: 0.5, y: 0.5}
+  m_UseGraphicAlpha: 1
 --- !u!1 &6656076762766265307
 GameObject:
   m_ObjectHideFlags: 0
@@ -980,6 +1028,7 @@ GameObject:
   - component: {fileID: 6664816033908807848}
   - component: {fileID: 2817090801704432259}
   - component: {fileID: 4231482014483251870}
+  - component: {fileID: 5476027103428622987}
   m_Layer: 5
   m_Name: M
   m_TagString: Untagged
@@ -1046,6 +1095,21 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: M
+--- !u!114 &5476027103428622987
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6656076762766265307}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_EffectColor: {r: 0, g: 0, b: 0, a: 1}
+  m_EffectDistance: {x: 0.5, y: 0.5}
+  m_UseGraphicAlpha: 1
 --- !u!1 &8875626274603215490
 GameObject:
   m_ObjectHideFlags: 0
