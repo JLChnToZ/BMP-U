@@ -4336,20 +4336,5 @@ PrefabInstance:
       propertyPath: m_SizeDelta.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4150691521171197449, guid: dae7d7cc9a1050d47833f8f36b78848e,
-        type: 3}
-      propertyPath: comboText
-      value: 
-      objectReference: {fileID: 857211518}
-    - target: {fileID: 4150691521171197449, guid: dae7d7cc9a1050d47833f8f36b78848e,
-        type: 3}
-      propertyPath: scoreText
-      value: 
-      objectReference: {fileID: 637695030}
-    - target: {fileID: 4150691521171197449, guid: dae7d7cc9a1050d47833f8f36b78848e,
-        type: 3}
-      propertyPath: scoreRankDisplay
-      value: 
-      objectReference: {fileID: 2022118970}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: dae7d7cc9a1050d47833f8f36b78848e, type: 3}
