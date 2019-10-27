@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -10,6 +11,8 @@ namespace BananaBeats {
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Init() {
             AudioResource.InitEngine();
+
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
             BMSPlayableManager.ScoreConfig = new ScoreConfig {
                 comboBonusRatio = 0.4F,
