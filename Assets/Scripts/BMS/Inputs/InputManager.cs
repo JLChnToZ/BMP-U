@@ -48,6 +48,7 @@ namespace BananaBeats.Inputs {
         }
 
         public static void Save(PlayerDataManager playerDataManager) {
+            playerDataManager.ClearAllBindings();
             foreach(var binding in bindings)
                 foreach(var mapping in binding.Value)
                     playerDataManager.SetKeyBinding(mapping.Key, binding.Key, mapping.Value);
@@ -65,12 +66,18 @@ namespace BananaBeats.Inputs {
         public static void SwitchBinding(InputAction action, BMSKeyLayout layout) {
             if(action == null) return;
             action.RemoveAllBindingOverrides();
-            if(bindings.TryGetValue(layout, out var mapping) && mapping.TryGetValue(action.id, out var path))
-                action.ApplyBindingOverride(path);
-            else if(bindings.TryGetValue(layout.GetFallbackLayout(), out mapping) && mapping.TryGetValue(action.id, out path))
-                action.ApplyBindingOverride(path);
-            else if(bindings.TryGetValue(BMSKeyLayout.None, out mapping) && mapping.TryGetValue(action.id, out path))
-                action.ApplyBindingOverride(path);
+            // Layout specific -> Fallback -> Global -> Default
+            var _ = TrySwitchBinding(action, layout) ||
+                TrySwitchBinding(action, layout.GetFallbackLayout()) ||
+                TrySwitchBinding(action, BMSKeyLayout.None);
+        }
+
+        private static bool TrySwitchBinding(InputAction action, BMSKeyLayout layout) {
+            if(bindings.TryGetValue(layout, out var mapping) && mapping.TryGetValue(action.id, out var result)) {
+                action.ApplyBindingOverride(result);
+                return true;
+            }
+            return false;
         }
 
         public static void ApplyBinding(Guid id, bool all = false) =>

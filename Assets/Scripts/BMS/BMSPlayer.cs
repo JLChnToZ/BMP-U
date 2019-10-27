@@ -44,6 +44,8 @@ namespace BananaBeats {
 
         public TimeSpan StopPosition => timingHelper.StopResumePosition;
 
+        public TimeSpan Duration => timingHelper.EventDispatcher.EndTime;
+
         public int PolyPhony { get; private set; }
 
         public bool PlayBGA { get; set; } = true;
@@ -115,7 +117,6 @@ namespace BananaBeats {
             PlaybackState = PlaybackState.Stopped;
             UnregisterUpdateLoop();
             timingHelper.Reset();
-            timingHelper.EventDispatcher.Seek(TimeSpan.MinValue, false);
             foreach(var resource in playingResources)
                 try {
                     resource.Reset();
@@ -167,7 +168,6 @@ namespace BananaBeats {
                     if(timingHelper.EventDispatcher.IsEnd && playingResources.Count == 0) {
                         PlaybackState = PlaybackState.Stopped;
                         UnregisterUpdateLoop();
-                        PlaybackStateChanged?.Invoke(this, EventArgs.Empty);
                     }
                 } else if(playingResources.Count == 0)
                     UnregisterUpdateLoop();

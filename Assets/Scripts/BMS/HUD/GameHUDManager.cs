@@ -26,6 +26,8 @@ namespace BananaBeats.HUD {
         public Text comboText;
         public Image scoreRankDisplay;
         public Sprite[] rankSprites;
+        public Image songProgressDisplay;
+        private IDisposable updateSongProgress;
 
         private Animation scoreRankDisplayAnim;
 
@@ -36,6 +38,8 @@ namespace BananaBeats.HUD {
             updateHUD += UpdateHUDHandler;
             if(scoreRankDisplay != null)
                 scoreRankDisplayAnim = scoreRankDisplay.GetComponent<Animation>();
+            if(songProgressDisplay != null)
+                updateSongProgress = GameLoop.RunAsUpdate(UpdateProgress);
         }
 
         protected void OnDestroy() {
@@ -43,6 +47,7 @@ namespace BananaBeats.HUD {
             BMSPlayableManager.GlobalPlayStateChanged -= PlayStateChanged;
             BMSPlayableManager.GlobalBMSEvent -= OnBMSEvent;
             updateHUD -= UpdateHUDHandler;
+            updateSongProgress?.Dispose();
         }
 
         protected void OnScoreUpdate(object sender, ScoreEventArgs e) {
@@ -76,7 +81,7 @@ namespace BananaBeats.HUD {
             UpdateText(subArtistText, chart.SubArtist);
             UpdateText(genreText, chart.Genre);
             UpdateText(commentsText, chart.Comments);
-            UpdateText(levelText, chart.Rank.ToString());
+            UpdateText(levelText, chart.PlayLevel.ToString());
             UpdateText(bpmText, chart.BPM.ToString());
             LoadStageImage(loader).Forget();
         }
@@ -112,6 +117,18 @@ namespace BananaBeats.HUD {
                     UpdateText(bpmText, bmsEvent.Data2F.ToString());
                     break;
             }
+        }
+
+        private void UpdateProgress() {
+            if(songProgressDisplay == null) {
+                updateSongProgress.Dispose();
+                updateSongProgress = null;
+                return;
+            }
+            var instance = BMSPlayableManager.Instance;
+            if(instance != null)
+                songProgressDisplay.fillAmount = 
+                    (float)instance.CurrentPosition.Ticks / instance.Duration.Ticks;
         }
     }
 }

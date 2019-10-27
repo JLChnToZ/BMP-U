@@ -60,23 +60,23 @@ namespace BananaBeats.PlayerData {
         public static void Load() => LoadAsync().Forget();
 
         private static async UniTaskVoid LoadAsync() {
-            await UniTask.SwitchToTaskPool();
             using(var playerData = new PlayerDataManager()) {
+                await UniTask.SwitchToTaskPool();
                 InputManager.Load(playerData);
                 NoteLayoutManager.Load(playerData);
+                await UniTask.SwitchToMainThread();
             }
-            await UniTask.SwitchToMainThread();
         }
 
         public static void Save() => SaveAsync().Forget();
 
         private static async UniTaskVoid SaveAsync() {
-            await UniTask.SwitchToTaskPool();
             using(var playerData = new PlayerDataManager()) {
+                await UniTask.SwitchToTaskPool();
                 InputManager.Save(playerData);
                 NoteLayoutManager.Save(playerData);
+                await UniTask.SwitchToMainThread();
             }
-            await UniTask.SwitchToMainThread();
         }
     }
 

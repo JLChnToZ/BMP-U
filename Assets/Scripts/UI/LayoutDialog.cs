@@ -196,7 +196,7 @@ namespace BananaBeats.UI {
                     return;
                 default: {
                     layoutSelect.options.RemoveAt(layoutSelect.value);
-                    if(layoutSelect.value > layoutSelect.options.Count)
+                    if(layoutSelect.value >= layoutSelect.options.Count)
                         layoutSelect.SetValueWithoutNotify(0);
                     OnLayoutSelectChanged(layoutSelect.value);
                     break;
