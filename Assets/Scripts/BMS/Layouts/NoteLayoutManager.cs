@@ -42,7 +42,7 @@ namespace BananaBeats.Layouts {
 
             // Draw end line
             for(int i = 0; i < preset.Length - 1; i++)
-                NoteLaneManager.CreateLane(endPos[preset[i]], endPos[preset[i + 1]]);
+                NoteLaneManager.CreateLane(endPos[preset[i] - 10], endPos[preset[i + 1] - 10]);
         }
 
         public static BMSKeyLayout GetFallbackLayout(this BMSKeyLayout layout) {
