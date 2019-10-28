@@ -74,18 +74,35 @@ namespace BananaBeats {
             }
         }
 
-        public UniTask LoadImages() {
+        public UniTask LoadImages(IProgress<float> progress = null) {
             if(bmpLoaded) return bmpLoader;
             bmpLoaded = true;
-            return bmpLoader = LoadImagesAsync();
+            return bmpLoader = PrepareAndLoadImagesAsync(progress);
         }
 
-        private async UniTask LoadImagesAsync() {
-            foreach(var resData in Chart.IterateResourceData(ResourceType.bmp))
-                await LoadSingleImage(resData);
+        private async UniTask PrepareAndLoadImagesAsync(IProgress<float> progress = null) {
+            PrepareLoadImages();
+            await LoadResourceAsync(bmp.Values, progress);
         }
 
         private async UniTask<ImageResource> LoadSingleImage(BMSResourceData resData) {
+            var res = PrepareLoadSingleImage(resData);
+            try {
+                await res.Load();
+            } catch(Exception ex) {
+                Debug.LogError($"Error while loading {resData.resourceId} {resData.dataPath}");
+                Debug.LogException(ex);
+            }
+            await UniTask.SwitchToMainThread();
+            return res;
+        }
+
+        public void PrepareLoadImages() {
+            foreach(var resData in Chart.IterateResourceData(ResourceType.bmp))
+                PrepareLoadSingleImage(resData);
+        }
+
+        private ImageResource PrepareLoadSingleImage(BMSResourceData resData) {
             if(!bmp.TryGetValue((int)resData.resourceId, out var res) || res.ResourceData.dataPath != resData.dataPath) {
                 if(res != null) res.Dispose();
                 if(string.IsNullOrEmpty(resData.dataPath)) return null;
@@ -110,23 +127,22 @@ namespace BananaBeats {
                 }
                 bmp[(int)resData.resourceId] = res;
             }
-            try {
-                await res.Load();
-            } catch(Exception ex) {
-                Debug.LogError($"Error while loading {resData.resourceId} {resData.dataPath}");
-                Debug.LogException(ex);
-            }
-            await UniTask.SwitchToMainThread();
             return res;
         }
 
-        public UniTask LoadAudio() {
+        public UniTask LoadAudio(IProgress<float> progress = null) {
             if(wavLoaded) return wavLoader;
             wavLoaded = true;
-            return wavLoader = LoadAudioAsync();
+            return wavLoader = PrepareAndLoadAudioAsync(progress);
         }
 
-        private async UniTask LoadAudioAsync() {
+        private async UniTask PrepareAndLoadAudioAsync(IProgress<float> progress = null) {
+            PrepareLoadAudio();
+            await LoadResourceAsync(wav.Values, progress);
+            await UniTask.SwitchToMainThread();
+        }
+
+        public void PrepareLoadAudio() {
             HashSet<FileSystemPath> checkedPaths = null;
             IDictionary<FileSystemPath, FileSystemPath> cache = null;
             foreach(var resData in Chart.IterateResourceData(ResourceType.wav)) {
@@ -145,14 +161,24 @@ namespace BananaBeats {
                     }
                     wav[(int)resData.resourceId] = res = new AudioResource(resData, FileSystem, path);
                 }
+            }
+        }
+
+        private async UniTask LoadResourceAsync<T>(ICollection<T> collection, IProgress<float> progress = null) where T : BMSResource {
+            int i = 0;
+            float countf = collection.Count;
+            foreach(var res in collection) {
                 try {
                     await res.Load();
                 } catch(Exception ex) {
+                    var resData = res.ResourceData;
                     Debug.LogError($"Error while loading {resData.resourceId} {resData.dataPath}");
                     Debug.LogException(ex);
+                } finally {
+                    await UniTask.SwitchToMainThread();
                 }
+                progress?.Report(++i / countf);
             }
-            await UniTask.SwitchToMainThread();
         }
 
         public UniTask<ImageResource> GetStageImage() =>

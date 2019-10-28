@@ -1,5 +1,6 @@
 // GENERATED AUTOMATICALLY FROM 'Assets/Configs/DefaultInputs.inputactions'
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.InputSystem;
@@ -7,7 +8,7 @@ using UnityEngine.InputSystem.Utilities;
 
 namespace BananaBeats.Inputs
 {
-    public class GamePlayInputs : IInputActionCollection
+    public class GamePlayInputs : IInputActionCollection, IDisposable
     {
         private InputActionAsset asset;
         public GamePlayInputs()
@@ -390,7 +391,7 @@ namespace BananaBeats.Inputs
             m_Gameplay_Channel29 = m_Gameplay.FindAction("Channel29", throwIfNotFound: true);
         }
 
-        ~GamePlayInputs()
+        public void Dispose()
         {
             UnityEngine.Object.Destroy(asset);
         }

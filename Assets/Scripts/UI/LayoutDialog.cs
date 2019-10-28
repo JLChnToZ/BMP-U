@@ -47,7 +47,10 @@ namespace BananaBeats.UI {
         }
 
         protected void OnEnable() {
-            PrepareChannelToggles();
+            ChannelToggle.Prepare(
+                firstRun, channelToggles, channelTogglePrefab, channelToggleContainer)
+                .TakeUntilDisable(this)
+                .Subscribe(ChannelToggleChanged);
             PrepareBinders();
             PrepareLayoutSelect();
             firstRun = false;
@@ -86,20 +89,6 @@ namespace BananaBeats.UI {
                     }
                 }
             OnLayoutSelectChanged(layoutSelect.value);
-        }
-
-        private void PrepareChannelToggles() {
-            if(firstRun)
-                for(int i = 11; i < 30; i++)
-                    if(i % 10 != 0)
-                        channelToggles[NoteLayoutManager.ChannelToLayout(i)] = Instantiate(channelTogglePrefab, channelToggleContainer).Init(i);
-            channelToggles.Values
-                .Select(channelToggle => channelToggle.ToggleChanged
-                .Scan((BMSKeyLayout.None, BMSKeyLayout.None), ((BMSKeyLayout, BMSKeyLayout) o, BMSKeyLayout v) => (o.Item2, v)))
-                .Merge()
-                .TakeUntilDisable(this)
-                .Scan(BMSKeyLayout.None, (BMSKeyLayout o, (BMSKeyLayout, BMSKeyLayout) v) => (o & ~v.Item1) | v.Item2)
-                .Subscribe(ChannelToggleChanged);
         }
 
         private void PrepareBinders() {
@@ -153,9 +142,7 @@ namespace BananaBeats.UI {
 
         private void UpdateToggles(BMSKeyLayout layout) {
             isUpdatingToggles = true;
-            foreach(var channelToggle in channelToggles)
-                channelToggle.Value.toggle.isOn =
-                    (layout & channelToggle.Key) == channelToggle.Key;
+            ChannelToggle.UpdateToggles(channelToggles, layout);
             isUpdatingToggles = false;
         }
 
@@ -213,7 +200,7 @@ namespace BananaBeats.UI {
 
         private void FinishClicked() {
             PlayerDataManager.Save();
-            gameObject.SetActive(false);
+            Destroy(gameObject);
         }
     }
 }

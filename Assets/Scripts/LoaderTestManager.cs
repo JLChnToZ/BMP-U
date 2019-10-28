@@ -1,9 +1,11 @@
 ﻿using UnityEngine;
+using UniRx;
 using UniRx.Async;
 using BMS;
 using BananaBeats.Visualization;
 using BananaBeats.Configs;
 using BananaBeats.Inputs;
+using BananaBeats.UI;
 
 using UnityEngine.UI;
 
@@ -16,12 +18,15 @@ namespace BananaBeats {
         public BGADisplayManager bgaPrefab;
         private BGADisplayManager instaniatedBGA;
 
-        public Button pauseButton, loadPanelLoadButton, loadPanelCancelButton, keyBindingsButton;
-        public RectTransform loadPanel, bindingsPanel;
+        public Button pauseButton, loadPanelLoadButton, loadPanelCancelButton, keyBindingsButton, configButton;
+        public Canvas canvasRoot;
+        public LayoutDialog bindingsPanel;
+        public ConfigDialog configPanel;
+        public RectTransform loadPanel;
         public InputField bmsInput;
         public Toggle autoMode;
 
-        private bool auto;
+        private BMSGameConfig config = BMSGameConfig.Default;
 
 #if UNITY_EDITOR
         protected void Awake() {
@@ -32,20 +37,9 @@ namespace BananaBeats {
         protected void Start() {
             BMSPlayableManager.GlobalPlayStateChanged += PlaybackStateChanged;
 
-            BMSPlayableManager.ScoreConfig = new ScoreConfig {
-                comboBonusRatio = 0.4F,
-                maxScore = 10000000,
-                timingConfigs = new[] {
-                    new TimingConfig { rankType = 0, score = 1F, secondsDiff = 0.07F, },
-                    new TimingConfig { rankType = 1, score = 0.8F, secondsDiff = 0.2F, },
-                    new TimingConfig { rankType = 2, score = 0.5F, secondsDiff = 0.4F, },
-                    new TimingConfig { rankType = -1, score = 0F, secondsDiff = 1F, },
-                },
-            };
-
             instaniatedBGA = Instantiate(bgaPrefab);
 
-            appearanceSetting?.Init();
+            if(appearanceSetting != null) appearanceSetting.Init();
 
             pauseButton.onClick.AddListener(() => {
                 var player = BMSPlayableManager.Instance;
@@ -66,12 +60,14 @@ namespace BananaBeats {
                     player.Play();
             });
 
-            autoMode.onValueChanged.AddListener(value => {
-                auto = value;
+            keyBindingsButton.onClick.AddListener(() => {
+                Instantiate(bindingsPanel, canvasRoot.transform);
             });
 
-            keyBindingsButton.onClick.AddListener(() => {
-                bindingsPanel.gameObject.SetActive(true);
+            configButton.onClick.AddListener(() => {
+                var panel = Instantiate(configPanel, canvasRoot.transform);
+                panel.Config = config;
+                panel.OnCompleted.AsObservable().Subscribe(_ => config = panel.Config);
             });
         }
 
@@ -88,9 +84,8 @@ namespace BananaBeats {
             HUD.GameHUDManager.UpdateHUD(loader);
             await loader.LoadAudio();
             await loader.LoadImages();
-            await UniTask.Yield();
             var player = BMSPlayableManager.Load(loader);
-            if(auto) player.PlayableLayout = BMSKeyLayout.None;
+            player.ApplyConfig(config);
             instaniatedBGA.Load(player);
             player.Play();
         }

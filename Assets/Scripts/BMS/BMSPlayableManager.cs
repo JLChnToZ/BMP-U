@@ -65,6 +65,10 @@ namespace BananaBeats {
 
         public TimeSpan PreOffset { get; set; } = TimeSpan.FromSeconds(3);
 
+        public TimeSpan TimingOffset { get; set; }
+
+        public float NoteSpeed { get; set; } = 1;
+
         public bool EnableNoteSpeedAdjustment { get; set; } = true;
 
         public float DetunePerSeconds { get; set; } = 1;
@@ -95,6 +99,16 @@ namespace BananaBeats {
             PlayableLayout = timingHelper.Chart.Layout;
             BMSEvent += BroadcastStaticBMSEvent;
             PlaybackStateChanged += BroadcastPlayStateChanged;
+        }
+
+        public void ApplyConfig(BMSGameConfig config) {
+            PlayableLayout = config.autoPlay ?
+                BMSKeyLayout.None :
+                (config.playableChannels & Chart.Layout);
+            EnableNoteSpeedAdjustment = config.bpmAffectSpeed;
+            DetunePerSeconds = config.detune;
+            NoteSpeed = config.speed;
+            TimingOffset = TimeSpanAccurate.FromSecond(config.offset);
         }
 
         public void Reload() {
@@ -136,6 +150,7 @@ namespace BananaBeats {
             if(PlaybackState == PlaybackState.Playing) {
                 var pos1 = timingHelper.CurrentPosition;
                 var pos2 = timingHelper.StopResumePosition;
+                NoteDisplayScroll.scale = NoteSpeed;
                 NoteDisplayScroll.time = (!EnableNoteSpeedAdjustment || pos1 > pos2 ? pos1 : pos2).ToAccurateSecondF();
                 ReportBeatFlow();
             }
@@ -313,7 +328,7 @@ namespace BananaBeats {
         }
 
         private void InternalHitNote(int channel, TimeSpan timeDiff, bool safeRange = true) =>
-            InternalHitNote(channel, scoreCalculator.HitNote(timeDiff, safeRange: safeRange));
+            InternalHitNote(channel, scoreCalculator.HitNote(timeDiff + TimingOffset, safeRange: safeRange));
 
         private void CheckNoteStatus() {
             if(scoreCalculator == null) return;
@@ -323,12 +338,12 @@ namespace BananaBeats {
                     var noteData = queue.Peek();
                     var channel = noteData.Channel;
                     if(noteData.noteType != NoteType.LongEnd || !missedLongNotes.Remove(channel)) {
-                        var timeDiff = noteData.bmsEvent.time - timingHelper.CurrentPosition;
+                        var timeDiff = noteData.bmsEvent.time - timingHelper.CurrentPosition + TimingOffset;
                         if(scoreCalculator.HitNote(timeDiff, true) >= 0) {
                             if(AutoTriggerLongNoteEnd &&
                                 noteData.noteType == NoteType.LongEnd &&
                                 timeDiff <= TimeSpan.Zero)
-                                InternalHitNote(channel + 10, timeDiff);
+                                InternalHitNote(channel + 10, timeDiff - TimingOffset);
                             break;
                         }
                     }
