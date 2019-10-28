@@ -21,13 +21,13 @@ This is the to-do list of this branch:
 - [ ] Main Menu
   - [ ] Fancy Title Screen
   - [ ] Song Selection UI - By Folders
-  - [ ] Options UI
+  - [x] Options UI
 	- [ ] Language Selection
     - [x] Layout Presets
 	- [x] Input Configuration By Layout
-	- [ ] Timing Adjustment
-	- [ ] Feature Toggles
-	- [ ] Speed Adjust
+	- [x] Timing Adjustment
+	- [x] Feature Toggles
+	- [x] Speed Adjust
   - [ ] Song Search UI
   - [ ] Score Records
 - [ ] Game Scene
@@ -37,11 +37,11 @@ This is the to-do list of this branch:
   - [x] Auto Mode
   - [x] Toggleable Auto Trigger Long Note Ends
   - [x] Toggleable BPM Driven Note Speed And Pausing
-  - [ ] Timing Adjustment
+  - [x] Timing Adjustment
   - [x] Keyboard Input
   - [x] Joystick Input (For controllers like IIDX etc.)
-  - [ ] Touch Screen Input
-  - [ ] Speed Adjustment
+  - [x] Touch Screen Input
+  - [x] Speed Adjustment
   - [ ] Score Result Screen
 - [ ] Online ranking: Non-critical feature.
 - [ ] Integration of third-party APIs such as BMS search, etc. -- Non-critical feature and this may require to negotiate with third-party service providers.
