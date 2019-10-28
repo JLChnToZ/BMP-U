@@ -40,7 +40,7 @@ This is the to-do list of this branch:
   - [x] Timing Adjustment
   - [x] Keyboard Input
   - [x] Joystick Input (For controllers like IIDX etc.)
-  - [x] Touch Screen Input
+  - [ ] Touch Screen Input
   - [x] Speed Adjustment
   - [ ] Score Result Screen
 - [ ] Online ranking: Non-critical feature.
