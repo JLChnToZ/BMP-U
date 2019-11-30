@@ -73,14 +73,14 @@ namespace BananaBeats.Visualization {
         private static World world;
         public static World World {
             get {
-                if(world == null) world = World.Active;
+                if(world == null) world = World.DefaultGameObjectInjectionWorld;
                 return world;
             }
-            set { world = value ?? World.Active; }
+            set { world = value ?? World.DefaultGameObjectInjectionWorld; }
         }
 
         public static void ConvertPrefab(GameObject prefab, NoteType noteType) {
-            prefabs[noteType] = GameObjectConversionUtility.ConvertGameObjectHierarchy(prefab, World);
+            prefabs[noteType] = GameObjectConversionUtility.ConvertGameObjectHierarchy(prefab, GameObjectConversionSettings.FromWorld(World, null));
         }
 
         public static int Spawn(int channel, TimeSpan time, NoteType noteType, float scale = 1) {

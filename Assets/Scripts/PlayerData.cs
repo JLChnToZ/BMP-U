@@ -13,6 +13,15 @@ namespace BananaBeats.PlayerData {
     public class PlayerDataManager: IDisposable {
         private readonly SQLiteConnection db;
 
+        private static PlayerDataManager instance;
+        public static PlayerDataManager Instance {
+            get {
+                if(instance == null)
+                    instance = new PlayerDataManager();
+                return instance;
+            }
+        }
+
         public PlayerDataManager() {
             db = new SQLiteConnection(
                 Path.Combine(FilsSystemHelper.AppPath, "player.dat"),
@@ -53,7 +62,20 @@ namespace BananaBeats.PlayerData {
             return string.Empty;
         }
 
-        public void Dispose() => db.Dispose();
+        public void UpdateSongInfo(string path, Chart chart) =>
+            db.InsertOrReplace(new SongInfo(path, chart));
+
+        public void ClearSongInfo(string path) {
+            var mapping = db.GetMapping<SongInfo>();
+            path = path.Replace("/", "//").Replace("%", "/%").Replace("_", "/_");
+            db.Execute($"DELECT FROM {mapping.TableName} WHERE {mapping.FindColumnWithPropertyName("Path").Name} LIKE ? ESCAPE ?", path + "%", "/");
+        }
+
+        public void Dispose() {
+            if(instance == this)
+                instance = null;
+            db.Dispose();
+        }
 
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -132,6 +154,8 @@ namespace BananaBeats.PlayerData {
             Title = chart.Title;
             Artist = chart.Artist;
             Genre = chart.Genre;
+            Rank = chart.Rank;
+            PlayLevel = chart.PlayLevel;
         }
 
         [Unique]
@@ -146,6 +170,10 @@ namespace BananaBeats.PlayerData {
         [Indexed]
         public string Genre { get; set; }
 
+        [Indexed]
         public int Rank { get; set; }
+
+        [Indexed]
+        public float PlayLevel { get; set; }
     }
 }

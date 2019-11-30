@@ -141,5 +141,8 @@ namespace BananaBeats.Utils {
             transform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
             return transform.sizeDelta;
         }
+
+        public static void ReportInMainThread<T>(this IProgress<T> progress, T value) =>
+            PlayerLoopHelper.AddContinuation(PlayerLoopTiming.Update, () => progress.Report(value));
     }
 }

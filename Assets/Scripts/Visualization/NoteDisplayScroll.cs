@@ -92,63 +92,37 @@ namespace BananaBeats.Visualization {
                 line.from = math.lerp(refEndPos[note.channel], refStartPos[note.channel], math.max(0, (pos.pos - time) * pos.scale * scale));
         }
 
-        protected override JobHandle OnUpdate(JobHandle inputDeps) {
-            if(refStartPos == null || refEndPos == null)
-                return inputDeps;
-            {
-                var job = new ScrollNormalNotes {
-                    time = time,
-                    scale = scale,
-                    refStartPos = new NativeArray<float3>(refStartPos, Allocator.TempJob),
-                    refEndPos = new NativeArray<float3>(refEndPos, Allocator.TempJob),
-                };
-                inputDeps = job.Schedule(this, inputDeps);
-            }
-            {
-                var job = new ScrollCatchedNormalNotes {
-                    time = time,
-                    scale = scale,
-                    refStartPos = new NativeArray<float3>(refStartPos, Allocator.TempJob),
-                    refEndPos = new NativeArray<float3>(refEndPos, Allocator.TempJob),
-                };
-                inputDeps = job.Schedule(this, inputDeps);
-            }
-            {
-                var job = new ScrollLongNoteStart {
-                    time = time,
-                    scale = scale,
-                    refStartPos = new NativeArray<float3>(refStartPos, Allocator.TempJob),
-                    refEndPos = new NativeArray<float3>(refEndPos, Allocator.TempJob),
-                };
-                inputDeps = job.Schedule(this, inputDeps);
-            }
-            {
-                var job = new ScrollLongNoteEnd {
-                    time = time,
-                    scale = scale,
-                    refStartPos = new NativeArray<float3>(refStartPos, Allocator.TempJob),
-                    refEndPos = new NativeArray<float3>(refEndPos, Allocator.TempJob),
-                };
-                inputDeps = job.Schedule(this, inputDeps);
-            }
-            {
-                var job = new ScrollLongNoteNoEnd {
-                    endPos = fixedEndTimePos,
-                    refStartPos = new NativeArray<float3>(refStartPos, Allocator.TempJob),
-                    refEndPos = new NativeArray<float3>(refEndPos, Allocator.TempJob),
-                };
-                inputDeps = job.Schedule(this, inputDeps);
-            }
-            {
-                var job = new ScrollCatchedLongNoteStart {
-                    time = time,
-                    scale = scale,
-                    refStartPos = new NativeArray<float3>(refStartPos, Allocator.TempJob),
-                    refEndPos = new NativeArray<float3>(refEndPos, Allocator.TempJob),
-                };
-                inputDeps = job.Schedule(this, inputDeps);
-            }
-            return inputDeps;
-        }
+        protected override JobHandle OnUpdate(JobHandle inputDeps) =>
+            refStartPos == null || refEndPos == null ? inputDeps :
+            inputDeps.Chain(this, new ScrollNormalNotes {
+                time = time,
+                scale = scale,
+                refStartPos = new NativeArray<float3>(refStartPos, Allocator.TempJob),
+                refEndPos = new NativeArray<float3>(refEndPos, Allocator.TempJob),
+            }).Chain(this, new ScrollCatchedNormalNotes {
+                time = time,
+                scale = scale,
+                refStartPos = new NativeArray<float3>(refStartPos, Allocator.TempJob),
+                refEndPos = new NativeArray<float3>(refEndPos, Allocator.TempJob),
+            }).Chain(this, new ScrollLongNoteStart {
+                time = time,
+                scale = scale,
+                refStartPos = new NativeArray<float3>(refStartPos, Allocator.TempJob),
+                refEndPos = new NativeArray<float3>(refEndPos, Allocator.TempJob),
+            }).Chain(this, new ScrollLongNoteEnd {
+                time = time,
+                scale = scale,
+                refStartPos = new NativeArray<float3>(refStartPos, Allocator.TempJob),
+                refEndPos = new NativeArray<float3>(refEndPos, Allocator.TempJob),
+            }).Chain(this, new ScrollLongNoteNoEnd {
+                endPos = fixedEndTimePos,
+                refStartPos = new NativeArray<float3>(refStartPos, Allocator.TempJob),
+                refEndPos = new NativeArray<float3>(refEndPos, Allocator.TempJob),
+            }).Chain(this, new ScrollCatchedLongNoteStart {
+                time = time,
+                scale = scale,
+                refStartPos = new NativeArray<float3>(refStartPos, Allocator.TempJob),
+                refEndPos = new NativeArray<float3>(refEndPos, Allocator.TempJob),
+            });
     }
 }

@@ -8,6 +8,8 @@ namespace SharpFileSystem.SharpZipLib {
             ".zip",
         };
 
+        public bool ReadOnly { get; set; } = true;
+
         public SeamlessZipFileSystem(IFileSystem fs): base(fs) { }
 
         protected override bool IsArchiveFile(IFileSystem fileSystem, FileSystemPath path) =>
@@ -16,6 +18,6 @@ namespace SharpFileSystem.SharpZipLib {
             !HasArchive(path);
 
         protected override IFileSystem CreateArchiveFileSystem(File archiveFile) =>
-            SharpZipLibFileSystem.Open(archiveFile.FileSystem.OpenFile(archiveFile.Path, FileAccess.Read));
+            SharpZipLibFileSystem.Open(archiveFile.FileSystem.OpenFile(archiveFile.Path, ReadOnly ? FileAccess.Read : FileAccess.ReadWrite));
     }
 }

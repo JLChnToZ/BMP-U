@@ -154,11 +154,7 @@ namespace BananaBeats {
                 NoteDisplayScroll.time = (!EnableNoteSpeedAdjustment || pos1 > pos2 ? pos1 : pos2).ToAccurateSecondF();
                 ReportBeatFlow();
             }
-            var task = base.Update(delta);
-            if(!task.IsCompleted)
-                await task;
-            else
-                task.GetResult();
+            await base.Update(delta);
             if(PlaybackState == PlaybackState.Playing) {
                 PreTimingHelper.CurrentPosition = timingHelper.CurrentPosition + PreOffset;
                 CheckNoteStatus();

@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
+﻿#pragma warning disable CS0649
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
 using UniRx;
 using BMS;
-using System;
 
 namespace BananaBeats.UI {
     public class ConfigDialog: MonoBehaviour {

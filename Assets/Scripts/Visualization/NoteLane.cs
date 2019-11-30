@@ -70,32 +70,36 @@ namespace BananaBeats.Visualization {
     }
 
     public class NoteLaneLerpSystem: JobComponentSystem {
-        BeginInitializationEntityCommandBufferSystem cmdBufSystem;
+        EntityCommandBufferSystem cmdBufSystem;
         protected override void OnCreate() {
             cmdBufSystem = World.GetOrCreateSystem<BeginInitializationEntityCommandBufferSystem>();
         }
 
-        [RequireComponentTag(typeof(NoteLane))]
-        private struct Job: IJobForEachWithEntity<NoteLaneLerp, LineSegment> {
+        [BurstCompile, RequireComponentTag(typeof(NoteLane))]
+        private struct LerpJob: IJobForEach<NoteLaneLerp, LineSegment> {
             public float time;
-            public EntityCommandBuffer.Concurrent cmdBuffer;
 
-            public void Execute(Entity entity, int index, ref NoteLaneLerp lerp, ref LineSegment seg) {
+            public void Execute(ref NoteLaneLerp lerp, ref LineSegment seg) {
                 lerp.value += time * lerp.timeScale;
                 seg.to = math.lerp(seg.from, lerp.maxValue, math.min(1, lerp.value));
+            }
+        }
+
+        [RequireComponentTag(typeof(NoteLane), typeof(LineSegment))]
+        private struct DestroyJob: IJobForEachWithEntity<NoteLaneLerp> {
+            public EntityCommandBuffer.Concurrent cmdBuffer;
+
+            public void Execute(Entity entity, int index, [ReadOnly] ref NoteLaneLerp lerp) {
                 if(lerp.value >= 1) cmdBuffer.RemoveComponent<NoteLaneLerp>(index, entity);
             }
         }
 
-        protected override JobHandle OnUpdate(JobHandle inputDeps) {
-            var job = new Job {
-                time = Time.deltaTime,
+        protected override JobHandle OnUpdate(JobHandle inputDeps) =>
+            inputDeps.Chain(this, new LerpJob {
+                time = Time.DeltaTime,
+            }).Chain(this, new DestroyJob {
                 cmdBuffer = cmdBufSystem.CreateCommandBuffer().ToConcurrent(),
-            };
-            inputDeps = job.Schedule(this, inputDeps);
-            cmdBufSystem.AddJobHandleForProducer(inputDeps);
-            return inputDeps;
-        }
+            }).Chain(cmdBufSystem);
     }
 
     public struct NoteLane: IComponentData { }

@@ -17,7 +17,7 @@ namespace BananaBeats.Visualization {
         public static float scale = 10F;
 
         [BurstCompile]
-        private struct Job: IJobForEach<Translation, Drop> {
+        private new struct Job: IJobForEach<Translation, Drop> {
             public float time;
 
             public void Execute(ref Translation translation, ref Drop drop) {
@@ -27,10 +27,9 @@ namespace BananaBeats.Visualization {
         }
 
         protected override JobHandle OnUpdate(JobHandle inputDeps) {
-            var job = new Job {
-                time = Time.deltaTime * scale,
-            };
-            return job.Schedule(this, inputDeps);
+            return new Job {
+                time = Time.DeltaTime * scale,
+            }.Schedule(this, inputDeps);
         }
     }
 }

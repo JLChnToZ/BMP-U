@@ -23,12 +23,14 @@ namespace BananaBeats {
 
         public Chart Chart { get; private set; }
 
-        public BMSLoader(string path, IFileSystem fileSystem = null) {
+        public BMSLoader(string path, IFileSystem fileSystem = null) :
+            this(FilsSystemHelper.RootDataPath.Combine(HelperFunctions.FixPathRoot(path)), fileSystem) {}
+
+        public BMSLoader(FileSystemPath path, IFileSystem fileSystem = null) {
             customFileSystem = fileSystem != null;
             FileSystem = customFileSystem ? fileSystem : new SeamlessZipFileSystem(FilsSystemHelper.DefaultFileSystem);
-            var parsedPath = FilsSystemHelper.RootDataPath.Combine(HelperFunctions.FixPathRoot(path));
-            this.path = parsedPath.ParentPath;
-            using(var stream = FileSystem.OpenRandomAccessFile(parsedPath, FileAccess.Read)) {
+            this.path = path.ParentPath;
+            using(var stream = FileSystem.OpenRandomAccessFile(path, FileAccess.Read)) {
                 var detector = new CharsetDetector();
                 detector.Feed(stream);
                 detector.DataEnd();
@@ -43,7 +45,7 @@ namespace BananaBeats {
                     encoding = Encoding.Default;
                 }
                 using(var reader = new StreamReader(stream, encoding)) {
-                    var ext = parsedPath.GetExtension();
+                    var ext = path.GetExtension();
                     switch(ext) {
                         case ".bms":
                         case ".bme":
