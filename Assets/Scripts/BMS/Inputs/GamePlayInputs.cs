@@ -8,10 +8,10 @@ using UnityEngine.InputSystem.Utilities;
 
 namespace BananaBeats.Inputs
 {
-    public class GamePlayInputs : IInputActionCollection, IDisposable
+    public class @GamePlayInputs : IInputActionCollection, IDisposable
     {
-        private InputActionAsset asset;
-        public GamePlayInputs()
+        public InputActionAsset asset { get; }
+        public @GamePlayInputs()
         {
             asset = InputActionAsset.FromJson(@"{
     ""name"": ""DefaultInputs"",
@@ -458,8 +458,8 @@ namespace BananaBeats.Inputs
         private readonly InputAction m_Gameplay_Channel29;
         public struct GameplayActions
         {
-            private GamePlayInputs m_Wrapper;
-            public GameplayActions(GamePlayInputs wrapper) { m_Wrapper = wrapper; }
+            private @GamePlayInputs m_Wrapper;
+            public GameplayActions(@GamePlayInputs wrapper) { m_Wrapper = wrapper; }
             public InputAction @Channel11 => m_Wrapper.m_Gameplay_Channel11;
             public InputAction @Channel12 => m_Wrapper.m_Gameplay_Channel12;
             public InputAction @Channel13 => m_Wrapper.m_Gameplay_Channel13;
@@ -487,118 +487,118 @@ namespace BananaBeats.Inputs
             {
                 if (m_Wrapper.m_GameplayActionsCallbackInterface != null)
                 {
-                    Channel11.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel11;
-                    Channel11.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel11;
-                    Channel11.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel11;
-                    Channel12.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel12;
-                    Channel12.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel12;
-                    Channel12.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel12;
-                    Channel13.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel13;
-                    Channel13.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel13;
-                    Channel13.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel13;
-                    Channel14.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel14;
-                    Channel14.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel14;
-                    Channel14.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel14;
-                    Channel15.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel15;
-                    Channel15.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel15;
-                    Channel15.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel15;
-                    Channel16.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel16;
-                    Channel16.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel16;
-                    Channel16.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel16;
-                    Channel17.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel17;
-                    Channel17.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel17;
-                    Channel17.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel17;
-                    Channel18.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel18;
-                    Channel18.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel18;
-                    Channel18.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel18;
-                    Channel19.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel19;
-                    Channel19.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel19;
-                    Channel19.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel19;
-                    Channel21.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel21;
-                    Channel21.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel21;
-                    Channel21.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel21;
-                    Channel22.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel22;
-                    Channel22.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel22;
-                    Channel22.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel22;
-                    Channel23.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel23;
-                    Channel23.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel23;
-                    Channel23.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel23;
-                    Channel24.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel24;
-                    Channel24.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel24;
-                    Channel24.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel24;
-                    Channel25.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel25;
-                    Channel25.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel25;
-                    Channel25.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel25;
-                    Channel26.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel26;
-                    Channel26.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel26;
-                    Channel26.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel26;
-                    Channel27.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel27;
-                    Channel27.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel27;
-                    Channel27.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel27;
-                    Channel28.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel28;
-                    Channel28.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel28;
-                    Channel28.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel28;
-                    Channel29.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel29;
-                    Channel29.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel29;
-                    Channel29.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel29;
+                    @Channel11.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel11;
+                    @Channel11.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel11;
+                    @Channel11.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel11;
+                    @Channel12.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel12;
+                    @Channel12.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel12;
+                    @Channel12.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel12;
+                    @Channel13.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel13;
+                    @Channel13.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel13;
+                    @Channel13.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel13;
+                    @Channel14.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel14;
+                    @Channel14.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel14;
+                    @Channel14.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel14;
+                    @Channel15.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel15;
+                    @Channel15.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel15;
+                    @Channel15.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel15;
+                    @Channel16.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel16;
+                    @Channel16.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel16;
+                    @Channel16.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel16;
+                    @Channel17.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel17;
+                    @Channel17.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel17;
+                    @Channel17.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel17;
+                    @Channel18.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel18;
+                    @Channel18.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel18;
+                    @Channel18.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel18;
+                    @Channel19.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel19;
+                    @Channel19.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel19;
+                    @Channel19.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel19;
+                    @Channel21.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel21;
+                    @Channel21.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel21;
+                    @Channel21.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel21;
+                    @Channel22.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel22;
+                    @Channel22.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel22;
+                    @Channel22.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel22;
+                    @Channel23.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel23;
+                    @Channel23.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel23;
+                    @Channel23.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel23;
+                    @Channel24.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel24;
+                    @Channel24.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel24;
+                    @Channel24.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel24;
+                    @Channel25.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel25;
+                    @Channel25.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel25;
+                    @Channel25.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel25;
+                    @Channel26.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel26;
+                    @Channel26.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel26;
+                    @Channel26.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel26;
+                    @Channel27.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel27;
+                    @Channel27.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel27;
+                    @Channel27.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel27;
+                    @Channel28.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel28;
+                    @Channel28.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel28;
+                    @Channel28.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel28;
+                    @Channel29.started -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel29;
+                    @Channel29.performed -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel29;
+                    @Channel29.canceled -= m_Wrapper.m_GameplayActionsCallbackInterface.OnChannel29;
                 }
                 m_Wrapper.m_GameplayActionsCallbackInterface = instance;
                 if (instance != null)
                 {
-                    Channel11.started += instance.OnChannel11;
-                    Channel11.performed += instance.OnChannel11;
-                    Channel11.canceled += instance.OnChannel11;
-                    Channel12.started += instance.OnChannel12;
-                    Channel12.performed += instance.OnChannel12;
-                    Channel12.canceled += instance.OnChannel12;
-                    Channel13.started += instance.OnChannel13;
-                    Channel13.performed += instance.OnChannel13;
-                    Channel13.canceled += instance.OnChannel13;
-                    Channel14.started += instance.OnChannel14;
-                    Channel14.performed += instance.OnChannel14;
-                    Channel14.canceled += instance.OnChannel14;
-                    Channel15.started += instance.OnChannel15;
-                    Channel15.performed += instance.OnChannel15;
-                    Channel15.canceled += instance.OnChannel15;
-                    Channel16.started += instance.OnChannel16;
-                    Channel16.performed += instance.OnChannel16;
-                    Channel16.canceled += instance.OnChannel16;
-                    Channel17.started += instance.OnChannel17;
-                    Channel17.performed += instance.OnChannel17;
-                    Channel17.canceled += instance.OnChannel17;
-                    Channel18.started += instance.OnChannel18;
-                    Channel18.performed += instance.OnChannel18;
-                    Channel18.canceled += instance.OnChannel18;
-                    Channel19.started += instance.OnChannel19;
-                    Channel19.performed += instance.OnChannel19;
-                    Channel19.canceled += instance.OnChannel19;
-                    Channel21.started += instance.OnChannel21;
-                    Channel21.performed += instance.OnChannel21;
-                    Channel21.canceled += instance.OnChannel21;
-                    Channel22.started += instance.OnChannel22;
-                    Channel22.performed += instance.OnChannel22;
-                    Channel22.canceled += instance.OnChannel22;
-                    Channel23.started += instance.OnChannel23;
-                    Channel23.performed += instance.OnChannel23;
-                    Channel23.canceled += instance.OnChannel23;
-                    Channel24.started += instance.OnChannel24;
-                    Channel24.performed += instance.OnChannel24;
-                    Channel24.canceled += instance.OnChannel24;
-                    Channel25.started += instance.OnChannel25;
-                    Channel25.performed += instance.OnChannel25;
-                    Channel25.canceled += instance.OnChannel25;
-                    Channel26.started += instance.OnChannel26;
-                    Channel26.performed += instance.OnChannel26;
-                    Channel26.canceled += instance.OnChannel26;
-                    Channel27.started += instance.OnChannel27;
-                    Channel27.performed += instance.OnChannel27;
-                    Channel27.canceled += instance.OnChannel27;
-                    Channel28.started += instance.OnChannel28;
-                    Channel28.performed += instance.OnChannel28;
-                    Channel28.canceled += instance.OnChannel28;
-                    Channel29.started += instance.OnChannel29;
-                    Channel29.performed += instance.OnChannel29;
-                    Channel29.canceled += instance.OnChannel29;
+                    @Channel11.started += instance.OnChannel11;
+                    @Channel11.performed += instance.OnChannel11;
+                    @Channel11.canceled += instance.OnChannel11;
+                    @Channel12.started += instance.OnChannel12;
+                    @Channel12.performed += instance.OnChannel12;
+                    @Channel12.canceled += instance.OnChannel12;
+                    @Channel13.started += instance.OnChannel13;
+                    @Channel13.performed += instance.OnChannel13;
+                    @Channel13.canceled += instance.OnChannel13;
+                    @Channel14.started += instance.OnChannel14;
+                    @Channel14.performed += instance.OnChannel14;
+                    @Channel14.canceled += instance.OnChannel14;
+                    @Channel15.started += instance.OnChannel15;
+                    @Channel15.performed += instance.OnChannel15;
+                    @Channel15.canceled += instance.OnChannel15;
+                    @Channel16.started += instance.OnChannel16;
+                    @Channel16.performed += instance.OnChannel16;
+                    @Channel16.canceled += instance.OnChannel16;
+                    @Channel17.started += instance.OnChannel17;
+                    @Channel17.performed += instance.OnChannel17;
+                    @Channel17.canceled += instance.OnChannel17;
+                    @Channel18.started += instance.OnChannel18;
+                    @Channel18.performed += instance.OnChannel18;
+                    @Channel18.canceled += instance.OnChannel18;
+                    @Channel19.started += instance.OnChannel19;
+                    @Channel19.performed += instance.OnChannel19;
+                    @Channel19.canceled += instance.OnChannel19;
+                    @Channel21.started += instance.OnChannel21;
+                    @Channel21.performed += instance.OnChannel21;
+                    @Channel21.canceled += instance.OnChannel21;
+                    @Channel22.started += instance.OnChannel22;
+                    @Channel22.performed += instance.OnChannel22;
+                    @Channel22.canceled += instance.OnChannel22;
+                    @Channel23.started += instance.OnChannel23;
+                    @Channel23.performed += instance.OnChannel23;
+                    @Channel23.canceled += instance.OnChannel23;
+                    @Channel24.started += instance.OnChannel24;
+                    @Channel24.performed += instance.OnChannel24;
+                    @Channel24.canceled += instance.OnChannel24;
+                    @Channel25.started += instance.OnChannel25;
+                    @Channel25.performed += instance.OnChannel25;
+                    @Channel25.canceled += instance.OnChannel25;
+                    @Channel26.started += instance.OnChannel26;
+                    @Channel26.performed += instance.OnChannel26;
+                    @Channel26.canceled += instance.OnChannel26;
+                    @Channel27.started += instance.OnChannel27;
+                    @Channel27.performed += instance.OnChannel27;
+                    @Channel27.canceled += instance.OnChannel27;
+                    @Channel28.started += instance.OnChannel28;
+                    @Channel28.performed += instance.OnChannel28;
+                    @Channel28.canceled += instance.OnChannel28;
+                    @Channel29.started += instance.OnChannel29;
+                    @Channel29.performed += instance.OnChannel29;
+                    @Channel29.canceled += instance.OnChannel29;
                 }
             }
         }
