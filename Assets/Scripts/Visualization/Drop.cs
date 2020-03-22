@@ -16,20 +16,13 @@ namespace BananaBeats.Visualization {
     public class EntityDropSystem: JobComponentSystem {
         public static float scale = 10F;
 
-        [BurstCompile]
-        private new struct Job: IJobForEach<Translation, Drop> {
-            public float time;
-
-            public void Execute(ref Translation translation, ref Drop drop) {
-                drop.lerp = math.lerp(drop.lerp, 1, time);
-                translation.Value.y = math.lerp(drop.from, translation.Value.y, drop.lerp);
-            }
-        }
-
-        protected override JobHandle OnUpdate(JobHandle inputDeps) {
-            return new Job {
-                time = Time.DeltaTime * scale,
-            }.Schedule(this, inputDeps);
+        protected override JobHandle OnUpdate(JobHandle jobHandle) {
+            jobHandle = Entities
+                .WithAll<Translation, Drop>()
+                .ForEach((ref Translation translation, ref Drop drop) =>
+                    translation.Value.y = math.lerp(drop.from, translation.Value.y, drop.lerp))
+                .Schedule(jobHandle);
+            return jobHandle;
         }
     }
 }

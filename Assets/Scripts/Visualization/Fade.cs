@@ -1,5 +1,4 @@
 ﻿using Unity.Jobs;
-using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
@@ -14,38 +13,31 @@ namespace BananaBeats.Visualization {
         protected override void OnCreate() =>
             cmdBufSystem = World.GetOrCreateSystem<BeginInitializationEntityCommandBufferSystem>();
 
-        [BurstCompile]
-        private struct FadeJob: IJobForEach<FadeOut, NonUniformScale> {
-            public float time;
-            public float timeScale;
+        protected override JobHandle OnUpdate(JobHandle jobHandle) {
+            var cmdBuffer = cmdBufSystem.CreateCommandBuffer().ToConcurrent();
+            float time = UnityTime.unscaledDeltaTime;
+            float timeScale = 10;
+            float maxTime = 1;
 
-            public void Execute(ref FadeOut data, ref NonUniformScale nonUniformScale) {
-                var scale = nonUniformScale.Value;
-                data.life += time;
-                scale.x = math.lerp(scale.x, 0, time * timeScale);
-                scale.y = math.lerp(scale.y, 0, time * timeScale);
-                nonUniformScale.Value = scale;
-            }
+            jobHandle = Entities
+                .WithAll<FadeOut, NonUniformScale>()
+                .ForEach((ref FadeOut data, ref NonUniformScale nonUniformScale) => {
+                    var scale = nonUniformScale.Value;
+                    data.life += time;
+                    scale.x = math.lerp(scale.x, 0, time * timeScale);
+                    scale.y = math.lerp(scale.y, 0, time * timeScale);
+                    nonUniformScale.Value = scale;
+                })
+                .Schedule(jobHandle);
+
+            jobHandle = Entities
+                .WithAll<FadeOut>()
+                .ForEach((Entity entity, int entityInQueryIndex, in FadeOut data) => {
+                    if(data.life > maxTime) cmdBuffer.DestroyEntity(entityInQueryIndex, entity);
+                })
+                .Schedule(jobHandle);
+
+            return jobHandle;
         }
-
-        [RequireComponentTag(typeof(NonUniformScale))]
-        private struct DestroyJob: IJobForEachWithEntity<FadeOut> {
-            public float maxTime;
-            public EntityCommandBuffer.Concurrent cmdBuffer;
-
-            public void Execute(Entity entity, int index, [ReadOnly] ref FadeOut data) {
-                if(data.life > maxTime)
-                    cmdBuffer.DestroyEntity(index, entity);
-            }
-        }
-
-        protected override JobHandle OnUpdate(JobHandle inputDeps) =>
-            inputDeps.Chain(this, new FadeJob {
-                time = UnityTime.unscaledDeltaTime,
-                timeScale = 10,
-            }).Chain(this, new DestroyJob {
-                maxTime = 1,
-                cmdBuffer = cmdBufSystem.CreateCommandBuffer().ToConcurrent(),
-            }).Chain(cmdBufSystem);
     }
 }

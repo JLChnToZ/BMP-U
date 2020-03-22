@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using UnityEngine;
 using Unity.Jobs;
-using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
-using Unity.Transforms;
 using Unity.Collections;
 using E7.ECS.LineRenderer;
 
@@ -75,31 +72,27 @@ namespace BananaBeats.Visualization {
             cmdBufSystem = World.GetOrCreateSystem<BeginInitializationEntityCommandBufferSystem>();
         }
 
-        [BurstCompile, RequireComponentTag(typeof(NoteLane))]
-        private struct LerpJob: IJobForEach<NoteLaneLerp, LineSegment> {
-            public float time;
+        protected override JobHandle OnUpdate(JobHandle jobHandle) {
+            var cmdBuffer = cmdBufSystem.CreateCommandBuffer().ToConcurrent();
+            var time = Time.DeltaTime;
 
-            public void Execute(ref NoteLaneLerp lerp, ref LineSegment seg) {
-                lerp.value += time * lerp.timeScale;
-                seg.to = math.lerp(seg.from, lerp.maxValue, math.min(1, lerp.value));
-            }
+            jobHandle = Entities
+                .WithAll<NoteLane, NoteLaneLerp, LineSegment>()
+                .ForEach((ref NoteLaneLerp lerp, ref LineSegment seg) => {
+                    lerp.value += time * lerp.timeScale;
+                    seg.to = math.lerp(seg.from, lerp.maxValue, math.min(1, lerp.value));
+                })
+                .Schedule(jobHandle);
+
+            jobHandle = Entities
+                .WithAll<NoteLane, NoteLaneLerp, LineSegment>()
+                .ForEach((Entity entity, int entityInQueryIndex, in NoteLaneLerp lerp) => {
+                    if(lerp.value >= 1) cmdBuffer.RemoveComponent<NoteLaneLerp>(entityInQueryIndex, entity);
+                })
+                .Schedule(jobHandle);
+
+            return jobHandle;
         }
-
-        [RequireComponentTag(typeof(NoteLane), typeof(LineSegment))]
-        private struct DestroyJob: IJobForEachWithEntity<NoteLaneLerp> {
-            public EntityCommandBuffer.Concurrent cmdBuffer;
-
-            public void Execute(Entity entity, int index, [ReadOnly] ref NoteLaneLerp lerp) {
-                if(lerp.value >= 1) cmdBuffer.RemoveComponent<NoteLaneLerp>(index, entity);
-            }
-        }
-
-        protected override JobHandle OnUpdate(JobHandle inputDeps) =>
-            inputDeps.Chain(this, new LerpJob {
-                time = Time.DeltaTime,
-            }).Chain(this, new DestroyJob {
-                cmdBuffer = cmdBufSystem.CreateCommandBuffer().ToConcurrent(),
-            }).Chain(cmdBufSystem);
     }
 
     public struct NoteLane: IComponentData { }
