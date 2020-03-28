@@ -77,7 +77,7 @@ namespace BananaBeats.Visualization {
             var time = Time.DeltaTime;
 
             jobHandle = Entities
-                .WithAll<NoteLane, NoteLaneLerp, LineSegment>()
+                .WithAll<NoteLane>()
                 .ForEach((ref NoteLaneLerp lerp, ref LineSegment seg) => {
                     lerp.value += time * lerp.timeScale;
                     seg.to = math.lerp(seg.from, lerp.maxValue, math.min(1, lerp.value));
@@ -85,12 +85,13 @@ namespace BananaBeats.Visualization {
                 .Schedule(jobHandle);
 
             jobHandle = Entities
-                .WithAll<NoteLane, NoteLaneLerp, LineSegment>()
+                .WithAll<NoteLane, LineSegment>()
                 .ForEach((Entity entity, int entityInQueryIndex, in NoteLaneLerp lerp) => {
                     if(lerp.value >= 1) cmdBuffer.RemoveComponent<NoteLaneLerp>(entityInQueryIndex, entity);
                 })
                 .Schedule(jobHandle);
 
+            jobHandle.Complete();
             return jobHandle;
         }
     }

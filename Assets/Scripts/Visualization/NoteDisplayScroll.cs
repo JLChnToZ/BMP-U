@@ -16,51 +16,46 @@ namespace BananaBeats.Visualization {
 
         protected override JobHandle OnUpdate(JobHandle jobHandle) {
             if(refStartPos != null && refEndPos != null) {
-                float time = NoteDisplayScroll.time;
-                float scale = NoteDisplayScroll.scale;
-                float endPos = NoteDisplayScroll.fixedEndTimePos;
-                var refStartPos = new NativeArray<float3>(NoteDisplayScroll.refStartPos, Allocator.Temp);
-                var refEndPos = new NativeArray<float3>(NoteDisplayScroll.refEndPos, Allocator.Temp);
+                float endPos = fixedEndTimePos;
+                using(var refStartPos = new NativeArray<float3>(NoteDisplayScroll.refStartPos, Allocator.TempJob))
+                using(var refEndPos = new NativeArray<float3>(NoteDisplayScroll.refEndPos, Allocator.TempJob)) {
+                    jobHandle = Entities
+                        .WithNone<Catched>()
+                        .ForEach((ref Translation translation, in Note note, in NoteDisplay pos) =>
+                            translation.Value = math.lerp(refEndPos[note.channel], refStartPos[note.channel], (pos.pos - time) * pos.scale * scale))
+                        .Schedule(jobHandle);
 
-                jobHandle = Entities
-                    .WithAll<Note, NoteDisplay, Translation>()
-                    .WithNone<Catched>()
-                    .ForEach((ref Translation translation, in Note note, in NoteDisplay pos) =>
-                        translation.Value = math.lerp(refEndPos[note.channel], refStartPos[note.channel], (pos.pos - time) * pos.scale * scale))
-                    .Schedule(jobHandle);
+                    jobHandle = Entities
+                        .WithAll<Catched>()
+                        .WithNone<FadeOut>()
+                        .ForEach((ref Translation translation, in Note note, in NoteDisplay pos) =>
+                            translation.Value = math.lerp(refEndPos[note.channel], refStartPos[note.channel], math.max(0, (pos.pos - time) * pos.scale * scale)))
+                        .Schedule(jobHandle);
 
-                jobHandle = Entities
-                    .WithAll<Note, NoteDisplay, Translation>().WithAll<Catched>()
-                    .WithNone<FadeOut>()
-                    .ForEach((ref Translation translation, in Note note, in NoteDisplay pos) =>
-                        translation.Value = math.lerp(refEndPos[note.channel], refStartPos[note.channel], math.max(0, (pos.pos - time) * pos.scale * scale)))
-                    .Schedule(jobHandle);
+                    jobHandle = Entities
+                        .WithNone<Catched>()
+                        .ForEach((ref LineSegment line, in Note note, in LongNoteStart pos) =>
+                            line.from = math.lerp(refEndPos[note.channel], refStartPos[note.channel], (pos.pos - time) * pos.scale * scale))
+                        .Schedule(jobHandle);
 
-                jobHandle = Entities
-                    .WithAll<Note, LongNoteStart, LineSegment>()
-                    .WithNone<Catched>()
-                    .ForEach((ref LineSegment line, in Note note, in LongNoteStart pos) =>
-                        line.from = math.lerp(refEndPos[note.channel], refStartPos[note.channel], (pos.pos - time) * pos.scale * scale))
-                    .Schedule(jobHandle);
+                    jobHandle = Entities
+                        .WithNone<LongNoteEnd>()
+                        .ForEach((ref LineSegment line, in Note note) =>
+                            line.to = math.lerp(refEndPos[note.channel], refStartPos[note.channel], endPos))
+                        .Schedule(jobHandle);
 
-                jobHandle = Entities
-                    .WithAll<Note, LineSegment>()
-                    .WithNone<LongNoteEnd>()
-                    .ForEach((ref LineSegment line, in Note note) =>
-                        line.to = math.lerp(refEndPos[note.channel], refStartPos[note.channel], endPos))
-                    .Schedule(jobHandle);
+                    jobHandle = Entities
+                        .ForEach((ref LineSegment line, in Note note, in LongNoteEnd pos) =>
+                            line.to = math.lerp(refEndPos[note.channel], refStartPos[note.channel], (pos.pos - time) * pos.scale * scale))
+                        .Schedule(jobHandle);
 
-                jobHandle = Entities
-                    .WithAll<Note, LineSegment, LongNoteEnd>()
-                    .ForEach((ref LineSegment line, in Note note, in LongNoteEnd pos) =>
-                        line.to = math.lerp(refEndPos[note.channel], refStartPos[note.channel], (pos.pos - time) * pos.scale * scale))
-                    .Schedule(jobHandle);
+                    jobHandle = Entities
+                        .ForEach((ref LineSegment line, in Note note, in LongNoteStart pos) =>
+                            line.from = math.lerp(refEndPos[note.channel], refStartPos[note.channel], math.max(0, (pos.pos - time) * pos.scale * scale)))
+                        .Schedule(jobHandle);
 
-                jobHandle = Entities
-                    .WithAll<Note, LongNoteEnd, LineSegment>()
-                    .ForEach((ref LineSegment line, in Note note, in LongNoteStart pos) =>
-                        line.from = math.lerp(refEndPos[note.channel], refStartPos[note.channel], math.max(0, (pos.pos - time) * pos.scale * scale)))
-                    .Schedule(jobHandle);
+                    jobHandle.Complete();
+                }
             }
             return jobHandle;
         }

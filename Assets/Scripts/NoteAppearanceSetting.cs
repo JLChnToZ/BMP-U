@@ -22,11 +22,22 @@ namespace BananaBeats.Configs {
         public float gaugeAnimationSpeed = 10F;
 
         protected void OnEnable() {
+            WorldInjector.OnInitWorld += Init;
 #if UNITY_EDITOR
             if(!UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode)
                 return;
 #endif
-            Init();
+            try {
+                Init();
+            } catch(Exception ex) {
+#if UNITY_EDITOR || DEBUG
+                Debug.LogException(ex);
+#endif
+            }
+        }
+
+        protected void OnDestroy() {
+            WorldInjector.OnInitWorld -= Init;
         }
 
         public void Init() {

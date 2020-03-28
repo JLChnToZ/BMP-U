@@ -8,6 +8,8 @@ using UnityTime = UnityEngine.Time;
 
 namespace BananaBeats.Visualization {
     public class Fade: JobComponentSystem {
+        private static readonly float timeScale = 10;
+        private static readonly float maxTime = 1;
         private EntityCommandBufferSystem cmdBufSystem;
 
         protected override void OnCreate() =>
@@ -16,11 +18,8 @@ namespace BananaBeats.Visualization {
         protected override JobHandle OnUpdate(JobHandle jobHandle) {
             var cmdBuffer = cmdBufSystem.CreateCommandBuffer().ToConcurrent();
             float time = UnityTime.unscaledDeltaTime;
-            float timeScale = 10;
-            float maxTime = 1;
 
             jobHandle = Entities
-                .WithAll<FadeOut, NonUniformScale>()
                 .ForEach((ref FadeOut data, ref NonUniformScale nonUniformScale) => {
                     var scale = nonUniformScale.Value;
                     data.life += time;
@@ -31,12 +30,12 @@ namespace BananaBeats.Visualization {
                 .Schedule(jobHandle);
 
             jobHandle = Entities
-                .WithAll<FadeOut>()
                 .ForEach((Entity entity, int entityInQueryIndex, in FadeOut data) => {
                     if(data.life > maxTime) cmdBuffer.DestroyEntity(entityInQueryIndex, entity);
                 })
                 .Schedule(jobHandle);
 
+            jobHandle.Complete();
             return jobHandle;
         }
     }

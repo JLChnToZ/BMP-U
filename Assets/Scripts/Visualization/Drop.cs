@@ -18,10 +18,11 @@ namespace BananaBeats.Visualization {
 
         protected override JobHandle OnUpdate(JobHandle jobHandle) {
             jobHandle = Entities
-                .WithAll<Translation, Drop>()
                 .ForEach((ref Translation translation, ref Drop drop) =>
                     translation.Value.y = math.lerp(drop.from, translation.Value.y, drop.lerp))
                 .Schedule(jobHandle);
+
+            jobHandle.Complete();
             return jobHandle;
         }
     }
