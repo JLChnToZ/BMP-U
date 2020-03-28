@@ -7,6 +7,7 @@ using Unity.Mathematics;
 using Unity.Transforms;
 
 namespace BananaBeats.Visualization {
+    [UpdateInGroup(typeof(SimulationSystemGroup))]
     public class DestroyNoteSystem: JobComponentSystem {
         private static readonly Queue<int> queue = new Queue<int>();
         private EntityCommandBufferSystem cmdBufSystem;

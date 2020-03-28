@@ -4,6 +4,7 @@ using Unity.Entities;
 using Unity.Jobs;
 
 namespace BananaBeats.Visualization {
+    [UpdateInGroup(typeof(SimulationSystemGroup))]
     public class HitNoteSystem: JobComponentSystem {
         private static readonly Queue<Data> queue = new Queue<Data>();
         private EntityCommandBufferSystem cmdBufSystem;

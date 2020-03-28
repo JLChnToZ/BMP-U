@@ -4,6 +4,7 @@ using UnityEngine;
 using Unity.Entities;
 using Unity.Mathematics;
 using E7.ECS.LineRenderer;
+using Unity.Transforms;
 
 namespace BananaBeats.Visualization {
 
@@ -118,6 +119,9 @@ namespace BananaBeats.Visualization {
                     throw new ArgumentException("Invalid note type.", nameof(noteType));
             }
             int id = nextId++;
+            cmdBuf.SetComponent(noteStart, new Translation {
+                Value = new float3(0, 0, float.NegativeInfinity),
+            });
             cmdBuf.AddComponent(noteStart, new Note {
                 channel = channel,
                 id = id,

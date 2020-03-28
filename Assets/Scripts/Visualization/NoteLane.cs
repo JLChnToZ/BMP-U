@@ -65,6 +65,7 @@ namespace BananaBeats.Visualization {
         }
     }
 
+    [UpdateInGroup(typeof(SimulationSystemGroup))]
     public class NoteLaneLerpSystem: JobComponentSystem {
         EntityCommandBufferSystem cmdBufSystem;
         protected override void OnCreate() =>

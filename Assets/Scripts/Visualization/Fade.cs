@@ -7,6 +7,7 @@ using Unity.Collections;
 using UnityTime = UnityEngine.Time;
 
 namespace BananaBeats.Visualization {
+    [UpdateInGroup(typeof(SimulationSystemGroup))]
     public class Fade: JobComponentSystem {
         private static readonly float timeScale = 10;
         private static readonly float maxTime = 1;

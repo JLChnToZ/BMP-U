@@ -6,7 +6,7 @@ using Unity.Jobs;
 using Unity.Mathematics;
 
 namespace BananaBeats.Visualization {
-
+    [UpdateInGroup(typeof(SimulationSystemGroup))]
     public class SetEndNoteTimeSystem: JobComponentSystem {
         public static float DropFrom { get; set; } = 10;
         public static Entity LnEnd { get; set; }
