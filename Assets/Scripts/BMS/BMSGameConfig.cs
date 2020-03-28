@@ -5,6 +5,7 @@ namespace BananaBeats {
     [Serializable]
     public struct BMSGameConfig {
         public bool loadImages;
+        public float backgroundDim;
         public bool loadSounds;
         public float detune;
         public float offset;
@@ -15,6 +16,7 @@ namespace BananaBeats {
 
         public static BMSGameConfig Default { get; } = new BMSGameConfig {
             loadImages = true,
+            backgroundDim = 0.8F,
             loadSounds = true,
             detune = 0.5F,
             offset = 0,

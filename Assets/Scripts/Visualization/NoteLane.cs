@@ -9,15 +9,17 @@ namespace BananaBeats.Visualization {
     using static NoteDisplayManager;
 
     public static class NoteLaneManager {
-        private static readonly ComponentType[] createTypes = new ComponentType[] {
-            typeof(LineSegment),
-            typeof(LineStyle),
-            typeof(NoteLane),
-        };
+        private static class StaticTypes {
+            public static readonly ComponentType[] createTypes = new ComponentType[] {
+                typeof(LineSegment),
+                typeof(LineStyle),
+                typeof(NoteLane),
+            };
 
-        private static readonly ComponentType[] clearTypes = new ComponentType[] {
-            typeof(NoteLane),
-        };
+            public static readonly ComponentType[] clearTypes = new ComponentType[] {
+                typeof(NoteLane),
+            };
+        }
 
         public static Material LaneMaterial { get; set; }
 
@@ -42,7 +44,7 @@ namespace BananaBeats.Visualization {
         }
 
         private static Entity InternalCreate(Vector3 pos1, Vector3 pos2, Material material, EntityCommandBuffer cmdBuf) {
-            var instance = cmdBuf.CreateEntity(EntityManager.CreateArchetype(createTypes));
+            var instance = cmdBuf.CreateEntity(EntityManager.CreateArchetype(StaticTypes.createTypes));
             cmdBuf.SetComponent(instance, new LineSegment {
                 from = pos1,
                 to = pos2,
@@ -55,7 +57,7 @@ namespace BananaBeats.Visualization {
         }
 
         public static void Clear() {
-            GetCommandBuffer().DestroyEntity(EntityManager.CreateEntityQuery(clearTypes));
+            GetCommandBuffer().DestroyEntity(EntityManager.CreateEntityQuery(StaticTypes.clearTypes));
         }
 
         public static void SetBeatFlowEffect(float value) {

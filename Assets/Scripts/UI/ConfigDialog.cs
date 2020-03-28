@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using UnityEngine.Events;
 using UniRx;
 using BMS;
+using System;
 
 namespace BananaBeats.UI {
     public class ConfigDialog: MonoBehaviour {
@@ -12,6 +13,8 @@ namespace BananaBeats.UI {
 
         [SerializeField]
         private Toggle loadImagesToggle;
+        [SerializeField]
+        private Slider dimBackground;
         [SerializeField]
         private Toggle loadSoundsToggle;
         [SerializeField]
@@ -46,6 +49,7 @@ namespace BananaBeats.UI {
         public BMSGameConfig Config {
             get => new BMSGameConfig {
                 loadImages = loadImagesToggle.isOn,
+                backgroundDim = dimBackground.value,
                 loadSounds = loadSoundsToggle.isOn,
                 autoPlay = autoPlayToggle.isOn,
                 bpmAffectSpeed = bpmSpeedToggle.isOn,
@@ -56,6 +60,7 @@ namespace BananaBeats.UI {
             };
             set {
                 loadImagesToggle.isOn = value.loadImages;
+                dimBackground.value = value.backgroundDim;
                 loadSoundsToggle.isOn = value.loadSounds;
                 autoPlayToggle.isOn = value.autoPlay;
                 bpmSpeedToggle.isOn = value.bpmAffectSpeed;

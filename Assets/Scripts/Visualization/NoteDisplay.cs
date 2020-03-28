@@ -43,21 +43,23 @@ namespace BananaBeats.Visualization {
     }
 
     public static class NoteDisplayManager {
-        private static readonly Dictionary<NoteType, Entity> prefabs = new Dictionary<NoteType, Entity>();
-
-        private static readonly ComponentType[] lnBodyType = new ComponentType[] {
-            typeof(LineSegment),
-            typeof(LineStyle),
-            typeof(Note),
-            typeof(LongNoteStart),
-        };
-
-        private static readonly EntityQueryDesc clearType = new EntityQueryDesc {
-            Any = new ComponentType[] {
-                typeof(NoteDisplay),
+        private static class StaticTypes {
+            public static readonly ComponentType[] lnBodyType = new ComponentType[] {
+                typeof(LineSegment),
+                typeof(LineStyle),
+                typeof(Note),
                 typeof(LongNoteStart),
-            },
-        };
+            };
+
+            public static readonly EntityQueryDesc clearType = new EntityQueryDesc {
+                    Any = new ComponentType[] {
+                    typeof(NoteDisplay),
+                    typeof(LongNoteStart),
+                },
+            };
+        }
+
+        private static readonly Dictionary<NoteType, Entity> prefabs = new Dictionary<NoteType, Entity>();
 
         public static Material LongNoteMaterial { get; set; }
 
@@ -108,7 +110,7 @@ namespace BananaBeats.Visualization {
                     break;
                 case NoteType.LongStart:
                     noteStart = cmdBuf.Instantiate(prefabs[NoteType.LongStart]);
-                    longNoteBody = cmdBuf.CreateEntity(World.EntityManager.CreateArchetype(lnBodyType));
+                    longNoteBody = cmdBuf.CreateEntity(World.EntityManager.CreateArchetype(StaticTypes.lnBodyType));
                     hasLongNoteBody = true;
                     break;
                 case NoteType.Fake:
@@ -164,7 +166,7 @@ namespace BananaBeats.Visualization {
 
         public static void Clear() =>
             GetCommandBuffer()
-            .DestroyEntity(EntityManager.CreateEntityQuery(clearType));
+            .DestroyEntity(EntityManager.CreateEntityQuery(StaticTypes.clearType));
 
         public static void RegisterPosition(Vector3[] refStartPos, Vector3[] refEndPos) {
             NoteDisplayScroll.refStartPos = Array.ConvertAll(refStartPos, V3toF3);

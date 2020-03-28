@@ -5,8 +5,27 @@ using UnityEngine;
 namespace BananaBeats.Visualization {
     public class BGADisplayManager: MonoBehaviour {
         public BGAConfig[] bgaConfigs;
+        public Renderer dimBackground;
         private BMSPlayer player;
         private readonly HashSet<BGADisplay> instaniatedBGADisplays = new HashSet<BGADisplay>();
+        private Material dimMaterial;
+
+        public float DimBackground {
+            get => dimBackground.sharedMaterial.color.a;
+            set {
+                if(dimMaterial == null) {
+#if UNITY_EDITOR
+                    dimMaterial = new Material(dimBackground.sharedMaterial);
+                    dimBackground.sharedMaterial = dimMaterial;
+#else
+                    dimMaterial = dimBackground.sharedMaterial;
+#endif
+                }
+                var color = dimMaterial.color;
+                color.a = value;
+                dimMaterial.color = color;
+            }
+        }
 
         public void Load(BMSPlayer player) {
             if(player == this.player) return;
@@ -27,6 +46,10 @@ namespace BananaBeats.Visualization {
         }
 
         protected void OnDestroy() => Clear();
+
+        public void ApplyConfig(BMSGameConfig config) {
+            DimBackground = config.backgroundDim;
+        }
     }
 
     [Serializable]

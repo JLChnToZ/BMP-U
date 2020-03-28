@@ -73,6 +73,9 @@ namespace BananaBeats {
 
         private UniTaskVoid TestLoadBMS(string path) {
             loader?.Dispose();
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
+            path = path.Replace('\\', '/');
+#endif
             loader = new BMSLoader(path);
             return ReloadBMS();
         }
@@ -87,6 +90,7 @@ namespace BananaBeats {
             var player = BMSPlayableManager.Load(loader);
             player.ApplyConfig(config);
             instaniatedBGA.Load(player);
+            instaniatedBGA.ApplyConfig(config);
             player.Play();
         }
 
