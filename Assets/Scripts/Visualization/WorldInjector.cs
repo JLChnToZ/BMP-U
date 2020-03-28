@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using Unity.Entities;
-using UnityEngine.LowLevel;
+using UniRx.Async;
 
 namespace BananaBeats.Visualization {
     public class WorldInjector: MonoBehaviour {
@@ -16,19 +12,43 @@ namespace BananaBeats.Visualization {
             world = new World("BMSNoteRain");
             var systems = DefaultWorldInitialization.GetAllSystems(WorldSystemFilterFlags.Default);
             DefaultWorldInitialization.AddSystemsToRootLevelSystemGroups(world, systems);
-            ScriptBehaviourUpdateOrder.UpdatePlayerLoop(world, PlayerLoop.GetCurrentPlayerLoop());
+            ComponentSystemScheduler.Create<InitializationSystemGroup>(world, PlayerLoopTiming.Initialization);
+            ComponentSystemScheduler.Create<SimulationSystemGroup>(world, PlayerLoopTiming.Update);
+            ComponentSystemScheduler.Create<PresentationSystemGroup>(world, PlayerLoopTiming.PreLateUpdate);
             NoteDisplayManager.World = world;
             OnInitWorld?.Invoke();
         }
 
         public void OnDestroy() {
             try {
-                if(world != null)
+                if(world != null && world.IsCreated)
                     world.Dispose();
             } catch {}
             if(NoteDisplayManager.World == world)
                 NoteDisplayManager.World = null;
             world = null;
+        }
+    }
+
+    internal class ComponentSystemScheduler: IPlayerLoopItem {
+        private readonly World world;
+        private readonly ComponentSystemBase componentSystem;
+
+        protected ComponentSystemScheduler(World world, ComponentSystemBase componentSystem) {
+            this.world = world;
+            this.componentSystem = componentSystem;
+        }
+
+        public bool MoveNext() {
+            componentSystem.Update();
+            return world.IsCreated;
+        }
+
+        public static ComponentSystemScheduler Create<T>(World world, PlayerLoopTiming timing)
+            where T : ComponentSystemBase {
+            var scheduler = new ComponentSystemScheduler(world, world.GetOrCreateSystem<T>());
+            PlayerLoopHelper.AddAction(timing, scheduler);
+            return scheduler;
         }
     }
 }

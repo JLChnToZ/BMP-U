@@ -30,6 +30,7 @@ namespace BananaBeats.Visualization {
                 .Schedule(jobHandle);
 
             jobHandle = Entities
+                .WithAll<NonUniformScale>()
                 .ForEach((Entity entity, int entityInQueryIndex, in FadeOut data) => {
                     if(data.life > maxTime) cmdBuffer.DestroyEntity(entityInQueryIndex, entity);
                 })

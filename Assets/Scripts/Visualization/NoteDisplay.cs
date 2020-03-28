@@ -78,7 +78,9 @@ namespace BananaBeats.Visualization {
             set { world = value ?? World.DefaultGameObjectInjectionWorld; }
         }
 
-        private static EntityCommandBuffer GetCommandBuffer() =>
+        internal static EntityManager EntityManager => World.EntityManager;
+
+        internal static EntityCommandBuffer GetCommandBuffer() =>
             World.GetOrCreateSystem<BeginInitializationEntityCommandBufferSystem>().CreateCommandBuffer();
 
         public static void ConvertPrefab(GameObject prefab, NoteType noteType) {
@@ -156,16 +158,9 @@ namespace BananaBeats.Visualization {
         public static void Destroy(int id) =>
             DestroyNoteSystem.Append(id);
 
-        public static void Clear() {
-            var entityManager = World.EntityManager;
-            var cmdBuf = GetCommandBuffer();
-            if(entityManager != null && entityManager.IsCreated) {
-                new EntityQueryDesc {
-                    Any = new ComponentType[] { typeof(NoteDisplay), typeof(LongNoteStart) },
-                };
-                cmdBuf.DestroyEntity(entityManager.CreateEntityQuery(clearType));
-            }
-        }
+        public static void Clear() =>
+            GetCommandBuffer()
+            .DestroyEntity(EntityManager.CreateEntityQuery(clearType));
 
         public static void RegisterPosition(Vector3[] refStartPos, Vector3[] refEndPos) {
             NoteDisplayScroll.refStartPos = Array.ConvertAll(refStartPos, V3toF3);

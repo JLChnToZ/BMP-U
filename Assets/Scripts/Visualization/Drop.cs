@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using Unity.Jobs;
-using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
@@ -17,9 +16,13 @@ namespace BananaBeats.Visualization {
         public static float scale = 10F;
 
         protected override JobHandle OnUpdate(JobHandle jobHandle) {
+            float time = Time.DeltaTime * scale;
+
             jobHandle = Entities
-                .ForEach((ref Translation translation, ref Drop drop) =>
-                    translation.Value.y = math.lerp(drop.from, translation.Value.y, drop.lerp))
+                .ForEach((ref Translation translation, ref Drop drop) => {
+                    drop.lerp = math.lerp(drop.lerp, 1, time);
+                    translation.Value.y = math.lerp(drop.from, translation.Value.y, drop.lerp);
+                })
                 .Schedule(jobHandle);
 
             jobHandle.Complete();

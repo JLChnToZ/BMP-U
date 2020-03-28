@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 using Unity.Jobs;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -7,14 +6,18 @@ using Unity.Collections;
 using E7.ECS.LineRenderer;
 
 namespace BananaBeats.Visualization {
+    using static NoteDisplayManager;
+
     public static class NoteLaneManager {
-        private static readonly Lazy<EntityArchetype> noteLaneArchetype = new Lazy<EntityArchetype>(
-            () => NoteDisplayManager.World.EntityManager.CreateArchetype(
-                typeof(LineSegment),
-                typeof(LineStyle),
-                typeof(NoteLane)
-            )
-        );
+        private static readonly ComponentType[] createTypes = new ComponentType[] {
+            typeof(LineSegment),
+            typeof(LineStyle),
+            typeof(NoteLane),
+        };
+
+        private static readonly ComponentType[] clearTypes = new ComponentType[] {
+            typeof(NoteLane),
+        };
 
         public static Material LaneMaterial { get; set; }
 
@@ -27,36 +30,32 @@ namespace BananaBeats.Visualization {
         public static float LaneGaugeAnimSpeed { get; set; } = 10F;
 
         public static void CreateLane(Vector3 pos1, Vector3 pos2) =>
-            InternalCreate(pos1, pos2, LaneMaterial);
+            InternalCreate(pos1, pos2, LaneMaterial, GetCommandBuffer());
 
         public static void CreateGauge(Vector3 pos1, Vector3 pos2) {
-            var entityManager = NoteDisplayManager.World.EntityManager;
-            var instance = InternalCreate(pos1, pos2, GaugeMaterial, entityManager);
-            entityManager.AddComponentData(instance, new NoteLaneLerp {
+            var cmdBuf = GetCommandBuffer();
+            var instance = InternalCreate(pos1, pos2, GaugeMaterial, cmdBuf);
+            cmdBuf.AddComponent(instance, new NoteLaneLerp {
                 timeScale = LaneGaugeAnimSpeed,
                 maxValue = pos2,
             });
         }
 
-        private static Entity InternalCreate(Vector3 pos1, Vector3 pos2, Material material, EntityManager entityManager = null) {
-            if(entityManager == null)
-                entityManager = NoteDisplayManager.World.EntityManager;
-            var instance = entityManager.CreateEntity(noteLaneArchetype.Value);
-            entityManager.SetComponentData(instance, new LineSegment {
+        private static Entity InternalCreate(Vector3 pos1, Vector3 pos2, Material material, EntityCommandBuffer cmdBuf) {
+            var instance = cmdBuf.CreateEntity(EntityManager.CreateArchetype(createTypes));
+            cmdBuf.SetComponent(instance, new LineSegment {
                 from = pos1,
                 to = pos2,
                 lineWidth = LaneLineWidth,
             });
-            entityManager.SetSharedComponentData(instance, new LineStyle {
+            cmdBuf.SetSharedComponent(instance, new LineStyle {
                 material = material,
             });
             return instance;
         }
 
         public static void Clear() {
-            var entityManager = NoteDisplayManager.World.EntityManager;
-            if(entityManager != null && entityManager.IsCreated)
-                entityManager.DestroyEntity(entityManager.CreateEntityQuery(typeof(NoteLane)));
+            GetCommandBuffer().DestroyEntity(EntityManager.CreateEntityQuery(clearTypes));
         }
 
         public static void SetBeatFlowEffect(float value) {
@@ -68,9 +67,8 @@ namespace BananaBeats.Visualization {
 
     public class NoteLaneLerpSystem: JobComponentSystem {
         EntityCommandBufferSystem cmdBufSystem;
-        protected override void OnCreate() {
+        protected override void OnCreate() =>
             cmdBufSystem = World.GetOrCreateSystem<BeginInitializationEntityCommandBufferSystem>();
-        }
 
         protected override JobHandle OnUpdate(JobHandle jobHandle) {
             var cmdBuffer = cmdBufSystem.CreateCommandBuffer().ToConcurrent();

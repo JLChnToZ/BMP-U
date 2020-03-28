@@ -3,6 +3,8 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using E7.ECS.LineRenderer;
+using Unity.Mathematics;
+using Unity.Transforms;
 
 namespace BananaBeats.Visualization {
     public class DestroyNoteSystem: JobComponentSystem {
@@ -34,8 +36,12 @@ namespace BananaBeats.Visualization {
                     .WithReadOnly(map)
                     .WithNone<LineSegment, FadeOut>()
                     .ForEach((Entity entity, int entityInQueryIndex, in Note note) => {
-                        if(map.ContainsKey(note.id))
+                        if(map.ContainsKey(note.id)) {
                             cmdBuffer.AddComponent<FadeOut>(entityInQueryIndex, entity);
+                            cmdBuffer.AddComponent(entityInQueryIndex, entity, new NonUniformScale {
+                                Value = new float3(1),
+                            });
+                        }
                     })
                     .Schedule(jobHandle);
 
