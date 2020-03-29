@@ -40,6 +40,8 @@ namespace BananaBeats.HUD {
 
         private Animation scoreRankDisplayAnim;
 
+        private bool isAutoPlay;
+
         protected void Awake() {
             BMSPlayableManager.OnScore += OnScoreUpdate;
             BMSPlayableManager.GlobalPlayStateChanged += PlayStateChanged;
@@ -145,6 +147,9 @@ namespace BananaBeats.HUD {
                         infoDisplayGroup.alpha = 1;
                     break;
             }
+            isAutoPlay = player.PlayableLayout == BMSKeyLayout.None;
+            if(scoreText != null)
+                scoreText.text = isAutoPlay ? string.Empty : player.Score.ToString();
         }
 
         protected void OnBMSEvent(BMSEvent bmsEvent, object resource) {
