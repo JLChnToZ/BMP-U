@@ -4,6 +4,7 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
+using E7.ECS.LineRenderer;
 
 namespace BananaBeats.Visualization {
     [UpdateInGroup(typeof(SimulationSystemGroup))]
@@ -31,6 +32,7 @@ namespace BananaBeats.Visualization {
                 }
                 jobHandle = Entities
                     .WithReadOnly(map)
+                    .WithAll<LongNoteStart>()
                     .ForEach((Entity entity, int entityInQueryIndex, in Note note) => {
                         if(map.TryGetValue(note.id, out float2 payload)) {
                             cmdBuffer.AddComponent(entityInQueryIndex, entity, new LongNoteEnd {
@@ -38,10 +40,7 @@ namespace BananaBeats.Visualization {
                                 scale = payload.y,
                             });
                             var noteEnd = cmdBuffer.Instantiate(entityInQueryIndex, lnEnd);
-                            cmdBuffer.AddComponent(entityInQueryIndex, noteEnd, new Note {
-                                channel = note.channel,
-                                id = note.id,
-                            });
+                            cmdBuffer.AddComponent(entityInQueryIndex, noteEnd, note);
                             cmdBuffer.AddComponent(entityInQueryIndex, noteEnd, new NoteDisplay {
                                 pos = payload.x,
                                 scale = payload.y,

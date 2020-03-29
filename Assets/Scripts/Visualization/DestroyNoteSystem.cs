@@ -26,7 +26,7 @@ namespace BananaBeats.Visualization {
 
                 jobHandle = Entities
                     .WithReadOnly(map)
-                    .WithAll<LongNoteStart, LineSegment>()
+                    .WithAll<LongNoteStart>()
                     .ForEach((Entity entity, int entityInQueryIndex, in Note note) => {
                         if(map.ContainsKey(note.id))
                             cmdBuffer.DestroyEntity(entityInQueryIndex, entity);
@@ -35,7 +35,7 @@ namespace BananaBeats.Visualization {
 
                 jobHandle = Entities
                     .WithReadOnly(map)
-                    .WithNone<LineSegment, FadeOut>()
+                    .WithNone<LongNoteStart, FadeOut>()
                     .ForEach((Entity entity, int entityInQueryIndex, in Note note) => {
                         if(map.ContainsKey(note.id)) {
                             cmdBuffer.AddComponent<FadeOut>(entityInQueryIndex, entity);
