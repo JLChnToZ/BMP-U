@@ -85,8 +85,8 @@ namespace BananaBeats {
             loader.Chart.Parse(ParseType.Header | ParseType.Content | ParseType.ContentSummary | ParseType.Resources);
             await UniTask.SwitchToMainThread();
             HUD.GameHUDManager.UpdateHUD(loader);
-            await loader.LoadAudio();
-            await loader.LoadImages();
+            await loader.LoadAudio(HUD.GameHUDManager.progressHandler);
+            await loader.LoadImages(HUD.GameHUDManager.progressHandler);
             var player = BMSPlayableManager.Load(loader);
             player.ApplyConfig(config);
             instaniatedBGA.Load(player);

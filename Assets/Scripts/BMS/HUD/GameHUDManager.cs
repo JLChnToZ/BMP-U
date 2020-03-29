@@ -4,10 +4,12 @@ using UnityEngine.UI;
 using BMS;
 using UniRx.Async;
 using BananaBeats.Utils;
+using System.ComponentModel;
 
 namespace BananaBeats.HUD {
     public class GameHUDManager: MonoBehaviour {
         private static Action<BMSLoader> updateHUD;
+        public static readonly Progress<float> progressHandler = new Progress<float>();
 
         public static void UpdateHUD(BMSLoader loader) =>
             updateHUD?.Invoke(loader);
@@ -30,6 +32,8 @@ namespace BananaBeats.HUD {
         public Graphic[] bpmFlashing;
         public Color bpmFlashColor = Color.white;
         public Color bpmDimColor = Color.white;
+        public GameObject progressDisplayContainer;
+        public Image progressDisplay;
 
         private IDisposable updateSongProgress;
         private IDisposable updateBPMFlashing;
@@ -41,12 +45,15 @@ namespace BananaBeats.HUD {
             BMSPlayableManager.GlobalPlayStateChanged += PlayStateChanged;
             BMSPlayableManager.GlobalBMSEvent += OnBMSEvent;
             updateHUD += UpdateHUDHandler;
+            progressHandler.ProgressChanged += LoadProgressHandler;
             if(scoreRankDisplay != null)
                 scoreRankDisplayAnim = scoreRankDisplay.GetComponent<Animation>();
             if(songProgressDisplay != null)
                 updateSongProgress = GameLoop.RunAsUpdate(UpdateProgress);
             if(bpmFlashing != null && bpmFlashing.Length > 0)
                 updateBPMFlashing = GameLoop.RunAsUpdate(UpdateFlashingBPM);
+            if(progressDisplayContainer != null)
+                progressDisplayContainer.SetActive(false);
         }
 
         protected void OnDestroy() {
@@ -54,6 +61,7 @@ namespace BananaBeats.HUD {
             BMSPlayableManager.GlobalPlayStateChanged -= PlayStateChanged;
             BMSPlayableManager.GlobalBMSEvent -= OnBMSEvent;
             updateHUD -= UpdateHUDHandler;
+            progressHandler.ProgressChanged -= LoadProgressHandler;
             updateSongProgress?.Dispose();
             updateBPMFlashing?.Dispose();
         }
@@ -78,6 +86,13 @@ namespace BananaBeats.HUD {
             if(text == null) return;
             text.gameObject.SetActive(!string.IsNullOrEmpty(content));
             text.text = content ?? string.Empty;
+        }
+
+        private void LoadProgressHandler(object _, float progress) {
+            if(progressDisplayContainer != null)
+                progressDisplayContainer.SetActive(true);
+            if(progressDisplay != null)
+                progressDisplay.fillAmount = progress;
         }
 
         protected void UpdateHUDHandler(BMSLoader loader) {
@@ -113,10 +128,23 @@ namespace BananaBeats.HUD {
 
         private void PlayStateChanged(object sender, EventArgs e) {
             if(!(sender is BMSPlayableManager player)) return;
-            if(infoDisplayGroup != null)
-                infoDisplayGroup.alpha = player.PlaybackState == PlaybackState.Playing ? 0 : 1;
-            if(player.PlaybackState == PlaybackState.Stopped)
-                UpdateText(bpmText, player.BMSLoader.Chart.BPM.ToString());
+            switch(player.PlaybackState) {
+                case PlaybackState.Playing:
+                    if(infoDisplayGroup != null)
+                        infoDisplayGroup.alpha = 0;
+                    if(progressDisplayContainer != null)
+                        progressDisplayContainer.SetActive(false);
+                    break;
+                case PlaybackState.Stopped:
+                    UpdateText(bpmText, player.BMSLoader.Chart.BPM.ToString());
+                    if(infoDisplayGroup != null)
+                        infoDisplayGroup.alpha = 1;
+                    break;
+                case PlaybackState.Paused:
+                    if(infoDisplayGroup != null)
+                        infoDisplayGroup.alpha = 1;
+                    break;
+            }
         }
 
         protected void OnBMSEvent(BMSEvent bmsEvent, object resource) {
