@@ -4,13 +4,9 @@ using Unity.Mathematics;
 using Unity.Transforms;
 using Unity.Collections;
 
-using UnityTime = UnityEngine.Time;
-
 namespace BananaBeats.Visualization {
     [UpdateInGroup(typeof(SimulationSystemGroup))]
     public class Fade: JobComponentSystem {
-        private static readonly float timeScale = 10;
-        private static readonly float maxTime = 1;
         private EntityCommandBufferSystem cmdBufSystem;
 
         protected override void OnCreate() =>
@@ -18,14 +14,15 @@ namespace BananaBeats.Visualization {
 
         protected override JobHandle OnUpdate(JobHandle jobHandle) {
             var cmdBuffer = cmdBufSystem.CreateCommandBuffer().ToConcurrent();
-            float time = UnityTime.unscaledDeltaTime;
+            float time = Time.DeltaTime;
+            float timeScale = NoteDisplayManager.FadeSpeed;
+            float maxTime = NoteDisplayManager.FadeLife;
 
             jobHandle = Entities
                 .ForEach((ref FadeOut data, ref NonUniformScale nonUniformScale) => {
                     var scale = nonUniformScale.Value;
                     data.life += time;
-                    scale.x = math.lerp(scale.x, 0, time * timeScale);
-                    scale.y = math.lerp(scale.y, 0, time * timeScale);
+                    scale = math.lerp(scale, 0, time * timeScale);
                     nonUniformScale.Value = scale;
                 })
                 .Schedule(jobHandle);

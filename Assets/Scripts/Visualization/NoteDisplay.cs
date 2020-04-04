@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Entities;
 using Unity.Mathematics;
-using E7.ECS.LineRenderer;
 using Unity.Transforms;
 
 namespace BananaBeats.Visualization {
@@ -23,6 +22,11 @@ namespace BananaBeats.Visualization {
         public float scale;
     }
 
+    public struct LongNotePos: IComponentData {
+        public float from;
+        public float to;
+    }
+
     public struct LongNoteEnd: IComponentData {
         public float pos;
         public float scale;
@@ -32,6 +36,10 @@ namespace BananaBeats.Visualization {
 
     public struct FadeOut: IComponentData {
         public float life;
+    }
+
+    public struct Spinning: IComponentData {
+        public float3 velocity;
     }
 
     public enum NoteType: byte {
@@ -44,13 +52,6 @@ namespace BananaBeats.Visualization {
 
     public static class NoteDisplayManager {
         private static class StaticTypes {
-            public static readonly ComponentType[] lnBodyType = new ComponentType[] {
-                typeof(LineSegment),
-                typeof(LineStyle),
-                typeof(Note),
-                typeof(LongNoteStart),
-            };
-
             public static readonly EntityQueryDesc clearType = new EntityQueryDesc {
                     Any = new ComponentType[] {
                     typeof(NoteDisplay),
@@ -60,19 +61,35 @@ namespace BananaBeats.Visualization {
         }
 
         private static readonly Dictionary<NoteType, Entity> prefabs = new Dictionary<NoteType, Entity>();
+        private static int nextId;
+        private static World world;
+
+        internal static float3[] refStartPos, refEndPos;
 
         public static Material LongNoteMaterial { get; set; }
 
         public static float LongNoteLineWidth { get; set; } = 1;
 
-        public static float DropFrom {
-            get => SetEndNoteTimeSystem.DropFrom;
-            set => SetEndNoteTimeSystem.DropFrom = value;
-        }
+        public static float FixedEndTimePos { get; set; } = 10;
 
-        private static int nextId;
+        public static float ScrollSpeed { get; set; } = 1;
 
-        private static World world;
+        public static float ScrollPos { get; set; }
+
+        public static float DropFrom { get; set; } = 10;
+
+        public static float DropSpeed { get; set; } = 10;
+
+        public static float FadeSpeed { get; set; } = 10;
+
+        public static float LnNoEndExtendSpeed { get; set; } = 1F;
+
+        public static float LnExtendSpeed { get; set; } = 27.5F;
+
+        public static Vector3 SpinningVelocity { get; set; } = new Vector3(2, 3, 4);
+
+        public static float FadeLife { get; set; } = 1;
+
         public static World World {
             get {
                 if(world == null) world = World.DefaultGameObjectInjectionWorld;
@@ -86,15 +103,12 @@ namespace BananaBeats.Visualization {
         internal static EntityCommandBuffer GetCommandBuffer() =>
             World.GetOrCreateSystem<BeginInitializationEntityCommandBufferSystem>().CreateCommandBuffer();
 
+        internal static Entity LnEnd => prefabs[NoteType.LongEnd];
+
         public static void ConvertPrefab(GameObject prefab, NoteType noteType) {
             if(World == null) return;
             var entity = GameObjectConversionUtility.ConvertGameObjectHierarchy(prefab, GameObjectConversionSettings.FromWorld(World, null));
             prefabs[noteType] = entity;
-            switch(noteType) {
-                case NoteType.LongEnd:
-                    SetEndNoteTimeSystem.LnEnd = entity;
-                    break;
-            }
         }
 
         public static int Spawn(int channel, TimeSpan time, NoteType noteType, float scale = 1) {
@@ -110,7 +124,7 @@ namespace BananaBeats.Visualization {
                     break;
                 case NoteType.LongStart:
                     noteStart = cmdBuf.Instantiate(prefabs[NoteType.LongStart]);
-                    longNoteBody = cmdBuf.CreateEntity(World.EntityManager.CreateArchetype(StaticTypes.lnBodyType));
+                    longNoteBody = cmdBuf.Instantiate(prefabs[NoteType.LongBody]);
                     hasLongNoteBody = true;
                     break;
                 case NoteType.Fake:
@@ -137,21 +151,24 @@ namespace BananaBeats.Visualization {
                     from = DropFrom,
                 });
             if(hasLongNoteBody) {
-                cmdBuf.SetComponent(longNoteBody, new Note {
+                cmdBuf.AddComponent(longNoteBody, new Note {
                     channel = channel,
                     id = id,
                 });
-                cmdBuf.SetComponent(longNoteBody, new LongNoteStart {
+                cmdBuf.AddComponent(longNoteBody, new LongNoteStart {
                     pos = pos,
                     scale = scale,
                 });
-                cmdBuf.SetSharedComponent(longNoteBody, new LineStyle {
-                    material = LongNoteMaterial,
+                if(DropFrom > 0)
+                    cmdBuf.AddComponent(longNoteBody, new Drop {
+                        from = DropFrom,
+                    });
+                cmdBuf.AddComponent<LongNotePos>(longNoteBody);
+                cmdBuf.AddComponent<NonUniformScale>(longNoteBody);
+            } else
+                cmdBuf.AddComponent(noteStart, new Spinning {
+                    velocity = SpinningVelocity * scale,
                 });
-                cmdBuf.SetComponent(longNoteBody, new LineSegment {
-                    lineWidth = LongNoteLineWidth,
-                });
-            }
             return id;
         }
 
@@ -169,8 +186,8 @@ namespace BananaBeats.Visualization {
             .DestroyEntity(EntityManager.CreateEntityQuery(StaticTypes.clearType));
 
         public static void RegisterPosition(Vector3[] refStartPos, Vector3[] refEndPos) {
-            NoteDisplayScroll.refStartPos = Array.ConvertAll(refStartPos, V3toF3);
-            NoteDisplayScroll.refEndPos = Array.ConvertAll(refEndPos, V3toF3);
+            NoteDisplayManager.refStartPos = Array.ConvertAll(refStartPos, V3toF3);
+            NoteDisplayManager.refEndPos = Array.ConvertAll(refEndPos, V3toF3);
         }
 
         private static float3 V3toF3(Vector3 vector3) => vector3;

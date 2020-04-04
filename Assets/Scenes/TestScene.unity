@@ -589,10 +589,6 @@ GameObject:
   m_Component:
   - component: {fileID: 249689086}
   - component: {fileID: 249689085}
-  - component: {fileID: 249689089}
-  - component: {fileID: 249689088}
-  - component: {fileID: 249689087}
-  - component: {fileID: 249689084}
   m_Layer: 0
   m_Name: Note Camera
   m_TagString: Untagged
@@ -600,18 +596,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &249689084
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 249689083}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3d317e0de66f34fdb9716e8081dd80c4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!20 &249689085
 Camera:
   m_ObjectHideFlags: 0
@@ -669,64 +653,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 20, y: 0, z: 0}
---- !u!114 &249689087
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 249689083}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6851b6711fc654d54b6566c5eae03737, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_SerializedData:
-    Value:
-      c0:
-        x: 1
-        y: 0
-        z: 0
-        w: 0
-      c1:
-        x: 0
-        y: 0.9396926
-        z: 0.34202012
-        w: 0
-      c2:
-        x: 0
-        y: -0.34202012
-        z: 0.9396926
-        w: 0
-      c3:
-        x: 0
-        y: 10
-        z: -13
-        w: 1
---- !u!114 &249689088
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 249689083}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1d8133af023214ae993fc28d2fd97a1e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &249689089
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 249689083}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5bf10cdea1344482e91a4f2b58506b77, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!224 &250856291 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4150691521171197453, guid: dae7d7cc9a1050d47833f8f36b78848e,

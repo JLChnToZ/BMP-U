@@ -9,9 +9,6 @@ using E7.ECS.LineRenderer;
 namespace BananaBeats.Visualization {
     [UpdateInGroup(typeof(SimulationSystemGroup))]
     public class SetEndNoteTimeSystem: JobComponentSystem {
-        public static float DropFrom { get; set; } = 10;
-        public static Entity LnEnd { get; set; }
-
         private static readonly Queue<Data> queue = new Queue<Data>();
         private EntityCommandBufferSystem cmdBufSystem;
 
@@ -22,8 +19,8 @@ namespace BananaBeats.Visualization {
             if(queue.Count == 0) return jobHandle;
 
             var cmdBuffer = cmdBufSystem.CreateCommandBuffer().ToConcurrent();
-            var lnEnd = LnEnd;
-            var dropFrom = DropFrom;
+            var lnEnd = NoteDisplayManager.LnEnd;
+            var dropFrom = NoteDisplayManager.DropFrom;
 
             using(var map = new NativeHashMap<int, float2>(queue.Count, Allocator.TempJob)) {
                 while(queue.Count > 0) {

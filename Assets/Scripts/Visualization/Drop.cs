@@ -13,15 +13,24 @@ namespace BananaBeats.Visualization {
 
     [UpdateInGroup(typeof(SimulationSystemGroup))]
     public class EntityDropSystem: JobComponentSystem {
-        public static float scale = 10F;
+        private EntityCommandBufferSystem cmdBufSystem;
+
+        protected override void OnCreate() =>
+            cmdBufSystem = World.GetOrCreateSystem<BeginInitializationEntityCommandBufferSystem>();
 
         protected override JobHandle OnUpdate(JobHandle jobHandle) {
-            float time = Time.DeltaTime * scale;
+            float time = Time.DeltaTime * NoteDisplayManager.DropSpeed;
+            var cmdBuffer = cmdBufSystem.CreateCommandBuffer().ToConcurrent();
 
             jobHandle = Entities
-                .ForEach((ref Translation translation, ref Drop drop) => {
+                .ForEach((Entity entity, int entityInQueryIndex, ref Translation translation, ref Drop drop) => {
                     drop.lerp = math.lerp(drop.lerp, 1, time);
-                    translation.Value.y = math.lerp(drop.from, translation.Value.y, drop.lerp);
+                    if(drop.lerp >= 0.999F) {
+                        translation.Value.y = drop.from;
+                        cmdBuffer.RemoveComponent<Drop>(entityInQueryIndex, entity);
+                    } else {
+                        translation.Value.y = math.lerp(drop.from, translation.Value.y, drop.lerp);
+                    }
                 })
                 .Schedule(jobHandle);
 

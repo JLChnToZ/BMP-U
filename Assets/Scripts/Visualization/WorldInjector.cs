@@ -2,6 +2,7 @@
 using UnityEngine;
 using Unity.Entities;
 using UniRx.Async;
+using System.Text;
 
 namespace BananaBeats.Visualization {
     public class WorldInjector: MonoBehaviour {
@@ -11,6 +12,10 @@ namespace BananaBeats.Visualization {
         public void Awake() {
             world = new World("BMSNoteRain");
             var systems = DefaultWorldInitialization.GetAllSystems(WorldSystemFilterFlags.Default);
+            var sb = new StringBuilder();
+            foreach(var system in systems)
+                sb.AppendLine(system.ToString());
+            Debug.Log($"System Scanned:\n{sb}");
             DefaultWorldInitialization.AddSystemsToRootLevelSystemGroups(world, systems);
             ComponentSystemScheduler.Create<InitializationSystemGroup>(world, PlayerLoopTiming.Initialization);
             ComponentSystemScheduler.Create<SimulationSystemGroup>(world, PlayerLoopTiming.Update);

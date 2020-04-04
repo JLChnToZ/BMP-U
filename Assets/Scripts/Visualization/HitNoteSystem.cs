@@ -24,7 +24,7 @@ namespace BananaBeats.Visualization {
 
                 jobHandle = Entities
                     .WithReadOnly(map)
-                    .WithNone<LongNoteEnd>()
+                    // .WithNone<LongNoteEnd>()
                     .ForEach((Entity entity, int entityInQueryIndex, in Note note) => {
                         if(map.ContainsKey(note.id))
                             cmdBuffer.AddComponent<Catched>(entityInQueryIndex, entity);

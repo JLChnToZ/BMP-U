@@ -25,6 +25,9 @@ MonoBehaviour:
   - noteType: 4
     prefab: {fileID: 4106850488725643669, guid: d29752c337593464fb72c3ab98868a12,
       type: 3}
+  - noteType: 2
+    prefab: {fileID: 4106850488725643669, guid: 09e9436f3565d204384a0f3dee151901,
+      type: 3}
   longNoteBodyMaterial: {fileID: 2100000, guid: e1b2e110a53631b45836e54b24b9b30b,
     type: 2}
   longNoteBodyLineWidth: 0.8

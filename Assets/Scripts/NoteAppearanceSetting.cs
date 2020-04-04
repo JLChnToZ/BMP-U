@@ -50,7 +50,7 @@ namespace BananaBeats.Configs {
             NoteDisplayManager.LongNoteMaterial = longNoteBodyMaterial;
 #endif
             NoteDisplayManager.DropFrom = dropFrom;
-            EntityDropSystem.scale = dropSpeed;
+            NoteDisplayManager.DropSpeed = dropSpeed;
 #if UNITY_EDITOR
             NoteLaneManager.LaneMaterial = Instantiate(laneMaterial);
 #else

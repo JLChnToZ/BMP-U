@@ -150,8 +150,8 @@ namespace BananaBeats {
             if(PlaybackState == PlaybackState.Playing) {
                 var pos1 = timingHelper.CurrentPosition;
                 var pos2 = timingHelper.StopResumePosition;
-                NoteDisplayScroll.scale = NoteSpeed;
-                NoteDisplayScroll.time = (!EnableNoteSpeedAdjustment || pos1 > pos2 ? pos1 : pos2).ToAccurateSecondF();
+                NoteDisplayManager.ScrollSpeed = NoteSpeed;
+                NoteDisplayManager.ScrollPos = (!EnableNoteSpeedAdjustment || pos1 > pos2 ? pos1 : pos2).ToAccurateSecondF();
                 ReportBeatFlow();
             }
             await base.Update(delta);
