@@ -52,6 +52,8 @@ namespace BananaBeats {
 
         public bool PlaySound { get; set; } = true;
 
+        public float Volume { get; set; } = 1;
+
         protected bool Disposed { get; private set; }
 
         public event BMSEventDelegate BMSEvent;
@@ -260,8 +262,10 @@ namespace BananaBeats {
         public virtual void StartHandle(BMSEvent bmsEvent, BMSResource resource, float pitch = 1) {
             if(resource == null) return;
             try {
-                if(resource is AudioResource audioRes)
+                if(resource is AudioResource audioRes) {
                     audioRes.Pitch = pitch;
+                    audioRes.Volume = Volume;
+                }
                 resource.Play(bmsEvent);
             } catch(Exception ex) {
 #if UNITY_EDITOR || DEBUG

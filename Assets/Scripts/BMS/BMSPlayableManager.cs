@@ -107,6 +107,7 @@ namespace BananaBeats {
                 (config.playableChannels & Chart.Layout);
             EnableNoteSpeedAdjustment = config.bpmAffectSpeed;
             DetunePerSeconds = config.detune;
+            Volume = config.volume;
             NoteSpeed = config.speed;
             TimingOffset = TimeSpanAccurate.FromSecond(config.offset);
         }

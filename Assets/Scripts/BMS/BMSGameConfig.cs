@@ -7,6 +7,7 @@ namespace BananaBeats {
         public bool loadImages;
         public float backgroundDim;
         public bool loadSounds;
+        public float volume;
         public float detune;
         public float offset;
         public float speed;
@@ -16,8 +17,9 @@ namespace BananaBeats {
 
         public static BMSGameConfig Default { get; } = new BMSGameConfig {
             loadImages = true,
-            backgroundDim = 0.8F,
+            backgroundDim = 0.5F,
             loadSounds = true,
+            volume = 0.5F,
             detune = 0.5F,
             offset = 0,
             speed = 1,

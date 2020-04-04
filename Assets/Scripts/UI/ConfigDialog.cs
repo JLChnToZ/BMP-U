@@ -18,6 +18,8 @@ namespace BananaBeats.UI {
         [SerializeField]
         private Toggle loadSoundsToggle;
         [SerializeField]
+        private Slider volumeControl;
+        [SerializeField]
         private Toggle autoPlayToggle;
         [SerializeField]
         private Toggle bpmSpeedToggle;
@@ -51,6 +53,7 @@ namespace BananaBeats.UI {
                 loadImages = loadImagesToggle.isOn,
                 backgroundDim = dimBackground.value,
                 loadSounds = loadSoundsToggle.isOn,
+                volume = volumeControl.value,
                 autoPlay = autoPlayToggle.isOn,
                 bpmAffectSpeed = bpmSpeedToggle.isOn,
                 speed = speedSlider.value,
@@ -62,6 +65,7 @@ namespace BananaBeats.UI {
                 loadImagesToggle.isOn = value.loadImages;
                 dimBackground.value = value.backgroundDim;
                 loadSoundsToggle.isOn = value.loadSounds;
+                volumeControl.value = value.volume;
                 autoPlayToggle.isOn = value.autoPlay;
                 bpmSpeedToggle.isOn = value.bpmAffectSpeed;
                 speedSlider.value = value.speed;
