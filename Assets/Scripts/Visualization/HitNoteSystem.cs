@@ -15,7 +15,7 @@ namespace BananaBeats.Visualization {
         protected override JobHandle OnUpdate(JobHandle jobHandle) {
             if(queue.Count == 0)
                 return jobHandle;
-            var cmdBuffer = cmdBufSystem.CreateCommandBuffer().ToConcurrent();
+            var cmdBuffer = cmdBufSystem.CreateCommandBuffer().AsParallelWriter();
             using(var map = new NativeHashMap<int, bool>(queue.Count, Allocator.TempJob)) {
                 while(queue.Count > 0) {
                     var data = queue.Dequeue();

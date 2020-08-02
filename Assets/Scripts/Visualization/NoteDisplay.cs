@@ -4,6 +4,7 @@ using UnityEngine;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
+using Unity.Rendering;
 
 namespace BananaBeats.Visualization {
 
@@ -65,6 +66,8 @@ namespace BananaBeats.Visualization {
         private static World world;
 
         internal static float3[] refStartPos, refEndPos;
+
+        internal static float4[] mappedColors = new float4[20];
 
         public static Material LongNoteMaterial { get; set; }
 
@@ -146,6 +149,9 @@ namespace BananaBeats.Visualization {
                 pos = pos,
                 scale = scale,
             });
+            cmdBuf.AddComponent(noteStart, new MaterialColor {
+                Value = mappedColors[channel],
+            });
             if(DropFrom > 0)
                 cmdBuf.AddComponent(noteStart, new Drop {
                     from = DropFrom,
@@ -163,6 +169,9 @@ namespace BananaBeats.Visualization {
                     cmdBuf.AddComponent(longNoteBody, new Drop {
                         from = DropFrom,
                     });
+                cmdBuf.AddComponent(longNoteBody, new MaterialColor {
+                    Value = mappedColors[channel],
+                });
                 cmdBuf.AddComponent<LongNotePos>(longNoteBody);
                 cmdBuf.AddComponent<NonUniformScale>(longNoteBody);
             } else
@@ -190,6 +199,12 @@ namespace BananaBeats.Visualization {
             NoteDisplayManager.refEndPos = Array.ConvertAll(refEndPos, V3toF3);
         }
 
+        public static void RegisterColors(Color[] mappedColors) {
+            NoteDisplayManager.mappedColors = Array.ConvertAll(mappedColors, ColorToF4);
+        }
+
         private static float3 V3toF3(Vector3 vector3) => vector3;
+
+        private static float4 ColorToF4(Color color) => (Vector4)color;
     }
 }

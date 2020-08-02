@@ -38,11 +38,11 @@ namespace E7.ECS.LineRenderer
             {
                 cameraAca = cameraAca,
                 lastSystemVersion = LastSystemVersion,
-                lineSegmentType = GetArchetypeChunkComponentType<LineSegment>(isReadOnly: true),
-                ltwType = GetArchetypeChunkComponentType<LocalToWorld>(isReadOnly: true),
-                translationType = GetArchetypeChunkComponentType<Translation>(isReadOnly: false),
-                rotationType = GetArchetypeChunkComponentType<Rotation>(isReadOnly: false),
-                scaleType = GetArchetypeChunkComponentType<NonUniformScale>(isReadOnly: false),
+                lineSegmentType = GetComponentTypeHandle<LineSegment>(isReadOnly: true),
+                ltwType = GetComponentTypeHandle<LocalToWorld>(isReadOnly: true),
+                translationType = GetComponentTypeHandle<Translation>(isReadOnly: false),
+                rotationType = GetComponentTypeHandle<Rotation>(isReadOnly: false),
+                scaleType = GetComponentTypeHandle<NonUniformScale>(isReadOnly: false),
             }.Schedule(lineSegmentQuery, inputDeps);
 
             return linePositioningJobHandle;
@@ -52,14 +52,14 @@ namespace E7.ECS.LineRenderer
         struct LinePositioningJob : IJobChunk
         {
             [DeallocateOnJobCompletion] public NativeArray<ArchetypeChunk> cameraAca;
-            [ReadOnly] public ArchetypeChunkComponentType<LineSegment> lineSegmentType;
+            [ReadOnly] public ComponentTypeHandle<LineSegment> lineSegmentType;
             public uint lastSystemVersion;
 
-            [ReadOnly] public ArchetypeChunkComponentType<LocalToWorld> ltwType;
+            [ReadOnly] public ComponentTypeHandle<LocalToWorld> ltwType;
 
-            public ArchetypeChunkComponentType<Translation> translationType;
-            public ArchetypeChunkComponentType<Rotation> rotationType;
-            public ArchetypeChunkComponentType<NonUniformScale> scaleType;
+            public ComponentTypeHandle<Translation> translationType;
+            public ComponentTypeHandle<Rotation> rotationType;
+            public ComponentTypeHandle<NonUniformScale> scaleType;
 
             public void Execute(ArchetypeChunk ac, int chunkIndex, int firstEntityIndex)
             {

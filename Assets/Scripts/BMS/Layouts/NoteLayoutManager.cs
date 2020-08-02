@@ -20,11 +20,15 @@ namespace BananaBeats.Layouts {
 
         private static Vector3[] startPos, endPos;
 
+        private static Color[] mappedColors;
+
         public static void SwitchLayout(BMSKeyLayout layout) {
             if(startPos == null)
                 startPos = new Vector3[20];
             if(endPos == null)
                 endPos = new Vector3[20];
+            if(mappedColors == null)
+                mappedColors = new Color[20];
 
             var preset = GetPreset(layout);
 
@@ -36,9 +40,11 @@ namespace BananaBeats.Layouts {
                 startPos[val] = line.start;
                 endPos[val] = line.end;
                 NoteLaneManager.CreateGauge(line.end, Vector3.LerpUnclamped(line.end, line.start, 10));
+                mappedColors[i] = Color.red; // Testing only
             }
 
             NoteDisplayManager.RegisterPosition(startPos, endPos);
+            NoteDisplayManager.RegisterColors(mappedColors);
 
             // Draw end line
             for(int i = 0; i < preset.Length - 1; i++)

@@ -20,7 +20,7 @@ namespace BananaBeats.Visualization {
 
         protected override JobHandle OnUpdate(JobHandle jobHandle) {
             float time = Time.DeltaTime * NoteDisplayManager.DropSpeed;
-            var cmdBuffer = cmdBufSystem.CreateCommandBuffer().ToConcurrent();
+            var cmdBuffer = cmdBufSystem.CreateCommandBuffer().AsParallelWriter();
 
             jobHandle = Entities
                 .ForEach((Entity entity, int entityInQueryIndex, ref Translation translation, ref Drop drop) => {

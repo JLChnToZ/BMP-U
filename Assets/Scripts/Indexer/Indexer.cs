@@ -50,7 +50,7 @@ namespace BananaBeats {
             Scan(path, fileProgress);
 
         private async UniTask Scan(FileSystemPath path, IProgress<string> fileProgress = null) {
-            await UniTask.SwitchToTaskPool();
+            await UniTask.SwitchToThreadPool();
             PlayerDataManager.Instance.ClearSongInfo(path.ToString());
             foreach(var filePath in fileSystem.GetEntitiesRecursive(path).Where(TypeFilter)) {
                 if(filePath.IsDirectory) continue;

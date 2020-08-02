@@ -52,7 +52,15 @@ namespace BananaBeats {
 
         public bool PlaySound { get; set; } = true;
 
-        public float Volume { get; set; } = 1;
+        public float Volume {
+            get => volume;
+            set {
+                volume = value;
+                foreach(var res in playingResources)
+                    if(res is AudioResource audioRes)
+                        audioRes.Volume = value;
+            }
+        }
 
         protected bool Disposed { get; private set; }
 
@@ -67,6 +75,7 @@ namespace BananaBeats {
         private DateTime lastUpdate;
         private UniTask updateTask;
         private IDisposable mainUpdateLoop;
+        private float volume = 1;
 
         public BMSPlayer(BMSLoader bmsLoader) {
             BMSLoader = bmsLoader;
@@ -264,7 +273,7 @@ namespace BananaBeats {
             try {
                 if(resource is AudioResource audioRes) {
                     audioRes.Pitch = pitch;
-                    audioRes.Volume = Volume;
+                    audioRes.Volume = volume;
                 }
                 resource.Play(bmsEvent);
             } catch(Exception ex) {

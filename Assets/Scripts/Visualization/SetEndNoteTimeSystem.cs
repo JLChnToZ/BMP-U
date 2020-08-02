@@ -5,6 +5,7 @@ using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 using E7.ECS.LineRenderer;
+using Unity.Rendering;
 
 namespace BananaBeats.Visualization {
     [UpdateInGroup(typeof(SimulationSystemGroup))]
@@ -18,10 +19,11 @@ namespace BananaBeats.Visualization {
         protected override JobHandle OnUpdate(JobHandle jobHandle) {
             if(queue.Count == 0) return jobHandle;
 
-            var cmdBuffer = cmdBufSystem.CreateCommandBuffer().ToConcurrent();
+            var cmdBuffer = cmdBufSystem.CreateCommandBuffer().AsParallelWriter();
             var lnEnd = NoteDisplayManager.LnEnd;
             var dropFrom = NoteDisplayManager.DropFrom;
 
+            using(var mappedColors = new NativeArray<float4>(NoteDisplayManager.mappedColors, Allocator.TempJob))
             using(var map = new NativeHashMap<int, float2>(queue.Count, Allocator.TempJob)) {
                 while(queue.Count > 0) {
                     var data = queue.Dequeue();
@@ -29,6 +31,7 @@ namespace BananaBeats.Visualization {
                 }
                 jobHandle = Entities
                     .WithReadOnly(map)
+                    .WithReadOnly(mappedColors)
                     .WithAll<LongNoteStart>()
                     .ForEach((Entity entity, int entityInQueryIndex, in Note note) => {
                         if(map.TryGetValue(note.id, out float2 payload)) {
@@ -41,6 +44,9 @@ namespace BananaBeats.Visualization {
                             cmdBuffer.AddComponent(entityInQueryIndex, noteEnd, new NoteDisplay {
                                 pos = payload.x,
                                 scale = payload.y,
+                            });
+                            cmdBuffer.AddComponent(entityInQueryIndex, noteEnd, new MaterialColor {
+                                Value = mappedColors[note.channel],
                             });
                             if(dropFrom > 0)
                                 cmdBuffer.AddComponent(entityInQueryIndex, noteEnd, new Drop {

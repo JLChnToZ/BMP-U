@@ -13,7 +13,7 @@ namespace BananaBeats.Visualization {
             cmdBufSystem = World.GetOrCreateSystem<BeginInitializationEntityCommandBufferSystem>();
 
         protected override JobHandle OnUpdate(JobHandle jobHandle) {
-            var cmdBuffer = cmdBufSystem.CreateCommandBuffer().ToConcurrent();
+            var cmdBuffer = cmdBufSystem.CreateCommandBuffer().AsParallelWriter();
             float time = Time.DeltaTime;
             float timeScale = NoteDisplayManager.FadeSpeed;
             float maxTime = NoteDisplayManager.FadeLife;

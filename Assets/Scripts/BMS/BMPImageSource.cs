@@ -15,7 +15,7 @@ namespace BananaBeats {
 
         protected override async UniTask LoadImpl() {
             ImageResult bmp;
-            await UniTask.SwitchToTaskPool();
+            await UniTask.SwitchToThreadPool();
             using(var stream = fileSystem.OpenFile(filePath, System.IO.FileAccess.Read))
                 bmp = ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
             await UniTask.SwitchToMainThread();

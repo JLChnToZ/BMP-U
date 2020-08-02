@@ -74,7 +74,7 @@ namespace BananaBeats.Visualization {
             cmdBufSystem = World.GetOrCreateSystem<BeginInitializationEntityCommandBufferSystem>();
 
         protected override JobHandle OnUpdate(JobHandle jobHandle) {
-            var cmdBuffer = cmdBufSystem.CreateCommandBuffer().ToConcurrent();
+            var cmdBuffer = cmdBufSystem.CreateCommandBuffer().AsParallelWriter();
             var time = Time.DeltaTime;
 
             jobHandle = Entities

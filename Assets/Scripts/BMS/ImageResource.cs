@@ -18,7 +18,7 @@ namespace BananaBeats {
         }
 
         protected override async UniTask LoadImpl() {
-            await UniTask.SwitchToTaskPool();
+            await UniTask.SwitchToThreadPool();
             byte[] fileData = await fileSystem.ReadAllBytesAsync(filePath);
             await UniTask.SwitchToMainThread();
             Texture = new Texture2D(2, 2);

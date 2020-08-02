@@ -5,19 +5,44 @@ using BananaBeats.Utils;
 using UniRx.Async;
 using SharpFileSystem;
 using BassPlaybackState = ManagedBass.PlaybackState;
+using Debug = UnityEngine.Debug;
 
 namespace BananaBeats {
     public class AudioResource: BMSResource {
         int handle;
         long sliceEnd;
+        float pitch = 1;
+        float volume = 1;
 
-        public float Pitch { get; set; } = 1;
+        public float Pitch {
+            get => pitch;
+            set {
+                pitch = value;
+                try {
+                    if(handle != 0 && Bass.ChannelIsActive(handle) == BassPlaybackState.Playing)
+                        UpdatePitch();
+                } catch(BassException ex) {
+                    Debug.LogError($"BASS: Failed to set pitch for handle {handle:X8}: {ex.ErrorCode}");
+                }
+            }
+        }
 
-        public float Volume { get; set; } = 1;
+        public float Volume {
+            get => volume;
+            set {
+                volume = value;
+                try {
+                    if(handle != 0 && Bass.ChannelIsActive(handle) == BassPlaybackState.Playing)
+                        UpdateVolume();
+                } catch(BassException ex) {
+                    Debug.LogError($"BASS: Failed to set volume for {handle:X8}: {ex.ErrorCode}");
+                }
+            }
+        }
 
         public static void InitEngine() {
             if(!Bass.Init())
-                UnityEngine.Debug.LogWarning($"BASS init error: {Bass.LastError}");
+                Debug.LogWarning($"BASS: Failed to init: {Bass.LastError}");
         }
 
         public AudioResource(BMSResourceData resourceData, IFileSystem fileSystem, FileSystemPath path) :
@@ -26,7 +51,7 @@ namespace BananaBeats {
 
         protected override async UniTask LoadImpl() {
             if(handle != 0) return;
-            await UniTask.SwitchToTaskPool();
+            await UniTask.SwitchToThreadPool();
             if(filePath.IsReal(fileSystem))
                 handle = Bass.CreateStream(filePath.ToString());
             else {
@@ -34,7 +59,21 @@ namespace BananaBeats {
                 handle = Bass.CreateStream(fileData, 0, fileData.Length, BassFlags.Default);
             }
             if(handle == 0)
-                throw new BassException(Bass.LastError);
+                throw new BassException();
+        }
+
+        private void UpdatePitch() {
+            if(handle == 0)
+                throw new InvalidOperationException("Handle uninitialized");
+            if(!Bass.ChannelSetAttribute(handle, ChannelAttribute.Frequency, pitch == 1 ? 0 : (pitch * Bass.ChannelGetInfo(handle).Frequency)))
+                throw new BassException();
+        }
+
+        private void UpdateVolume() { 
+            if(handle == 0)
+                throw new InvalidOperationException("Handle uninitialized");
+            if(!Bass.ChannelSetAttribute(handle, ChannelAttribute.Volume, volume))
+                throw new BassException();
         }
 
         public override void Play(BMSEvent bmsEvent) {
@@ -44,16 +83,14 @@ namespace BananaBeats {
             sliceEnd = bmsEvent.sliceEnd >= TimeSpan.MaxValue ? long.MaxValue :
                 Bass.ChannelSeconds2Bytes(handle, bmsEvent.sliceEnd.ToAccurateSecond());
             if(!Bass.ChannelSetPosition(handle, sliceStart))
-                throw new BassException(Bass.LastError);
+                throw new BassException();
             switch(Bass.ChannelIsActive(handle)) {
                 case BassPlaybackState.Stopped:
                 case BassPlaybackState.Paused:
-                    if(!Bass.ChannelSetAttribute(handle, ChannelAttribute.Volume, Volume))
-                        throw new BassException(Bass.LastError);
-                    if(!Bass.ChannelSetAttribute(handle, ChannelAttribute.Frequency, Pitch == 1 ? 0 : (Pitch * Bass.ChannelGetInfo(handle).Frequency)))
-                        throw new BassException(Bass.LastError);
+                    UpdateVolume();
+                    UpdatePitch();
                     if(!Bass.ChannelPlay(handle))
-                        throw new BassException(Bass.LastError);
+                        throw new BassException();
                     break;
             }
             wasPlaying = true;
@@ -63,7 +100,7 @@ namespace BananaBeats {
             if(handle == 0) return;
             base.Pause();
             if(!Bass.ChannelPause(handle))
-                throw new BassException(Bass.LastError);
+                throw new BassException();
         }
 
         public override void Resume() {
@@ -73,7 +110,7 @@ namespace BananaBeats {
                 case BassPlaybackState.Stopped:
                 case BassPlaybackState.Paused:
                     if(!Bass.ChannelPlay(handle))
-                        throw new BassException(Bass.LastError);
+                        throw new BassException();
                     break;
             }
         }
@@ -82,13 +119,13 @@ namespace BananaBeats {
             if(handle == 0) return;
             base.Reset();
             if(!Bass.ChannelStop(handle))
-                throw new BassException(Bass.LastError);
+                throw new BassException();
         }
 
         public override void Update(TimeSpan diff) {
             if(handle != 0 && Bass.ChannelIsActive(handle) == BassPlaybackState.Playing) {
                 if(Bass.ChannelGetPosition(handle) >= sliceEnd && !Bass.ChannelStop(handle))
-                    throw new BassException(Bass.LastError);
+                    throw new BassException();
             } else if(wasPlaying) {
                 wasPlaying = false;
                 InvokeEnd();
@@ -98,7 +135,7 @@ namespace BananaBeats {
         public override void Dispose() {
             if(handle != 0) {
                 if(!Bass.StreamFree(handle))
-                    throw new BassException(Bass.LastError);
+                    Debug.LogWarning($"BASS: Failed to free stream {handle:X8}: {Bass.LastError}");
                 handle = 0;
             }
             base.Dispose();

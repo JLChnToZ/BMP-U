@@ -18,7 +18,7 @@ namespace BananaBeats {
 
         protected override async UniTask LoadImpl() {
             if(videoStream != null) return;
-            await UniTask.SwitchToTaskPool();
+            await UniTask.SwitchToThreadPool();
             try {
                 videoStream = new VideoStream(await fileSystem.GetRealPathAsync(filePath)) {
                     Preload = true,

@@ -83,7 +83,7 @@ namespace BananaBeats.PlayerData {
 
         private static async UniTaskVoid LoadAsync() {
             using(var playerData = new PlayerDataManager()) {
-                await UniTask.SwitchToTaskPool();
+                await UniTask.SwitchToThreadPool();
                 InputManager.Load(playerData);
                 NoteLayoutManager.Load(playerData);
                 await UniTask.SwitchToMainThread();
@@ -94,7 +94,7 @@ namespace BananaBeats.PlayerData {
 
         private static async UniTaskVoid SaveAsync() {
             using(var playerData = new PlayerDataManager()) {
-                await UniTask.SwitchToTaskPool();
+                await UniTask.SwitchToThreadPool();
                 InputManager.Save(playerData);
                 NoteLayoutManager.Save(playerData);
                 await UniTask.SwitchToMainThread();

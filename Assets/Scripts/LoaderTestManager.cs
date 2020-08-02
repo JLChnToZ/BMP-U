@@ -81,7 +81,7 @@ namespace BananaBeats {
         }
 
         private async UniTaskVoid ReloadBMS() {
-            await UniTask.SwitchToTaskPool();
+            await UniTask.SwitchToThreadPool();
             loader.Chart.Parse(ParseType.Header | ParseType.Content | ParseType.ContentSummary | ParseType.Resources);
             await UniTask.SwitchToMainThread();
             HUD.GameHUDManager.UpdateHUD(loader);

@@ -51,7 +51,7 @@ namespace E7.ECS.LineRenderer
                 {
                     EntityCommandBuffer ecb = new EntityCommandBuffer(Allocator.Temp);
 
-                    var lineStyleType = GetArchetypeChunkSharedComponentType<LineStyle>();
+                    var lineStyleType = GetSharedComponentTypeHandle<LineStyle>();
 
                     //TODO : This shouldn't be needed, but somehow the mesh became `null` in editor world??
                     CreateMeshIfNotYet();

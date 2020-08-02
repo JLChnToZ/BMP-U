@@ -12,7 +12,9 @@ namespace BananaBeats {
         public static void Init() {
             AudioResource.InitEngine();
 
+#if !UNITY_EDITOR
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+#endif
 
             BMSPlayableManager.ScoreConfig = new ScoreConfig {
                 comboBonusRatio = 0.4F,
